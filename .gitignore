@@ -1,0 +1,5 @@
+service/venv/
+service/.env
+service/__pycache__/
+service/app/__pycache__/
+*.pyc
