@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   SECTION_KEYS,
   SECTION_LABELS,
   runTier1Checks,
   runTier2Checks,
   sectionStatus,
+  type QualityIssue,
   type QualitySnapshot,
   type SectionKey,
   type SectionStatus,
 } from "@/lib/protocol/quality";
+import { runTier3Review } from "@/lib/protocol/tier3";
 
 export function QualityPanel({
   snapshot,
@@ -24,6 +26,19 @@ export function QualityPanel({
     [snapshot],
   );
   const warningCount = issues.length;
+
+  const [considerations, setConsiderations] = useState<QualityIssue[] | null>(null);
+  const [tier3Error, setTier3Error] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function requestReview() {
+    setTier3Error(null);
+    startTransition(async () => {
+      const res = await runTier3Review(snapshot);
+      if (res.error) setTier3Error(res.error);
+      else setConsiderations(res.issues ?? []);
+    });
+  }
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
@@ -72,6 +87,52 @@ export function QualityPanel({
             </div>
           );
         })}
+      </div>
+
+      <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-900">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Reviewer questions (AI)</p>
+          <button
+            type="button"
+            onClick={requestReview}
+            disabled={pending}
+            className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-800 hover:bg-purple-100 disabled:opacity-50 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-950"
+          >
+            {pending ? "Thinking..." : considerations ? "Ask again" : "Get reviewer questions"}
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          Questions a reviewer or committee member might raise, for your own judgement. Not a
+          verdict, and not a substitute for your supervisor's read.
+        </p>
+
+        {tier3Error && <p className="mt-2 text-xs text-red-600">{tier3Error}</p>}
+
+        {considerations && considerations.length === 0 && !tier3Error && (
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            No specific considerations raised for what's filled in so far.
+          </p>
+        )}
+
+        {considerations && considerations.length > 0 && (
+          <ul className="mt-2 flex flex-col gap-2">
+            {considerations.map((c) => (
+              <li
+                key={c.id}
+                className="rounded-lg border border-purple-100 bg-purple-50/60 p-2 dark:border-purple-900/60 dark:bg-purple-950/20"
+              >
+                <button
+                  type="button"
+                  onClick={() => onNavigate(c.section)}
+                  className="text-left text-xs text-purple-900 hover:underline dark:text-purple-300"
+                >
+                  <span className="mr-1 font-medium">{SECTION_LABELS[c.section]}:</span>
+                  {c.message}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
