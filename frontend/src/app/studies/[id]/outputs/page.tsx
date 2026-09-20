@@ -38,7 +38,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
     .eq("protocol_version_id", version.id)
     .order("generated_at", { ascending: false });
 
-  const latestByType = new Map<string, (typeof outputs)[number]>();
+  const latestByType = new Map<string, NonNullable<typeof outputs>[number]>();
   for (const o of outputs ?? []) {
     if (!latestByType.has(o.output_type)) latestByType.set(o.output_type, o);
   }

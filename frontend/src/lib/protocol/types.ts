@@ -1,5 +1,7 @@
 export type ProtocolStatus = "draft" | "registered" | "superseded";
 
+export type RegistrationMethod = "self" | "supervisor_approved";
+
 export type VariableType =
   | "continuous"
   | "categorical"
@@ -17,6 +19,11 @@ export type ProtocolVersionRow = {
   study_id: string;
   version_number: number;
   status: ProtocolStatus;
+  registration_method: RegistrationMethod | null;
+  registered_at: string | null;
+  registered_by: string | null;
+  approval_requested_at: string | null;
+  approved_by: string | null;
 
   study_title: string | null;
   short_title: string | null;

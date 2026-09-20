@@ -44,7 +44,7 @@ export default async function SupervisorPage() {
         supabase.from("deviations").select("study_id, created_at").in("study_id", studyIds),
         supabase.from("protocol_versions").select("study_id, updated_at").in("study_id", studyIds),
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+    : [{ data: null }, { data: null }, { data: null }];
 
   const byStudy = <T extends { study_id: string }>(rows: T[] | null) => {
     const map = new Map<string, T[]>();
