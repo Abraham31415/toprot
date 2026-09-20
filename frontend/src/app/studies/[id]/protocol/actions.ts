@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { ObjectiveType, VariableRole, VariableType } from "@/lib/protocol/types";
 import type { SampleSizeInput, SampleSizeResult } from "@/lib/protocol/sample-size";
+import { runSampleSizeCalculation } from "@/lib/protocol/sample-size-engine";
 
 export type SaveResult = { error?: string; savedAt?: number };
 
@@ -107,41 +108,22 @@ export async function calculateSampleSize(
   studyId: string,
   input: SampleSizeInput,
 ): Promise<SampleSizeCalcResult> {
-  const serviceUrl = process.env.NEXT_PUBLIC_DOC_SERVICE_URL;
-  if (!serviceUrl) return { error: "Document service URL is not configured." };
-
-  let response: Response;
-  try {
-    response = await fetch(`${serviceUrl}/sample-size/calculate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-      cache: "no-store",
-    });
-  } catch (err) {
-    return { error: `Could not reach the document service: ${(err as Error).message}` };
-  }
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    return {
-      error: body?.detail ? JSON.stringify(body.detail) : `Calculation failed (HTTP ${response.status})`,
-    };
-  }
-
-  const result: SampleSizeResult = await response.json();
+  const { error, result } = await runSampleSizeCalculation(input);
+  if (error || !result) return { error };
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { error: dbError } = await supabase
     .from("protocol_versions")
     .update({
       sample_size_inputs: input,
       calculated_sample_size: result.n_total,
-      stress_test_results: result.stress_test,
+      // formula_label/citation aren't dedicated columns; folded into this JSON blob
+      // rather than migrating the schema for two extra display-only strings.
+      stress_test_results: { ...result.stress_test, formula_label: result.formula_label, citation: result.citation },
     })
     .eq("id", versionId);
 
-  if (error) return { error: error.message };
+  if (dbError) return { error: dbError.message };
 
   revalidatePath(`/studies/${studyId}/protocol`);
   return { result };

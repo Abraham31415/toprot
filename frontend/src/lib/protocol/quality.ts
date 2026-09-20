@@ -1,5 +1,6 @@
 import type { ObjectiveRow, ObjectiveType, ProtocolVersionRow, VariableRow, VariableType } from "./types";
-import type { DesignType, SampleSizeInput } from "./sample-size";
+import type { SampleSizeInput } from "./sample-size";
+import { CATEGORICAL_DESIGNS, CONTINUOUS_DESIGNS } from "./sample-size";
 
 export const SECTION_KEYS = [
   "identity",
@@ -125,9 +126,6 @@ const SURVIVAL_KEYWORDS = [
 ];
 const CROSS_SECTIONAL_DESIGN_KEYWORDS = ["cross-sectional", "cross sectional"];
 
-const CATEGORICAL_SAMPLE_SIZE_DESIGNS: DesignType[] = ["single_proportion", "two_proportions"];
-const CONTINUOUS_SAMPLE_SIZE_DESIGNS: DesignType[] = ["two_means"];
-
 function findKeyword(haystack: string, needles: string[]): string | null {
   const lower = haystack.toLowerCase();
   return needles.find((n) => lower.includes(n)) ?? null;
@@ -157,8 +155,8 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
   // Outcome variable type vs. sample size design (proportions imply categorical, means imply continuous).
   const designType = s.sample_size_inputs?.design_type;
   if (designType && outcomeVars.length > 0) {
-    const wantsContinuous = CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(designType);
-    const wantsCategorical = CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(designType);
+    const wantsContinuous = CONTINUOUS_DESIGNS.includes(designType);
+    const wantsCategorical = CATEGORICAL_DESIGNS.includes(designType);
     for (const v of outcomeVars) {
       if (wantsContinuous && !CONTINUOUS_VARIABLE_TYPES.includes(v.variable_type)) {
         issues.push({
@@ -248,7 +246,7 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
   if (designType && analysisText) {
     const categoricalTest = findKeyword(analysisText, CATEGORICAL_TEST_KEYWORDS);
     const continuousTest = findKeyword(analysisText, CONTINUOUS_TEST_KEYWORDS);
-    if (CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(designType) && continuousTest && !categoricalTest) {
+    if (CATEGORICAL_DESIGNS.includes(designType) && continuousTest && !categoricalTest) {
       issues.push({
         id: "ss-analysis-mismatch",
         section: "sample_size",
@@ -256,7 +254,7 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
         message: `Section 6 is powered for a proportions comparison, but Section 5 describes "${continuousTest}", typically used for continuous outcomes.`,
       });
     }
-    if (CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(designType) && categoricalTest && !continuousTest) {
+    if (CONTINUOUS_DESIGNS.includes(designType) && categoricalTest && !continuousTest) {
       issues.push({
         id: "ss-analysis-mismatch",
         section: "sample_size",
@@ -301,6 +299,16 @@ function estimateOutcomeProportion(inputs: Partial<SampleSizeInput> | null): num
     inputs.proportion_group2 != null
   ) {
     return (inputs.proportion_group1 + inputs.proportion_group2) / 2;
+  }
+  if (inputs.design_type === "cross_sectional_or" && inputs.baseline_proportion != null && inputs.odds_ratio != null) {
+    const p0 = inputs.baseline_proportion;
+    const p1 = (inputs.odds_ratio * p0) / (1 - p0 + inputs.odds_ratio * p0);
+    return (p0 + p1) / 2;
+  }
+  if (inputs.design_type === "cohort_rr" && inputs.baseline_proportion != null && inputs.relative_risk != null) {
+    const p0 = inputs.baseline_proportion;
+    const p1 = p0 * inputs.relative_risk;
+    return (p0 + p1) / 2;
   }
   return null;
 }
