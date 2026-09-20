@@ -6,6 +6,7 @@ export default async function Home() {
   const profile = await getCurrentProfile();
 
   if (profile) {
+    if (!profile.role) redirect("/onboarding");
     redirect(profile.role === "supervisor" ? "/supervisor" : "/dashboard");
   }
 

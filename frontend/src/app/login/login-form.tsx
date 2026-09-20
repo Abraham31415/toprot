@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { login, type LoginState } from "./actions";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 
 const initialState: LoginState = undefined;
 
@@ -12,6 +13,12 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      <GoogleSignInButton />
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <span className="text-xs text-zinc-400 dark:text-zinc-600">or</span>
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+      </div>
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="font-medium text-zinc-700 dark:text-zinc-300">Email</span>
         <input

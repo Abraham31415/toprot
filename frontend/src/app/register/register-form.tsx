@@ -45,16 +45,12 @@ export function RegisterForm() {
         </p>
       )}
 
-      {role === "student" && (
-        <>
-          <GoogleSignInButton />
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-            <span className="text-xs text-zinc-400 dark:text-zinc-600">or</span>
-            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-          </div>
-        </>
-      )}
+      <GoogleSignInButton />
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <span className="text-xs text-zinc-400 dark:text-zinc-600">or</span>
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+      </div>
 
       <Field
         label="Full name"

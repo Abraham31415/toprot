@@ -21,5 +21,6 @@ export async function updatePassword(
   if (error) return { error: error.message };
 
   const profile = await getCurrentProfile();
-  redirect(profile?.role === "supervisor" ? "/supervisor" : "/dashboard");
+  if (!profile?.role) redirect("/onboarding");
+  redirect(profile.role === "supervisor" ? "/supervisor" : "/dashboard");
 }

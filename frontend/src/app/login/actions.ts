@@ -25,5 +25,6 @@ export async function login(
   }
 
   const profile = await getCurrentProfile();
-  redirect(profile?.role === "supervisor" ? "/supervisor" : "/dashboard");
+  if (!profile?.role) redirect("/onboarding");
+  redirect(profile.role === "supervisor" ? "/supervisor" : "/dashboard");
 }

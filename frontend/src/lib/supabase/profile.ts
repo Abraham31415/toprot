@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type Profile = {
   id: string;
-  role: "student" | "supervisor";
+  role: "student" | "supervisor" | null;
   full_name: string;
   institution: string | null;
   created_at: string;

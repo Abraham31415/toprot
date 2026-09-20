@@ -12,6 +12,7 @@ export default async function SupervisorPage() {
   const profile = await getCurrentProfile();
 
   if (!profile) redirect("/login");
+  if (!profile.role) redirect("/onboarding");
   if (profile.role !== "supervisor") redirect("/dashboard");
 
   const supabase = await createClient();

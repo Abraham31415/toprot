@@ -10,6 +10,7 @@ export default async function DashboardPage() {
   const profile = await getCurrentProfile();
 
   if (!profile) redirect("/login");
+  if (!profile.role) redirect("/onboarding");
   if (profile.role !== "student") redirect("/supervisor");
 
   const supabase = await createClient();
