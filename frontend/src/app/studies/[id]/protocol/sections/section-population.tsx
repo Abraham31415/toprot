@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextField, SaveBar } from "./form-controls";
 import { CriteriaList } from "./criteria-list";
 import { useSectionSave } from "./use-section-save";
+import { useProtocolLive } from "../protocol-context";
 
 export function SectionPopulation({
   version,
@@ -20,6 +21,16 @@ export function SectionPopulation({
   const [inclusion, setInclusion] = useState<string[]>(version.inclusion_criteria ?? []);
   const [exclusion, setExclusion] = useState<string[]>(version.exclusion_criteria ?? []);
   const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const { update } = useProtocolLive();
+
+  useEffect(() => {
+    update({
+      target_population: targetPopulation,
+      setting,
+      inclusion_criteria: inclusion,
+      exclusion_criteria: exclusion,
+    });
+  }, [targetPopulation, setting, inclusion, exclusion, update]);
 
   return (
     <div className="flex flex-col gap-4">

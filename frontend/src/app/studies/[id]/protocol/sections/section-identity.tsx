@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextField, SaveBar } from "./form-controls";
 import { useSectionSave } from "./use-section-save";
+import { useProtocolLive } from "../protocol-context";
 
 export function SectionIdentity({
   version,
@@ -24,8 +25,13 @@ export function SectionIdentity({
     anticipated_end_date: version.anticipated_end_date ?? "",
   });
   const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const { update } = useProtocolLive();
 
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    update({ study_title: fields.study_title, study_design: fields.study_design });
+  }, [fields, update]);
 
   return (
     <div className="flex flex-col gap-4">

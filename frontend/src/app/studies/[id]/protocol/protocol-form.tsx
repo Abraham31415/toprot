@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ObjectiveRow, ProtocolVersionRow, VariableRow } from "@/lib/protocol/types";
+import { buildInitialSnapshot, type QualitySnapshot, type SectionKey } from "@/lib/protocol/quality";
+import { ProtocolLiveContext } from "./protocol-context";
 import { DataDictionaryPreview } from "./data-dictionary-preview";
+import { QualityPanel } from "./quality-panel";
 import { SectionIdentity } from "./sections/section-identity";
 import { SectionObjectives } from "./sections/section-objectives";
 import { SectionPopulation } from "./sections/section-population";
@@ -12,7 +15,7 @@ import { SectionSampleSize } from "./sections/section-sample-size";
 import { SectionDataCollection } from "./sections/section-data-collection";
 import { SectionEthics } from "./sections/section-ethics";
 
-const SECTIONS = [
+const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "identity", label: "1. Study identity" },
   { key: "objectives", label: "2. Research question & objectives" },
   { key: "population", label: "3. Population & eligibility" },
@@ -21,9 +24,7 @@ const SECTIONS = [
   { key: "sample_size", label: "6. Sample size" },
   { key: "data_collection", label: "7. Data collection" },
   { key: "ethics", label: "8. Ethical considerations" },
-] as const;
-
-type SectionKey = (typeof SECTIONS)[number]["key"];
+];
 
 export function ProtocolForm({
   studyId,
@@ -42,6 +43,18 @@ export function ProtocolForm({
 }) {
   const [active, setActive] = useState<SectionKey>("identity");
   const [variables, setVariables] = useState<VariableRow[]>(initialVariables);
+  const [snapshot, setSnapshot] = useState<QualitySnapshot>(() =>
+    buildInitialSnapshot(version, objectives, initialVariables),
+  );
+
+  const updateLive = useCallback(
+    (patch: Partial<QualitySnapshot>) => setSnapshot((s) => ({ ...s, ...patch })),
+    [],
+  );
+
+  useEffect(() => {
+    setSnapshot((s) => ({ ...s, variables }));
+  }, [variables]);
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -72,47 +85,50 @@ export function ProtocolForm({
           ))}
         </nav>
 
-        <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-          {active === "identity" && (
-            <SectionIdentity version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-          {active === "objectives" && (
-            <SectionObjectives
-              version={version}
-              objectives={objectives}
-              studyId={studyId}
-              readOnly={readOnly}
-            />
-          )}
-          {active === "population" && (
-            <SectionPopulation version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-          {active === "variables" && (
-            <SectionVariables
-              versionId={version.id}
-              studyId={studyId}
-              variables={variables}
-              onChange={setVariables}
-              readOnly={readOnly}
-            />
-          )}
-          {active === "statistics" && (
-            <SectionStatistics version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-          {active === "sample_size" && (
-            <SectionSampleSize version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-          {active === "data_collection" && (
-            <SectionDataCollection version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-          {active === "ethics" && (
-            <SectionEthics version={version} studyId={studyId} readOnly={readOnly} />
-          )}
-        </div>
+        <ProtocolLiveContext.Provider value={{ update: updateLive }}>
+          <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+            {active === "identity" && (
+              <SectionIdentity version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+            {active === "objectives" && (
+              <SectionObjectives
+                version={version}
+                objectives={objectives}
+                studyId={studyId}
+                readOnly={readOnly}
+              />
+            )}
+            {active === "population" && (
+              <SectionPopulation version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+            {active === "variables" && (
+              <SectionVariables
+                versionId={version.id}
+                studyId={studyId}
+                variables={variables}
+                onChange={setVariables}
+                readOnly={readOnly}
+              />
+            )}
+            {active === "statistics" && (
+              <SectionStatistics version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+            {active === "sample_size" && (
+              <SectionSampleSize version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+            {active === "data_collection" && (
+              <SectionDataCollection version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+            {active === "ethics" && (
+              <SectionEthics version={version} studyId={studyId} readOnly={readOnly} />
+            )}
+          </div>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <DataDictionaryPreview variables={variables} />
-        </aside>
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start">
+            <QualityPanel snapshot={snapshot} onNavigate={setActive} />
+            <DataDictionaryPreview variables={variables} />
+          </aside>
+        </ProtocolLiveContext.Provider>
       </div>
     </main>
   );

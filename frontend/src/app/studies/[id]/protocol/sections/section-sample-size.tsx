@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { ProtocolVersionRow } from "@/lib/protocol/types";
 import type { DesignType, SampleSizeInput, SampleSizeResult } from "@/lib/protocol/sample-size";
 import { DESIGN_TYPE_LABELS } from "@/lib/protocol/sample-size";
 import { calculateSampleSize } from "../actions";
 import { TextField } from "./form-controls";
 import { StressTestTable } from "./stress-test-table";
+import { useProtocolLive } from "../protocol-context";
 
 function initialInput(version: ProtocolVersionRow): SampleSizeInput {
   const saved = version.sample_size_inputs as Partial<SampleSizeInput> | null;
@@ -51,6 +52,14 @@ export function SectionSampleSize({
   });
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { update } = useProtocolLive();
+
+  useEffect(() => {
+    update({
+      sample_size_design_type: input.design_type,
+      calculated_sample_size: result?.n_total ?? null,
+    });
+  }, [input.design_type, result, update]);
 
   const set = <K extends keyof SampleSizeInput>(key: K) => (value: SampleSizeInput[K]) =>
     setInput((f) => ({ ...f, [key]: value }));

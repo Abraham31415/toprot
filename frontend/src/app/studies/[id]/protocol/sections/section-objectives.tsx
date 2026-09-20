@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { ObjectiveRow, ObjectiveType, ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextAreaField, SaveBar } from "./form-controls";
 import { saveObjectives, saveProtocolSection } from "../actions";
+import { useProtocolLive } from "../protocol-context";
 
 type DraftObjective = { objective_type: ObjectiveType; description: string };
 
@@ -27,6 +28,11 @@ export function SectionObjectives({
   const [pending, startTransition] = useTransition();
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { update: updateLive } = useProtocolLive();
+
+  useEffect(() => {
+    updateLive({ research_question: researchQuestion, objectives: items });
+  }, [researchQuestion, items, updateLive]);
 
   function update(i: number, patch: Partial<DraftObjective>) {
     setItems((prev) => prev.map((o, idx) => (idx === i ? { ...o, ...patch } : o)));

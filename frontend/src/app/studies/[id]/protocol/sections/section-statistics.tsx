@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextField, TextAreaField, SaveBar } from "./form-controls";
 import { useSectionSave } from "./use-section-save";
+import { useProtocolLive } from "../protocol-context";
 
 export function SectionStatistics({
   version,
@@ -21,7 +22,16 @@ export function SectionStatistics({
     analysis_software: version.analysis_software ?? "Stata",
   });
   const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const { update } = useProtocolLive();
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    update({
+      statistical_methods: fields.statistical_methods,
+      primary_analysis: fields.primary_analysis,
+      significance_level: parseFloat(fields.significance_level) || null,
+    });
+  }, [fields, update]);
 
   return (
     <div className="flex flex-col gap-4">

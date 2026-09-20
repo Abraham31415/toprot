@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextField, TextAreaField, SaveBar } from "./form-controls";
 import { useSectionSave } from "./use-section-save";
+import { useProtocolLive } from "../protocol-context";
 
 export function SectionEthics({
   version,
@@ -21,7 +22,15 @@ export function SectionEthics({
     confidentiality_plan: version.confidentiality_plan ?? "",
   });
   const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const { update } = useProtocolLive();
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    update({
+      ethical_approval_body: fields.ethical_approval_body,
+      consent_process: fields.consent_process,
+    });
+  }, [fields, update]);
 
   return (
     <div className="flex flex-col gap-4">
