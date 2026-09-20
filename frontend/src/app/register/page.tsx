@@ -8,7 +8,7 @@ export default function RegisterPage() {
           Create your account
         </h1>
         <p className="mt-1 mb-8 text-sm text-zinc-500 dark:text-zinc-400">
-          The protocol is the source of truth.
+          Plan. Run. Prove.
         </p>
         <RegisterForm />
       </div>

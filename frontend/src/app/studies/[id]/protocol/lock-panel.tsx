@@ -140,7 +140,7 @@ export function LockPanel({
               Register this version
             </button>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Timestamps and locks it. No supervisor required.
+              Timestamps and locks this version.
             </span>
           </div>
 

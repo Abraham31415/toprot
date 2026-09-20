@@ -16,9 +16,14 @@ export default async function Home() {
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           ToProt
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          The protocol is the source of truth. Enter it once, generate everything else.
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
+            Plan. Run. Prove.
+          </p>
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Enter it once, generate everything else.
+          </p>
+        </div>
         <div className="flex w-full gap-3">
           <Link
             href="/register"

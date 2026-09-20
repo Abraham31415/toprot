@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ToProt",
-  description: "The protocol is the source of truth.",
+  description: "Plan. Run. Prove.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

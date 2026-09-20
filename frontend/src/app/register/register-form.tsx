@@ -36,8 +36,7 @@ export function RegisterForm() {
 
       {role === "student" ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          No supervisor needed to get started. You can invite one later, per study, whenever
-          you want.
+          Start your study in minutes.
         </p>
       ) : (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
