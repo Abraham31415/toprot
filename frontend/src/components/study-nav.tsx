@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const TABS = [
   { slug: "protocol", label: "Protocol" },
+  { slug: "references", label: "References" },
   { slug: "milestones", label: "Milestones" },
   { slug: "deviations", label: "Deviations" },
   { slug: "outputs", label: "Outputs" },
