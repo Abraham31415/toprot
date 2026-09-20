@@ -2,7 +2,6 @@ services:
   - type: web
     name: toprot-document-service
     runtime: python
-    pythonVersion: "3.11.9"
     region: frankfurt
     plan: free
     rootDir: service
