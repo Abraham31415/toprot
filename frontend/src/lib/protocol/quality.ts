@@ -1,5 +1,5 @@
 import type { ObjectiveRow, ObjectiveType, ProtocolVersionRow, VariableRow, VariableType } from "./types";
-import type { DesignType } from "./sample-size";
+import type { DesignType, SampleSizeInput } from "./sample-size";
 
 export const SECTION_KEYS = [
   "identity",
@@ -41,8 +41,9 @@ export type QualitySnapshot = {
   statistical_methods: string;
   primary_analysis: string;
   significance_level: number | null;
-  sample_size_design_type: DesignType | null;
+  sample_size_inputs: Partial<SampleSizeInput> | null;
   calculated_sample_size: number | null;
+  current_enrollment: number | null;
   data_collection_methods: string;
   data_sources: string;
   data_management_plan: string;
@@ -54,8 +55,9 @@ export function buildInitialSnapshot(
   version: ProtocolVersionRow,
   objectives: ObjectiveRow[],
   variables: VariableRow[],
+  currentEnrollment: number | null = null,
 ): QualitySnapshot {
-  const sampleSizeInputs = version.sample_size_inputs as { design_type?: DesignType } | null;
+  const sampleSizeInputs = version.sample_size_inputs as Partial<SampleSizeInput> | null;
   return {
     study_title: version.study_title ?? "",
     study_design: version.study_design ?? "",
@@ -69,8 +71,9 @@ export function buildInitialSnapshot(
     statistical_methods: version.statistical_methods ?? "",
     primary_analysis: version.primary_analysis ?? "",
     significance_level: version.significance_level,
-    sample_size_design_type: sampleSizeInputs?.design_type ?? null,
+    sample_size_inputs: sampleSizeInputs,
     calculated_sample_size: version.calculated_sample_size,
+    current_enrollment: currentEnrollment,
     data_collection_methods: version.data_collection_methods ?? "",
     data_sources: version.data_sources ?? "",
     data_management_plan: version.data_management_plan ?? "",
@@ -152,9 +155,10 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
   }
 
   // Outcome variable type vs. sample size design (proportions imply categorical, means imply continuous).
-  if (s.sample_size_design_type && outcomeVars.length > 0) {
-    const wantsContinuous = CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(s.sample_size_design_type);
-    const wantsCategorical = CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(s.sample_size_design_type);
+  const designType = s.sample_size_inputs?.design_type;
+  if (designType && outcomeVars.length > 0) {
+    const wantsContinuous = CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(designType);
+    const wantsCategorical = CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(designType);
     for (const v of outcomeVars) {
       if (wantsContinuous && !CONTINUOUS_VARIABLE_TYPES.includes(v.variable_type)) {
         issues.push({
@@ -241,14 +245,10 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
   }
 
   // 6. Sample size design vs. the analysis method named in the plan.
-  if (s.sample_size_design_type && analysisText) {
+  if (designType && analysisText) {
     const categoricalTest = findKeyword(analysisText, CATEGORICAL_TEST_KEYWORDS);
     const continuousTest = findKeyword(analysisText, CONTINUOUS_TEST_KEYWORDS);
-    if (
-      CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(s.sample_size_design_type) &&
-      continuousTest &&
-      !categoricalTest
-    ) {
+    if (CATEGORICAL_SAMPLE_SIZE_DESIGNS.includes(designType) && continuousTest && !categoricalTest) {
       issues.push({
         id: "ss-analysis-mismatch",
         section: "sample_size",
@@ -256,11 +256,7 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
         message: `Section 6 is powered for a proportions comparison, but Section 5 describes "${continuousTest}", typically used for continuous outcomes.`,
       });
     }
-    if (
-      CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(s.sample_size_design_type) &&
-      categoricalTest &&
-      !continuousTest
-    ) {
+    if (CONTINUOUS_SAMPLE_SIZE_DESIGNS.includes(designType) && categoricalTest && !continuousTest) {
       issues.push({
         id: "ss-analysis-mismatch",
         section: "sample_size",
@@ -277,6 +273,117 @@ export function runTier1Checks(s: QualitySnapshot): QualityIssue[] {
       section: "data_collection",
       tier: 1,
       message: `You've declared ${s.variables.length} variable${s.variables.length === 1 ? "" : "s"}, but Section 7 doesn't say how data will be collected.`,
+    });
+  }
+
+  return issues;
+}
+
+const MISSING_DATA_KEYWORDS = [
+  "missing data",
+  "missing value",
+  "imputation",
+  "complete case",
+  "complete-case",
+  "listwise deletion",
+  "multiple imputation",
+];
+
+/** A rough overall outcome prevalence, for rule-of-thumb power calculations only. */
+function estimateOutcomeProportion(inputs: Partial<SampleSizeInput> | null): number | null {
+  if (!inputs) return null;
+  if (inputs.design_type === "single_proportion" && inputs.expected_proportion != null) {
+    return inputs.expected_proportion;
+  }
+  if (
+    inputs.design_type === "two_proportions" &&
+    inputs.proportion_group1 != null &&
+    inputs.proportion_group2 != null
+  ) {
+    return (inputs.proportion_group1 + inputs.proportion_group2) / 2;
+  }
+  return null;
+}
+
+/**
+ * Tier 2: published statistical rules of thumb, run on the numbers the student
+ * entered. Still deterministic (formulas, not AI) -- each warning names the
+ * rule and threshold so it's educational, not just a red flag.
+ */
+export function runTier2Checks(s: QualitySnapshot): QualityIssue[] {
+  const issues: QualityIssue[] = [];
+  const analysisText = `${s.statistical_methods} ${s.primary_analysis}`.trim();
+  const lowerAnalysis = analysisText.toLowerCase();
+  const predictorCount = s.variables.filter((v) => v.role === "covariate" || v.role === "exposure").length;
+  const n = s.calculated_sample_size;
+  const inputs = s.sample_size_inputs;
+
+  // Events per variable for logistic regression (Peduzzi et al., 1996: >=10 events per predictor).
+  if (lowerAnalysis.includes("logistic regression") && n != null && predictorCount > 0) {
+    const proportion = estimateOutcomeProportion(inputs);
+    if (proportion != null) {
+      const impliedEvents = n * proportion;
+      const epv = impliedEvents / predictorCount;
+      if (epv < 10) {
+        issues.push({
+          id: "epv-logistic",
+          section: "statistics",
+          tier: 2,
+          message: `About ${epv.toFixed(1)} events per variable for your logistic regression (≈${Math.round(impliedEvents)} expected events ÷ ${predictorCount} predictors). Published guidance recommends at least 10 events per predictor (Peduzzi et al., 1996).`,
+          detail: "Consider reducing the number of predictors or increasing your sample size.",
+        });
+      }
+    }
+  }
+
+  // Subjects per predictor for linear regression (common guidance: ~10-15 per predictor).
+  if (lowerAnalysis.includes("linear regression") && n != null && predictorCount > 0) {
+    const perPredictor = n / predictorCount;
+    if (perPredictor < 15) {
+      issues.push({
+        id: "spp-linear",
+        section: "statistics",
+        tier: 2,
+        message: `About ${perPredictor.toFixed(1)} subjects per predictor for your linear regression (${n} ÷ ${predictorCount}). Common guidance recommends at least 10-15 subjects per predictor.`,
+      });
+    }
+  }
+
+  // Chi-square: warn if expected cell counts in a 2x2 table are likely under 5.
+  const usesChiSquare = ["chi-square", "chi square", "chi-squared", "chi2"].some((k) => lowerAnalysis.includes(k));
+  if (usesChiSquare && inputs?.design_type === "two_proportions" && n != null) {
+    const nPerGroup = n / 2;
+    const p1 = inputs.proportion_group1 ?? 0.5;
+    const p2 = inputs.proportion_group2 ?? 0.5;
+    const expectedCells = [nPerGroup * p1, nPerGroup * (1 - p1), nPerGroup * p2, nPerGroup * (1 - p2)];
+    if (expectedCells.some((c) => c < 5)) {
+      issues.push({
+        id: "chi-square-small-cells",
+        section: "sample_size",
+        tier: 2,
+        message: "At least one expected cell count in your 2x2 table is likely under 5, based on your planned group sizes and proportions. The chi-square approximation is unreliable below that; consider Fisher's exact test instead.",
+      });
+    }
+  }
+
+  // Achieved vs. planned enrollment.
+  if (n != null && s.current_enrollment != null && s.current_enrollment > 0 && s.current_enrollment < n) {
+    const pctOfTarget = Math.round((s.current_enrollment / n) * 100);
+    issues.push({
+      id: "enrollment-below-target",
+      section: "sample_size",
+      tier: 2,
+      message: `Current enrollment (${s.current_enrollment}) is ${pctOfTarget}% of your calculated sample size (${n}). Falling short of target reduces your power to detect the effect you planned for.`,
+    });
+  }
+
+  // Missing-data handling.
+  if (s.statistical_methods.trim() && !MISSING_DATA_KEYWORDS.some((k) => lowerAnalysis.includes(k))) {
+    issues.push({
+      id: "missing-data-not-addressed",
+      section: "statistics",
+      tier: 2,
+      message: "Your statistical plan doesn't say how missing data will be handled (e.g. complete-case analysis, multiple imputation).",
     });
   }
 

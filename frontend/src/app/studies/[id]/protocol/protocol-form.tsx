@@ -32,6 +32,7 @@ export function ProtocolForm({
   version,
   objectives,
   variables: initialVariables,
+  currentEnrollment,
   readOnly,
 }: {
   studyId: string;
@@ -39,12 +40,13 @@ export function ProtocolForm({
   version: ProtocolVersionRow;
   objectives: ObjectiveRow[];
   variables: VariableRow[];
+  currentEnrollment: number | null;
   readOnly: boolean;
 }) {
   const [active, setActive] = useState<SectionKey>("identity");
   const [variables, setVariables] = useState<VariableRow[]>(initialVariables);
   const [snapshot, setSnapshot] = useState<QualitySnapshot>(() =>
-    buildInitialSnapshot(version, objectives, initialVariables),
+    buildInitialSnapshot(version, objectives, initialVariables, currentEnrollment),
   );
 
   const updateLive = useCallback(

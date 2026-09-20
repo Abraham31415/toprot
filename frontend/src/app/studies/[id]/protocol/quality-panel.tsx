@@ -5,6 +5,7 @@ import {
   SECTION_KEYS,
   SECTION_LABELS,
   runTier1Checks,
+  runTier2Checks,
   sectionStatus,
   type QualitySnapshot,
   type SectionKey,
@@ -18,7 +19,10 @@ export function QualityPanel({
   snapshot: QualitySnapshot;
   onNavigate: (section: SectionKey) => void;
 }) {
-  const issues = useMemo(() => runTier1Checks(snapshot), [snapshot]);
+  const issues = useMemo(
+    () => [...runTier1Checks(snapshot), ...runTier2Checks(snapshot)],
+    [snapshot],
+  );
   const warningCount = issues.length;
 
   return (
@@ -32,7 +36,7 @@ export function QualityPanel({
         )}
       </div>
       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-        Structural consistency checks between sections. Updates as you type.
+        Structural consistency and statistical rules of thumb. Updates as you type.
       </p>
 
       <div className="mt-4 flex flex-col gap-1">

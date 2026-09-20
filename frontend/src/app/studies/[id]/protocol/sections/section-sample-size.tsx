@@ -56,10 +56,10 @@ export function SectionSampleSize({
 
   useEffect(() => {
     update({
-      sample_size_design_type: input.design_type,
+      sample_size_inputs: input,
       calculated_sample_size: result?.n_total ?? null,
     });
-  }, [input.design_type, result, update]);
+  }, [input, result, update]);
 
   const set = <K extends keyof SampleSizeInput>(key: K) => (value: SampleSizeInput[K]) =>
     setInput((f) => ({ ...f, [key]: value }));

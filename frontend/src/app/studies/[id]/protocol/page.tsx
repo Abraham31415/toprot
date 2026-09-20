@@ -15,7 +15,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
 
   const { data: study } = await supabase
     .from("studies")
-    .select("id, title, owner_id")
+    .select("id, title, owner_id, current_enrollment")
     .eq("id", studyId)
     .single();
 
@@ -90,6 +90,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
         version={version}
         objectives={objectives ?? []}
         variables={variables ?? []}
+        currentEnrollment={study.current_enrollment}
         readOnly={readOnly}
       />
     </div>
