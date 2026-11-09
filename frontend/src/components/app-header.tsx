@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Profile } from "@/lib/supabase/profile";
 
 export function AppHeader({ profile }: { profile: Profile }) {
@@ -9,6 +10,13 @@ export function AppHeader({ profile }: { profile: Profile }) {
           {profile.full_name} · <span className="capitalize">{profile.role}</span>
         </p>
       </div>
+      <div className="flex items-center gap-3">
+      <Link
+        href="/ai-usage"
+        className="text-sm font-medium text-zinc-600 hover:underline dark:text-zinc-400"
+      >
+        AI credits
+      </Link>
       <form action="/logout" method="post">
         <button
           type="submit"
@@ -17,6 +25,7 @@ export function AppHeader({ profile }: { profile: Profile }) {
           Log out
         </button>
       </form>
+      </div>
     </header>
   );
 }

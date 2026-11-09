@@ -34,7 +34,7 @@ export function QualityPanel({
   function requestReview() {
     setTier3Error(null);
     startTransition(async () => {
-      const res = await runTier3Review(snapshot);
+      const res = await runTier3Review(snapshot, crypto.randomUUID());
       if (res.error) setTier3Error(res.error);
       else setConsiderations(res.issues ?? []);
     });

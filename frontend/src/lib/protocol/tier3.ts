@@ -3,6 +3,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { AiCallFailure, USER_MESSAGES, UNTRUSTED_SYSTEM_NOTICE, runAiOperation, usageFromAnthropic, wrapUntrusted } from "@/lib/ai";
 import { SECTION_KEYS, type QualityIssue, type QualitySnapshot } from "./quality";
 
 const SYSTEM_PROMPT = `You are helping a research student stress-test their study protocol before it goes to a supervisor or ethics committee. You are NOT a reviewer, approver, or grader: you never say a protocol is "good", "solid", "well-designed", "acceptable", "correct", or use any other approval/disapproval language, and you never assign a score or verdict of any kind.
@@ -67,7 +70,9 @@ function snapshotToPromptText(s: QualitySnapshot): string {
 
 export type Tier3Result = { error?: string; issues?: QualityIssue[] };
 
-export async function runTier3Review(snapshot: QualitySnapshot): Promise<Tier3Result> {
+// Metered by the AI credit system (src/lib/ai): the caller is authenticated server-side,
+// credits are reserved before the call and settled against actual token usage afterwards.
+export async function runTier3Review(snapshot: QualitySnapshot, idempotencyKey: string): Promise<Tier3Result> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return { error: "AI review isn't configured yet (the ANTHROPIC_API_KEY environment variable is missing)." };
   }
@@ -76,30 +81,55 @@ export async function runTier3Review(snapshot: QualitySnapshot): Promise<Tier3Re
     return { error: "Fill in at least the study design or research question before requesting a review." };
   }
 
+  // Identity comes from the session cookie, never from anything the client sends.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: USER_MESSAGES.unauthenticated };
+
+  const system = SYSTEM_PROMPT + UNTRUSTED_SYSTEM_NOTICE;
+  const rawText = snapshotToPromptText(snapshot);
+  const userContent = wrapUntrusted(rawText);
   const client = new Anthropic();
 
-  try {
-    const response = await client.messages.parse({
-      model: "claude-opus-5",
-      max_tokens: 16000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: snapshotToPromptText(snapshot) }],
-      output_config: { format: zodOutputFormat(ResponseSchema) },
-    });
+  const outcome = await runAiOperation({
+    db: createAdminClient(),
+    userId: user.id,
+    feature: "protocol_review",
+    idempotencyKey,
+    inputChars: system.length + userContent.length,
+    untrustedText: rawText,
+    call: async ({ model, maxOutputTokens, signal }) => {
+      let response;
+      try {
+        response = await client.messages.parse(
+          {
+            model,
+            max_tokens: maxOutputTokens,
+            system,
+            messages: [{ role: "user", content: userContent }],
+            output_config: { format: zodOutputFormat(ResponseSchema) },
+          },
+          { signal },
+        );
+      } catch (err) {
+        throw new AiCallFailure((err as Error).message, "provider_error");
+      }
+      const usage = usageFromAnthropic(response.usage);
+      if (!response.parsed_output) {
+        throw new AiCallFailure("unparseable model output", "invalid_output", usage);
+      }
+      const issues: QualityIssue[] = response.parsed_output.considerations.map((c, i) => ({
+        id: `tier3-${i}`,
+        section: c.section,
+        tier: 3,
+        message: c.question,
+      }));
+      return { value: issues, usage };
+    },
+  });
 
-    if (!response.parsed_output) {
-      return { error: "The model's response could not be parsed into a structured list." };
-    }
-
-    const issues: QualityIssue[] = response.parsed_output.considerations.map((c, i) => ({
-      id: `tier3-${i}`,
-      section: c.section,
-      tier: 3,
-      message: c.question,
-    }));
-
-    return { issues };
-  } catch (err) {
-    return { error: `AI review failed: ${(err as Error).message}` };
-  }
+  if (!outcome.ok) return { error: outcome.message };
+  return { issues: outcome.value };
 }
