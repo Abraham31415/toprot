@@ -29,25 +29,20 @@ export async function saveObjectives(
 ): Promise<SaveResult> {
   const supabase = await createClient();
 
-  const { error: deleteError } = await supabase
-    .from("protocol_objectives")
-    .delete()
-    .eq("protocol_version_id", versionId);
-  if (deleteError) return { error: deleteError.message };
-
   const rows = objectives
     .filter((o) => o.description.trim())
-    .map((o, i) => ({
-      protocol_version_id: versionId,
+    .map((o) => ({
       objective_type: o.objective_type,
       description: o.description.trim(),
-      display_order: i,
     }));
 
-  if (rows.length) {
-    const { error: insertError } = await supabase.from("protocol_objectives").insert(rows);
-    if (insertError) return { error: insertError.message };
-  }
+  // Delete + insert happen in one transaction inside the function, so a failure leaves the
+  // existing objectives untouched. display_order is taken from array position.
+  const { error } = await supabase.rpc("replace_protocol_objectives", {
+    version_id: versionId,
+    rows,
+  });
+  if (error) return { error: error.message };
 
   revalidatePath(`/studies/${studyId}/protocol`);
   return { savedAt: Date.now() };
@@ -71,16 +66,9 @@ export async function saveVariables(
 ): Promise<SaveResult> {
   const supabase = await createClient();
 
-  const { error: deleteError } = await supabase
-    .from("protocol_variables")
-    .delete()
-    .eq("protocol_version_id", versionId);
-  if (deleteError) return { error: deleteError.message };
-
   const rows = variables
     .filter((v) => v.variable_name.trim())
-    .map((v, i) => ({
-      protocol_version_id: versionId,
+    .map((v) => ({
       variable_name: v.variable_name.trim(),
       variable_slug: v.variable_slug,
       variable_type: v.variable_type,
@@ -89,13 +77,14 @@ export async function saveVariables(
       value_labels: v.value_labels,
       measurement_timepoint: v.measurement_timepoint,
       description: v.description,
-      display_order: i,
     }));
 
-  if (rows.length) {
-    const { error: insertError } = await supabase.from("protocol_variables").insert(rows);
-    if (insertError) return { error: insertError.message };
-  }
+  // Atomic replace: a duplicate slug or other failure rolls back the delete too.
+  const { error } = await supabase.rpc("replace_protocol_variables", {
+    version_id: versionId,
+    rows,
+  });
+  if (error) return { error: error.message };
 
   revalidatePath(`/studies/${studyId}/protocol`);
   return { savedAt: Date.now() };
