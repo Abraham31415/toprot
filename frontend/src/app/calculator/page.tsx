@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { CalculatorClient } from "./calculator-client";
 import { listMyStudies } from "./actions";
+
+export const metadata: Metadata = {
+  title: "Sample size calculator",
+  description:
+    "Free sample size calculator for single proportion, single mean, two proportions, two means, paired means and correlation studies, with a dropout and effect size stress test. No account needed.",
+  alternates: { canonical: "/calculator" },
+};
 
 export default async function CalculatorPage() {
   const profile = await getCurrentProfile();
