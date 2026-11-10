@@ -18,7 +18,7 @@ export function StudyNav({ studyId, active }: { studyId: string; active: (typeof
           href={`/studies/${studyId}/${tab.slug}`}
           className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
             active === tab.slug
-              ? "border-b-2 border-teal text-teal"
+              ? "border-b-2 border-cobalt text-teal-ink"
               : "text-navy/65 hover:text-navy"
           }`}
         >

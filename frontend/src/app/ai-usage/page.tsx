@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppHeader } from "@/components/app-header";
 import { getHeadroom } from "@/lib/ai";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
@@ -43,7 +42,6 @@ export default async function AiUsagePage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-12">
         <Link href={home} className="text-sm text-navy/65 hover:underline">
           Back

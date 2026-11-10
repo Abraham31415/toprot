@@ -70,7 +70,7 @@ export default function ExamplesPage() {
             <p className="mt-2 text-base font-semibold">Required sample: {S.sampleSize.result} participants</p>
             <p className="mt-2">
               Try the same inputs in the free{" "}
-              <a href="/calculator" className="text-teal underline">
+              <a href="/calculator" className="text-cobalt underline">
                 sample size calculator
               </a>
               .
@@ -130,7 +130,7 @@ export default function ExamplesPage() {
             <a
               href="/examples/sample-data-dictionary.csv"
               download
-              className="inline-block rounded-md border border-navy/25 px-4 py-2 text-sm font-medium hover:border-teal hover:text-teal"
+              className="inline-block rounded-md border border-navy/25 px-4 py-2 text-sm font-medium hover:border-cobalt hover:text-cobalt"
             >
               Download sample data dictionary (CSV)
             </a>

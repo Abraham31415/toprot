@@ -38,7 +38,7 @@ export function AmendmentCard({
           type="button"
           disabled={pending}
           onClick={() => respond("approved")}
-          className="rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+          className="rounded-lg bg-cobalt px-3 py-1.5 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
         >
           Acknowledge
         </button>

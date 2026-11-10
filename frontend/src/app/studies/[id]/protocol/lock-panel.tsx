@@ -91,7 +91,7 @@ export function LockPanel({
                     return res;
                   })
                 }
-                className="rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+                className="rounded-lg bg-cobalt px-3 py-1.5 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
               >
                 {pending ? "Creating..." : "Create amendment"}
               </button>
@@ -135,7 +135,7 @@ export function LockPanel({
               type="button"
               disabled={pending}
               onClick={() => run(() => registerProtocolVersion(version.id, studyId))}
-              className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+              className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
             >
               Register this version
             </button>
@@ -204,7 +204,7 @@ export function LockPanel({
             type="button"
             disabled={pending}
             onClick={() => run(() => approveAndLockProtocol(version.id, studyId))}
-            className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+            className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
           >
             Approve and lock
           </button>

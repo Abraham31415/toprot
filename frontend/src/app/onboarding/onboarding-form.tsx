@@ -19,7 +19,7 @@ export function OnboardingForm() {
             onClick={() => setRole(r)}
             className={`flex-1 rounded-md py-2 text-sm font-medium capitalize transition-colors ${
               role === r
-                ? "bg-navy text-white"
+                ? "bg-cobalt text-white"
                 : "text-navy/65 hover:text-navy"
             }`}
           >
@@ -44,7 +44,7 @@ export function OnboardingForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-navy py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
+        className="rounded-lg bg-cobalt py-2.5 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
       >
         {pending ? "Saving..." : `Continue as ${role}`}
       </button>

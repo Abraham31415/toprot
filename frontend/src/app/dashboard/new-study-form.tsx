@@ -22,7 +22,7 @@ export function NewStudyForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
+        className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
       >
         {pending ? "Creating..." : "New study"}
       </button>

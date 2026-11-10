@@ -121,7 +121,7 @@ export function ReferenceManager({
               type="button"
               onClick={handleLookup}
               disabled={pending || !query.trim()}
-              className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
+              className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
             >
               {pending ? "Looking up..." : "Look up"}
             </button>
@@ -141,7 +141,7 @@ export function ReferenceManager({
                 type="button"
                 onClick={handleAdd}
                 disabled={pending}
-                className="mt-2 rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+                className="mt-2 rounded-lg bg-cobalt px-3 py-1.5 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
               >
                 Add to references
               </button>

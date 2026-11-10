@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/app-header";
 import { StudyNav } from "@/components/study-nav";
 import { MILESTONE_TYPES, type MilestoneRow as MilestoneRowType } from "@/lib/protocol/milestones";
 import { MilestoneRow } from "./milestone-row";
@@ -31,7 +30,6 @@ export default async function MilestonesPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <StudyNav studyId={study.id} active="milestones" />
         <h1 className="text-xl font-semibold text-navy">Milestone tracker</h1>

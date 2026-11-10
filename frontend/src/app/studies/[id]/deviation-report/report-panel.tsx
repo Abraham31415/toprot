@@ -108,7 +108,7 @@ export function ReportPanel({
           type="button"
           disabled={pending || !uploadedPath}
           onClick={generate}
-          className="mt-3 rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+          className="mt-3 rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
         >
           {pending ? "Working..." : "Generate report"}
         </button>

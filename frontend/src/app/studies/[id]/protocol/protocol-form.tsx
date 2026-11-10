@@ -106,13 +106,13 @@ export function ProtocolForm({
                 title={c.complete ? "Complete" : `Still needed: ${c.missing.join(", ")}`}
                 className={`flex items-center justify-between gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-navy text-white"
+                    ? "bg-cobalt text-white"
                     : "text-navy/75 hover:bg-navy/5"
                 }`}
               >
                 <span>{s.label}</span>
                 <span
-                  className={`text-xs ${isActive ? "text-white/80" : c.complete ? "text-teal" : "text-navy/55"}`}
+                  className={`text-xs ${isActive ? "text-white/80" : c.complete ? "text-teal-ink" : "text-navy/55"}`}
                   aria-label={c.complete ? "complete" : `${c.filled} of ${c.total} filled`}
                 >
                   {c.complete ? "✓" : `${c.filled}/${c.total}`}

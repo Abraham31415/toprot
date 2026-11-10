@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
         <ol className="max-w-3xl space-y-8">
           {STEPS.map((s, i) => (
             <li key={s.title} className="flex gap-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-semibold text-white">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cobalt text-sm font-semibold text-white">
                 {i + 1}
               </span>
               <div>

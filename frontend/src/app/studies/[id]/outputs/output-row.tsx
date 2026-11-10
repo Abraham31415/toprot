@@ -91,7 +91,7 @@ export function OutputRow({
               type="button"
               disabled={pending}
               onClick={generate}
-              className="rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+              className="rounded-lg bg-cobalt px-3 py-1.5 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
             >
               {pending ? "Working..." : existing ? "Regenerate" : "Generate"}
             </button>

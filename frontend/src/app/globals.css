@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #142c50;
 }
 
 @theme inline {
   /* ToProt brand palette (public site and shared components) */
-  --color-navy: #112d35;
-  --color-teal: #146b66;
-  --color-paper: #f6f8f7;
-  --color-line: #dce8e4;
+  --color-navy: #142c50;
+  --color-cobalt: #375df5;
+  --color-cobalt-dark: #2a49cc;
+  --color-teal: #0bae9b;
+  --color-teal-ink: #067565; /* teal for text on light backgrounds (AA contrast) */
+  --color-soft: #e8edff;
+  --color-paper: #f8fafc;
+  --color-line: #dfe6f1;
   --color-gold: #c58a36;
   --color-background: var(--background);
   --color-foreground: var(--foreground);

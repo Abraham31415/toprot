@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/app-header";
 import { StudyNav } from "@/components/study-nav";
 import { DeviationForm } from "./deviation-form";
 
@@ -41,7 +40,6 @@ export default async function DeviationsPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-10">
         <StudyNav studyId={study.id} active="deviations" />
         <h1 className="text-xl font-semibold text-navy">Deviation log</h1>

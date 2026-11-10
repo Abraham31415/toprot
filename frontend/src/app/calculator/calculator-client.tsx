@@ -88,7 +88,7 @@ function SaveToStudyPanel({
           type="button"
           onClick={handleSave}
           disabled={pending}
-          className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
+          className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
         >
           {pending ? "Saving..." : "Save"}
         </button>

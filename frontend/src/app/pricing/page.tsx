@@ -18,8 +18,8 @@ export default function PricingPage() {
       />
       <Container className="pb-16">
         <div className="grid gap-5 md:grid-cols-3">
-          <section className="rounded-lg border-2 border-teal bg-white p-6">
-            <p className="text-sm font-semibold text-teal">Available now</p>
+          <section className="rounded-lg border-2 border-cobalt bg-white p-6">
+            <p className="text-sm font-semibold text-teal-ink">Available now</p>
             <h2 className="mt-1 text-xl font-semibold">Free</h2>
             <p className="mt-2 text-3xl font-semibold">$0</p>
             <ul className="mt-4 ml-5 list-disc space-y-2 text-sm text-navy/80">

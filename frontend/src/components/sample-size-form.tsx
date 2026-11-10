@@ -216,7 +216,7 @@ export function SampleSizeForm({
           type="button"
           onClick={calculate}
           disabled={pending}
-          className="self-start rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
+          className="self-start rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
         >
           {pending ? "Calculating..." : "Calculate"}
         </button>

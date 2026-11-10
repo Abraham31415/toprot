@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/app-header";
 import { StudyNav } from "@/components/study-nav";
 import { OUTPUT_ORDER } from "@/lib/protocol/outputs";
 import { computeCompletion } from "@/lib/protocol/completion";
@@ -64,7 +63,6 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <StudyNav studyId={study.id} active="outputs" />
         <h1 className="text-xl font-semibold text-navy">
@@ -78,7 +76,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
           className={`mt-4 rounded-lg border p-3 text-sm ${
             incomplete.length
               ? "border-amber-300 bg-amber-50 text-amber-900"
-              : "border-teal/30 bg-teal/5 text-navy/85"
+              : "border-cobalt/30 bg-teal/5 text-navy/85"
           }`}
         >
           {incomplete.length ? (

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/app-header";
 import { currentStage } from "@/lib/protocol/milestones";
 import { latestOf, isStalled } from "@/lib/protocol/stalled";
 import { InvitationCard } from "./invitation-card";
@@ -63,7 +62,6 @@ export default async function SupervisorPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-12">
         {!!invitations?.length && (
           <div className="mb-10">

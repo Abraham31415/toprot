@@ -26,13 +26,13 @@ export default function ResourcesPage() {
         <h2 className="text-xl font-semibold">Available now</h2>
         <ul className="mt-3 ml-5 list-disc space-y-2 text-navy/80">
           <li>
-            <a href="/calculator" className="text-teal underline">Sample size calculator</a>: six designs, no account needed.
+            <a href="/calculator" className="text-cobalt underline">Sample size calculator</a>: six designs, no account needed.
           </li>
           <li>
-            <a href="/examples" className="text-teal underline">Sample study</a>: a fictional study with a downloadable data dictionary.
+            <a href="/examples" className="text-cobalt underline">Sample study</a>: a fictional study with a downloadable data dictionary.
           </li>
           <li>
-            <a href="/docs" className="text-teal underline">Documentation</a>: how to use ToProt.
+            <a href="/docs" className="text-cobalt underline">Documentation</a>: how to use ToProt.
           </li>
         </ul>
 

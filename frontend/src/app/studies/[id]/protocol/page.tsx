@@ -1,7 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/app-header";
 import { StudyNav } from "@/components/study-nav";
 import { ProtocolForm } from "./protocol-form";
 import { LockPanel } from "./lock-panel";
@@ -71,7 +70,6 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="min-h-screen bg-paper">
-      <AppHeader profile={profile} />
       <div className="mx-auto max-w-6xl px-6 pt-10">
         <StudyNav studyId={study.id} active="protocol" />
         <LockPanel

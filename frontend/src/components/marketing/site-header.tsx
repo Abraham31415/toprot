@@ -16,19 +16,19 @@ export function SiteHeader() {
 
         <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">
           {NAV_LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className="text-sm font-medium text-navy/80 hover:text-teal">
+            <Link key={l.href} href={l.href} className="text-sm font-medium text-navy/80 hover:text-cobalt">
               {l.label}
             </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/login" className="text-sm font-medium text-navy/80 hover:text-teal">
+          <Link href="/login" className="text-sm font-medium text-navy/80 hover:text-cobalt">
             Log in
           </Link>
           <Link
             href="/register"
-            className="rounded-md bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal"
+            className="rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
           >
             Get started
           </Link>
@@ -71,7 +71,7 @@ export function SiteHeader() {
             <Link
               href="/register"
               onClick={() => setOpen(false)}
-              className="flex-1 rounded-md bg-navy py-2.5 text-center text-sm font-medium text-white"
+              className="flex-1 rounded-md bg-cobalt py-2.5 text-center text-sm font-medium text-white"
             >
               Get started
             </Link>

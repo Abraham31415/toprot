@@ -29,7 +29,7 @@ export function Container({ children, className = "" }: { children: ReactNode; c
 export function PageHeading({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string }) {
   return (
     <Container className="pb-8 pt-12 sm:pt-16">
-      {eyebrow && <p className="text-sm font-semibold uppercase tracking-wide text-teal">{eyebrow}</p>}
+      {eyebrow && <p className="text-sm font-semibold uppercase tracking-wide text-teal-ink">{eyebrow}</p>}
       <h1 className="mt-1 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
       {lead && <p className="mt-4 max-w-2xl text-lg text-navy/75">{lead}</p>}
     </Container>
@@ -46,11 +46,11 @@ export function ButtonLink({
   variant?: "primary" | "secondary";
 }) {
   const base =
-    "inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal";
+    "inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt";
   const style =
     variant === "primary"
-      ? "bg-navy text-white hover:bg-teal"
-      : "border border-navy/25 bg-white text-navy hover:border-teal hover:text-teal";
+      ? "bg-cobalt text-white hover:bg-cobalt-dark"
+      : "border border-navy/25 bg-white text-navy hover:border-cobalt hover:text-cobalt";
   return (
     <Link href={href} className={`${base} ${style}`}>
       {children}
@@ -60,7 +60,7 @@ export function ButtonLink({
 
 export function StatusBadge({ status }: { status: "available" | "planned" }) {
   return status === "available" ? (
-    <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-medium text-teal">Available</span>
+    <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-medium text-teal-ink">Available</span>
   ) : (
     <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-medium text-[#8a5d1c]">Planned</span>
   );
@@ -69,7 +69,7 @@ export function StatusBadge({ status }: { status: "available" | "planned" }) {
 export function Prose({ children }: { children: ReactNode }) {
   return (
     <Container className="pb-16">
-      <div className="max-w-3xl space-y-4 text-base leading-7 text-navy/85 [&_a]:text-teal [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-navy [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1">
+      <div className="max-w-3xl space-y-4 text-base leading-7 text-navy/85 [&_a]:text-cobalt [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-navy [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1">
         {children}
       </div>
     </Container>

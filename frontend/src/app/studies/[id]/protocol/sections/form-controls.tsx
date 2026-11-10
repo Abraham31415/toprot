@@ -123,7 +123,7 @@ export function SaveBar({
   } else if (savedAt) {
     status = {
       text: `All changes saved at ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
-      className: "text-teal",
+      className: "text-teal-ink",
     };
   } else {
     status = { text: auto ? "Changes save automatically." : "Not saved yet.", className: "text-navy/65" };
@@ -135,7 +135,7 @@ export function SaveBar({
         type="button"
         onClick={onSave}
         disabled={pending}
-        className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
+        className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
       >
         {pending ? "Saving..." : error ? "Retry" : auto ? "Save now" : "Save section"}
       </button>
