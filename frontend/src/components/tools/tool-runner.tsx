@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Copy, Download, Printer } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, Download, FilePlus2, FolderPlus, Printer } from "lucide-react";
+import { insertMethodsIntoProtocol, listMyStudiesForTools, saveCalculationToStudy } from "@/app/tools/actions";
 import { getCalculator } from "@/lib/tools/registry";
 import { parseNumbers } from "@/lib/tools/helpers";
 import type { Calculator, Field, ToolResult } from "@/lib/tools/types";
@@ -37,6 +38,19 @@ export function ToolRunner({ slug }: { slug: string }) {
   );
   const [result, setResult] = useState<ToolResult | null>(null);
   const [copied, setCopied] = useState<"methods" | "result" | null>(null);
+  const [studies, setStudies] = useState<{ id: string; title: string }[]>([]);
+  const [studyId, setStudyId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Studies load after render so the page itself stays static and indexable. Empty when signed out.
+  useEffect(() => {
+    let live = true;
+    listMyStudiesForTools()
+      .then((s) => { if (live) { setStudies(s); setStudyId(s[0]?.id ?? ""); } })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
 
   const shown = useMemo(() => (tool ? tool.fields.filter((f) => visible(f, values)) : []), [tool, values]);
   if (!tool) return null;
@@ -62,6 +76,20 @@ export function ToolRunner({ slug }: { slug: string }) {
       setTimeout(() => setCopied(null), 1500);
     } catch {
       /* clipboard unavailable */
+    }
+  }
+
+  async function toStudy(kind: "save" | "insert") {
+    if (!studyId) return;
+    setBusy(true);
+    setStatus(null);
+    try {
+      const res = kind === "save" ? await saveCalculationToStudy(studyId, slug, values) : await insertMethodsIntoProtocol(studyId, slug, values);
+      setStatus(res.error ? { ok: false, text: res.error } : { ok: true, text: res.message ?? "Done." });
+    } catch {
+      setStatus({ ok: false, text: "Could not reach the server. Try again." });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -186,6 +214,33 @@ export function ToolRunner({ slug }: { slug: string }) {
               <button type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-md border border-navy/25 px-3 py-1.5 text-xs font-medium text-navy hover:border-cobalt hover:text-cobalt">
                 <Download className="h-3.5 w-3.5" /> Download Word (.doc)
               </button>
+            </div>
+            <div className="mt-5 rounded-lg border border-line p-4 print:hidden">
+              <h3 className="text-sm font-semibold text-navy">Use in a research project</h3>
+              {studies.length === 0 ? (
+                <p className="mt-1 text-sm text-navy/70">
+                  <a href="/login" className="font-medium text-cobalt underline">Log in</a> or <a href="/register" className="font-medium text-cobalt underline">create a free account</a> as a student to save results to a study or insert the methods text into your protocol.
+                </p>
+              ) : (
+                <>
+                  <label htmlFor="study-pick" className="mt-2 block text-xs font-medium text-navy/70">Project</label>
+                  <select id="study-pick" value={studyId} onChange={(e) => setStudyId(e.target.value)} className="mt-1 w-full rounded-md border border-navy/25 bg-white px-3 py-2 text-sm text-navy">
+                    {studies.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
+                  </select>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" disabled={busy} onClick={() => toStudy("save")} className="inline-flex items-center gap-1.5 rounded-md bg-cobalt px-3 py-1.5 text-xs font-medium text-white hover:bg-cobalt-dark disabled:opacity-50">
+                      <FolderPlus className="h-3.5 w-3.5" /> Save to project
+                    </button>
+                    {result.methods && (
+                      <button type="button" disabled={busy} onClick={() => toStudy("insert")} className="inline-flex items-center gap-1.5 rounded-md border border-navy/25 px-3 py-1.5 text-xs font-medium text-navy hover:border-cobalt hover:text-cobalt disabled:opacity-50">
+                        <FilePlus2 className="h-3.5 w-3.5" /> Add methods text to protocol
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-navy/60">Inserting adds to the Statistics section of the draft protocol and never overwrites your text. It is recalculated on the server from your inputs.</p>
+                  {status && <p role="status" className={`mt-2 text-sm ${status.ok ? "text-teal-ink" : "text-red-700"}`}>{status.text}</p>}
+                </>
+              )}
             </div>
           </section>
         )}
