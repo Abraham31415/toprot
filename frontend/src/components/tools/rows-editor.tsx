@@ -20,19 +20,19 @@ export function RowsEditor({ field, value, onChange }: { field: Field; value: st
   const rows = parse(value);
   const set = (next: Row[]) => onChange(JSON.stringify(next));
   const blank = (): Row => Object.fromEntries(cols.map((c) => [c.id, c.kind === "select" ? (c.options?.[0]?.value ?? "") : ""]));
-  const cls = "w-full rounded-md border border-navy/25 bg-white px-2 py-1.5 text-sm text-navy outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20";
+  const cls = "w-full min-w-0 rounded-md border border-navy/25 bg-white px-2 py-1.5 text-sm text-navy outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20";
 
   return (
-    <div className="sm:col-span-2">
+    <div className="min-w-0 sm:col-span-2">
       <p className="block text-sm font-medium text-navy">{field.label}</p>
       <ul className="mt-2 space-y-3">
         {rows.map((row, i) => (
           <li key={i} className="rounded-lg border border-line bg-paper p-3">
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {cols.map((c) => {
                 const id = `${field.id}-${i}-${c.id}`;
                 return (
-                  <div key={c.id} className={c.id === "text" || c.id === "definition" || c.id === "name" ? "sm:col-span-2" : ""}>
+                  <div key={c.id} className={`min-w-0 ${c.id === "text" || c.id === "definition" || c.id === "name" ? "sm:col-span-2" : ""}`}>
                     <label htmlFor={id} className="block text-xs font-medium text-navy/70">{c.label}</label>
                     {c.kind === "select" ? (
                       <select id={id} className={cls} value={row[c.id] ?? ""} onChange={(e) => set(rows.map((r, j) => (j === i ? { ...r, [c.id]: e.target.value } : r)))}>

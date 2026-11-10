@@ -2,11 +2,12 @@ import { SIZE_CALCULATORS } from "./calculators-size";
 import { EPI_CALCULATORS, STAT_CALCULATORS } from "./calculators-stats";
 import { DESIGN_BUILDERS } from "./builders-design";
 import { METHOD_BUILDERS } from "./builders-method";
+import { INSTRUMENT_BUILDERS } from "./builders-instruments";
 import { CATEGORIES, type Calculator, type ToolMeta } from "./types";
 
 export { CATEGORIES };
 
-export const CALCULATORS: Calculator[] = [...SIZE_CALCULATORS, ...STAT_CALCULATORS, ...EPI_CALCULATORS, ...DESIGN_BUILDERS, ...METHOD_BUILDERS];
+export const CALCULATORS: Calculator[] = [...SIZE_CALCULATORS, ...STAT_CALCULATORS, ...EPI_CALCULATORS, ...DESIGN_BUILDERS, ...METHOD_BUILDERS, ...INSTRUMENT_BUILDERS];
 
 /** Entries that are not in-page calculators. Status is stated plainly so nothing unbuilt looks available. */
 const OTHER: ToolMeta[] = [

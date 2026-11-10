@@ -105,8 +105,9 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
               </ol>
             </section>
             <p className="rounded-lg bg-soft p-3 text-xs text-navy/80">
-              Runs in your browser with fixed formulas. No AI, no AI credits, and your inputs are not sent anywhere. This is a
-              planning aid and not a substitute for review by a qualified statistician.
+              {tool.formulaLabel === "How it works"
+                ? "Runs in your browser with fixed rules and templates. No AI, no AI credits, and your inputs are not sent anywhere unless you choose to add them to your own protocol. It is a drafting aid and not a substitute for review by your supervisor, a statistician or your ethics committee."
+                : "Runs in your browser with fixed formulas. No AI, no AI credits, and your inputs are not sent anywhere. This is a planning aid and not a substitute for review by a qualified statistician."}
             </p>
           </aside>
         </div>

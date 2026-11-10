@@ -96,6 +96,16 @@ export function ToolRunner({ slug }: { slug: string }) {
     }
   }
 
+  function downloadCsv() {
+    if (!result?.csv) return;
+    const blob = new Blob([result.csv.content], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = result.csv.filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   function download() {
     if (!tool || !result || result.error) return;
     const blob = new Blob([resultToHtml(tool, values, result)], { type: "application/msword" });
@@ -110,7 +120,7 @@ export function ToolRunner({ slug }: { slug: string }) {
     ? [tool.name, result.headline ? `${result.headline.label}: ${result.headline.value}` : "", ...(result.rows ?? []).map(([k, v]) => `${k}: ${v}`)].filter(Boolean).join("\n")
     : "";
 
-  const inputClass = "mt-1 w-full rounded-md border border-navy/25 bg-white px-3 py-2 text-sm text-navy outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20";
+  const inputClass = "mt-1 w-full min-w-0 rounded-md border border-navy/25 bg-white px-3 py-2 text-sm text-navy outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20";
 
   const renderField = (f: Field) => f.kind === "rows" ? (
     <RowsEditor key={f.id} field={f} value={values[f.id] ?? "[]"} onChange={(v) => setValues((s) => ({ ...s, [f.id]: v }))} />
@@ -121,6 +131,8 @@ export function ToolRunner({ slug }: { slug: string }) {
         <select id={`f-${f.id}`} className={inputClass} value={values[f.id]} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}>
           {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+      ) : f.kind === "date" ? (
+        <input id={`f-${f.id}`} type="date" className={inputClass} value={values[f.id]} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} />
       ) : f.kind === "textarea" ? (
         <textarea id={`f-${f.id}`} rows={f.rows ?? 4} className={`${inputClass} font-mono`} placeholder={f.placeholder} value={values[f.id]} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} />
       ) : (
@@ -134,10 +146,10 @@ export function ToolRunner({ slug }: { slug: string }) {
   const otherFields = shown.filter((f) => !tableFields.includes(f));
 
   return (
-    <div>
+    <div className="min-w-0">
       <form
         onSubmit={(e) => { e.preventDefault(); run(); }}
-        className="rounded-xl border border-line bg-white p-5 print:hidden"
+        className="min-w-0 rounded-xl border border-line bg-white p-5 print:hidden"
         aria-label={`${tool.name} inputs`}
       >
         {tool.tableLabels && (
@@ -162,9 +174,9 @@ export function ToolRunner({ slug }: { slug: string }) {
             </div>
           </fieldset>
         )}
-        <div className="grid gap-4 sm:grid-cols-2">{otherFields.map(renderField)}</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{otherFields.map(renderField)}</div>
         <button type="submit" className="mt-5 rounded-md bg-cobalt px-5 py-2.5 text-sm font-medium text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
-          Calculate
+          {tool.formulaLabel === "How it works" ? "Build" : "Calculate"}
         </button>
       </form>
 
@@ -234,6 +246,11 @@ export function ToolRunner({ slug }: { slug: string }) {
               <button type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-md border border-navy/25 px-3 py-1.5 text-xs font-medium text-navy hover:border-cobalt hover:text-cobalt">
                 <Download className="h-3.5 w-3.5" /> Download Word (.doc)
               </button>
+              {result.csv && (
+                <button type="button" onClick={downloadCsv} className="inline-flex items-center gap-1.5 rounded-md border border-navy/25 px-3 py-1.5 text-xs font-medium text-navy hover:border-cobalt hover:text-cobalt">
+                  <Download className="h-3.5 w-3.5" /> Download CSV
+                </button>
+              )}
             </div>
             <div className="mt-5 rounded-lg border border-line p-4 print:hidden">
               <h3 className="text-sm font-semibold text-navy">Use in a research project</h3>

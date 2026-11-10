@@ -3,7 +3,7 @@ export type FieldOption = { value: string; label: string };
 export type Field = {
   id: string;
   label: string;
-  kind: "number" | "select" | "textarea" | "rows";
+  kind: "number" | "select" | "textarea" | "rows" | "date";
   default: string;
   help?: string;
   min?: number;
@@ -58,6 +58,8 @@ export type ToolResult = {
   blocks?: ResultBlock[];
   /** Ways to put this result into the protocol. Each is recomputed on the server before it is applied. */
   apply?: ApplyAction[];
+  /** A downloadable CSV, for example a codebook or data dictionary. */
+  csv?: { filename: string; content: string };
 };
 
 export type ToolCategory =

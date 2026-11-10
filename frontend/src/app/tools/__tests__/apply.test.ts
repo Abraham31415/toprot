@@ -133,3 +133,55 @@ describe("applyToolAction", () => {
     expect((await applyToolAction("s1", "research-question-builder", questionInputs, 3)).error).toMatch(/draft/);
   });
 });
+
+describe("applyToolAction for the instrument builders", () => {
+  it("sets the study design only when empty", async () => {
+    const raw = defaultsFor("study-design-assistant");
+    const r = await applyToolAction("s1", "study-design-assistant", raw, 0);
+    expect(r.error).toBeUndefined();
+    expect(String(state.updates[0].patch.study_design)).toMatch(/study|trial|review/i);
+    state.version = { ...state.version!, study_design: "Cohort" };
+    state.updates = [];
+    expect((await applyToolAction("s1", "study-design-assistant", raw, 0)).error).toMatch(/already has a study design/);
+    expect(state.updates).toHaveLength(0);
+  });
+  it("sets blank study dates and milestone target dates from the timeline, skipping completed milestones through the filter", async () => {
+    const r = await applyToolAction("s1", "research-timeline-builder", defaultsFor("research-timeline-builder"), 0);
+    expect(r.error).toBeUndefined();
+    const versionPatch = state.updates.find((u) => u.table === "protocol_versions")!;
+    expect(versionPatch.patch).toEqual({ anticipated_start_date: "2027-02-01", anticipated_end_date: "2028-01-30" });
+    const ms = state.updates.filter((u) => u.table === "milestones");
+    expect(ms.length).toBe(5);
+    for (const m of ms) {
+      expect(m.filters).toContainEqual(["neq", "status", "complete"]);
+      expect(m.filters).toContainEqual(["eq", "study_id", "s1"]);
+    }
+  });
+  it("does not overwrite study dates that are already set", async () => {
+    state.version = { ...state.version!, anticipated_start_date: "2027-01-01", anticipated_end_date: "2027-12-31" };
+    await applyToolAction("s1", "research-timeline-builder", defaultsFor("research-timeline-builder"), 0);
+    expect(state.updates.find((u) => u.table === "protocol_versions")).toBeUndefined();
+  });
+  it("adds questionnaire questions as variables through the atomic RPC", async () => {
+    const r = await applyToolAction("s1", "questionnaire-builder", defaultsFor("questionnaire-builder"), 0);
+    expect(r.error).toBeUndefined();
+    expect(state.rpcs[0].fn).toBe("replace_protocol_variables");
+    expect((state.rpcs[0].args.rows as { variable_name: string }[])[0].variable_name).toMatch(/^q1_/);
+  });
+  it("adds the consent, risks and confidentiality paragraphs to their own fields", async () => {
+    const raw = defaultsFor("consent-ethics-template-builder");
+    for (const [i, field] of [[0, "consent_process"], [1, "risks_and_benefits"], [2, "confidentiality_plan"]] as const) {
+      state.updates = [];
+      const r = await applyToolAction("s1", "consent-ethics-template-builder", raw, i);
+      expect(r.error).toBeUndefined();
+      expect(state.updates[0].patch).toHaveProperty(field);
+    }
+  });
+  it("adds data dictionary variables and the SAP to statistics", async () => {
+    expect((await applyToolAction("s1", "data-dictionary-builder", defaultsFor("data-dictionary-builder"), 0)).error).toBeUndefined();
+    expect(state.rpcs.at(-1)!.fn).toBe("replace_protocol_variables");
+    state.updates = [];
+    expect((await applyToolAction("s1", "statistical-analysis-plan-generator", defaultsFor("statistical-analysis-plan-generator"), 0)).error).toBeUndefined();
+    expect(String(state.updates[0].patch.statistical_methods)).toMatch(/Primary analysis/);
+  });
+});
