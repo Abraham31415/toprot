@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import type { ObjectiveRow, ObjectiveType, ProtocolVersionRow } from "@/lib/protocol/types";
 import { TextAreaField, SaveBar } from "./form-controls";
 import { saveObjectives, saveProtocolSection } from "../actions";
 import { useProtocolLive } from "../protocol-context";
+import { useSaveController } from "./use-section-save";
 
 type DraftObjective = { objective_type: ObjectiveType; description: string };
 
@@ -25,9 +26,20 @@ export function SectionObjectives({
       ? objectives.map((o) => ({ objective_type: o.objective_type, description: o.description }))
       : [{ objective_type: "primary", description: "" }],
   );
-  const [pending, startTransition] = useTransition();
-  const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Objectives are saved with a replace-all write, which is atomic in the database (one transaction), so it
+  // is safe to autosave; a failed save leaves the previous rows intact.
+  const { save, pending, savedAt, error, dirty } = useSaveController(
+    async (p: { researchQuestion: string; items: DraftObjective[] }) => {
+      const [sectionResult, objectivesResult] = await Promise.all([
+        saveProtocolSection(version.id, studyId, { research_question: p.researchQuestion }),
+        saveObjectives(version.id, studyId, p.items),
+      ]);
+      const err = sectionResult.error ?? objectivesResult.error;
+      return err ? { error: err } : { savedAt: Date.now() };
+    },
+    readOnly ? null : { researchQuestion, items },
+    true,
+  );
   const { update: updateLive } = useProtocolLive();
 
   useEffect(() => {
@@ -36,19 +48,6 @@ export function SectionObjectives({
 
   function update(i: number, patch: Partial<DraftObjective>) {
     setItems((prev) => prev.map((o, idx) => (idx === i ? { ...o, ...patch } : o)));
-  }
-
-  function save() {
-    setError(null);
-    startTransition(async () => {
-      const [sectionResult, objectivesResult] = await Promise.all([
-        saveProtocolSection(version.id, studyId, { research_question: researchQuestion }),
-        saveObjectives(version.id, studyId, items),
-      ]);
-      const err = sectionResult.error ?? objectivesResult.error;
-      if (err) setError(err);
-      else setSavedAt(Date.now());
-    });
   }
 
   return (
@@ -105,7 +104,7 @@ export function SectionObjectives({
         )}
       </div>
 
-      <SaveBar onSave={save} pending={pending} savedAt={savedAt} error={error} disabled={readOnly} />
+      <SaveBar onSave={save} pending={pending} savedAt={savedAt} error={error} dirty={dirty} disabled={readOnly} />
     </div>
   );
 }

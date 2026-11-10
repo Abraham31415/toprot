@@ -21,7 +21,8 @@ export function SectionStatistics({
     significance_level: String(version.significance_level ?? 0.05),
     analysis_software: version.analysis_software ?? "Stata",
   });
-  const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const patch = { ...fields, significance_level: parseFloat(fields.significance_level) || null };
+  const { save, pending, savedAt, error, dirty } = useSectionSave(version.id, studyId, readOnly ? null : patch);
   const { update } = useProtocolLive();
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
 
@@ -64,12 +65,12 @@ export function SectionStatistics({
         />
       </div>
       <SaveBar
-        onSave={() =>
-          save({ ...fields, significance_level: parseFloat(fields.significance_level) || null })
-        }
+        onSave={save}
         pending={pending}
         savedAt={savedAt}
         error={error}
+        dirty={dirty}
+        auto
         disabled={readOnly}
       />
     </div>

@@ -24,7 +24,12 @@ export function SectionIdentity({
     anticipated_start_date: version.anticipated_start_date ?? "",
     anticipated_end_date: version.anticipated_end_date ?? "",
   });
-  const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const patch = {
+    ...fields,
+    anticipated_start_date: fields.anticipated_start_date || null,
+    anticipated_end_date: fields.anticipated_end_date || null,
+  };
+  const { save, pending, savedAt, error, dirty } = useSectionSave(version.id, studyId, readOnly ? null : patch);
   const { update } = useProtocolLive();
 
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
@@ -69,16 +74,12 @@ export function SectionIdentity({
         />
       </div>
       <SaveBar
-        onSave={() =>
-          save({
-            ...fields,
-            anticipated_start_date: fields.anticipated_start_date || null,
-            anticipated_end_date: fields.anticipated_end_date || null,
-          })
-        }
+        onSave={save}
         pending={pending}
         savedAt={savedAt}
         error={error}
+        dirty={dirty}
+        auto
         disabled={readOnly}
       />
     </div>

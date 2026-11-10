@@ -21,7 +21,8 @@ export function SectionEthics({
     risks_and_benefits: version.risks_and_benefits ?? "",
     confidentiality_plan: version.confidentiality_plan ?? "",
   });
-  const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const patch = { ...fields };
+  const { save, pending, savedAt, error, dirty } = useSectionSave(version.id, studyId, readOnly ? null : patch);
   const { update } = useProtocolLive();
   const set = (k: keyof typeof fields) => (v: string) => setFields((f) => ({ ...f, [k]: v }));
 
@@ -57,7 +58,15 @@ export function SectionEthics({
         onChange={set("confidentiality_plan")}
         disabled={readOnly}
       />
-      <SaveBar onSave={() => save(fields)} pending={pending} savedAt={savedAt} error={error} disabled={readOnly} />
+      <SaveBar
+        onSave={save}
+        pending={pending}
+        savedAt={savedAt}
+        error={error}
+        dirty={dirty}
+        auto
+        disabled={readOnly}
+      />
     </div>
   );
 }

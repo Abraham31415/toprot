@@ -20,7 +20,13 @@ export function SectionPopulation({
   const [setting, setSetting] = useState(version.setting ?? "");
   const [inclusion, setInclusion] = useState<string[]>(version.inclusion_criteria ?? []);
   const [exclusion, setExclusion] = useState<string[]>(version.exclusion_criteria ?? []);
-  const { save, pending, savedAt, error } = useSectionSave(version.id, studyId);
+  const patch = {
+    target_population: targetPopulation,
+    setting,
+    inclusion_criteria: inclusion.filter((c) => c.trim()),
+    exclusion_criteria: exclusion.filter((c) => c.trim()),
+  };
+  const { save, pending, savedAt, error, dirty } = useSectionSave(version.id, studyId, readOnly ? null : patch);
   const { update } = useProtocolLive();
 
   useEffect(() => {
@@ -42,17 +48,12 @@ export function SectionPopulation({
       <CriteriaList label="Inclusion criteria" items={inclusion} onChange={setInclusion} readOnly={readOnly} />
       <CriteriaList label="Exclusion criteria" items={exclusion} onChange={setExclusion} readOnly={readOnly} />
       <SaveBar
-        onSave={() =>
-          save({
-            target_population: targetPopulation,
-            setting,
-            inclusion_criteria: inclusion.filter((c) => c.trim()),
-            exclusion_criteria: exclusion.filter((c) => c.trim()),
-          })
-        }
+        onSave={save}
         pending={pending}
         savedAt={savedAt}
         error={error}
+        dirty={dirty}
+        auto
         disabled={readOnly}
       />
     </div>

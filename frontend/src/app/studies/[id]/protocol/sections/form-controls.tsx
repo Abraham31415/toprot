@@ -98,26 +98,50 @@ export function SaveBar({
   savedAt,
   error,
   disabled,
+  dirty = false,
+  auto = false,
 }: {
   onSave: () => void;
   pending: boolean;
   savedAt: number | null;
   error: string | null;
   disabled?: boolean;
+  dirty?: boolean;
+  /** True when this section saves itself after you stop typing. */
+  auto?: boolean;
 }) {
   if (disabled) return null;
+
+  let status: { text: string; className: string };
+  if (pending) status = { text: "Saving...", className: "text-zinc-500 dark:text-zinc-400" };
+  else if (error) status = { text: `Could not save: ${error}`, className: "text-red-600" };
+  else if (dirty) {
+    status = {
+      text: auto ? "Unsaved changes. Saving shortly..." : "Unsaved changes. Select Save section to keep them.",
+      className: "text-amber-700 dark:text-amber-400",
+    };
+  } else if (savedAt) {
+    status = {
+      text: `All changes saved at ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      className: "text-teal",
+    };
+  } else {
+    status = { text: auto ? "Changes save automatically." : "Not saved yet.", className: "text-zinc-500 dark:text-zinc-400" };
+  }
+
   return (
-    <div className="flex items-center gap-3 pt-2">
+    <div className="flex flex-wrap items-center gap-3 pt-2">
       <button
         type="button"
         onClick={onSave}
         disabled={pending}
-        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
       >
-        {pending ? "Saving..." : "Save section"}
+        {pending ? "Saving..." : error ? "Retry" : auto ? "Save now" : "Save section"}
       </button>
-      {error && <span className="text-sm text-red-600">{error}</span>}
-      {!error && savedAt && <span className="text-sm text-green-600">Saved</span>}
+      <span role="status" aria-live="polite" className={`text-sm ${status.className}`}>
+        {status.text}
+      </span>
     </div>
   );
 }

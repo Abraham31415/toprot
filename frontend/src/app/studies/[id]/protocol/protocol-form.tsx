@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ObjectiveRow, ProtocolVersionRow, VariableRow } from "@/lib/protocol/types";
 import { buildInitialSnapshot, type QualitySnapshot, type SectionKey } from "@/lib/protocol/quality";
+import { computeCompletion } from "@/lib/protocol/completion";
 import { ProtocolLiveContext } from "./protocol-context";
 import { DataDictionaryPreview } from "./data-dictionary-preview";
 import { QualityPanel } from "./quality-panel";
@@ -49,6 +50,10 @@ export function ProtocolForm({
     buildInitialSnapshot(version, objectives, initialVariables, currentEnrollment),
   );
 
+  const completion = useMemo(() => computeCompletion(snapshot), [snapshot]);
+  const byKey = new Map(completion.sections.map((s) => [s.key, s]));
+  const activeIndex = SECTIONS.findIndex((s) => s.key === active);
+
   const updateLive = useCallback(
     (patch: Partial<QualitySnapshot>) => setSnapshot((s) => ({ ...s, ...patch })),
     [],
@@ -68,23 +73,53 @@ export function ProtocolForm({
             {readOnly && " · read-only"}
           </p>
         </div>
+        <div className="w-44 shrink-0 text-right">
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            {completion.percent}% complete
+            <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">
+              ({completion.completeSections}/{SECTIONS.length} sections)
+            </span>
+          </p>
+          <div
+            className="mt-1 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+            role="progressbar"
+            aria-label="Protocol completion"
+            aria-valuenow={completion.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div className="h-full bg-teal transition-all" style={{ width: `${completion.percent}%` }} />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[220px_1fr_320px]">
         <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
-          {SECTIONS.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setActive(s.key)}
-              className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
-                active === s.key
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+          {SECTIONS.map((s) => {
+            const c = byKey.get(s.key)!;
+            const isActive = active === s.key;
+            return (
+              <button
+                key={s.key}
+                onClick={() => setActive(s.key)}
+                aria-current={isActive ? "step" : undefined}
+                title={c.complete ? "Complete" : `Still needed: ${c.missing.join(", ")}`}
+                className={`flex items-center justify-between gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-navy text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                }`}
+              >
+                <span>{s.label}</span>
+                <span
+                  className={`text-xs ${isActive ? "text-white/80" : c.complete ? "text-teal" : "text-zinc-400"}`}
+                  aria-label={c.complete ? "complete" : `${c.filled} of ${c.total} filled`}
+                >
+                  {c.complete ? "✓" : `${c.filled}/${c.total}`}
+                </span>
+              </button>
+            );
+          })}
         </nav>
 
         <ProtocolLiveContext.Provider value={{ update: updateLive }}>
@@ -124,6 +159,24 @@ export function ProtocolForm({
             {active === "ethics" && (
               <SectionEthics version={version} studyId={studyId} readOnly={readOnly} />
             )}
+            <div className="mt-6 flex justify-between border-t border-zinc-100 pt-4 dark:border-zinc-900">
+              <button
+                type="button"
+                disabled={activeIndex <= 0}
+                onClick={() => setActive(SECTIONS[activeIndex - 1].key)}
+                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:invisible dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={activeIndex >= SECTIONS.length - 1}
+                onClick={() => setActive(SECTIONS[activeIndex + 1].key)}
+                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:invisible dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              >
+                Next section
+              </button>
+            </div>
           </div>
 
           <aside className="flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start">

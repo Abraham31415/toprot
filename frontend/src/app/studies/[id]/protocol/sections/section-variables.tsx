@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import type { VariableRole, VariableRow, VariableType } from "@/lib/protocol/types";
 import { VARIABLE_ROLES, VARIABLE_TYPES } from "@/lib/protocol/types";
 import { slugify, uniqueSlug } from "@/lib/protocol/slug";
 import { SaveBar } from "./form-controls";
+import { useSaveController } from "./use-section-save";
 import { saveVariables } from "../actions";
 
 type DraftVariable = {
@@ -52,9 +53,33 @@ export function SectionVariables({
   const [drafts, setDrafts] = useState<DraftVariable[]>(
     variables.length ? variables.map(toDraft) : [emptyDraft()],
   );
-  const [pending, startTransition] = useTransition();
-  const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Variables are saved with a replace-all write, which is atomic in the database (one transaction), so it
+  // is safe to autosave; a failed save leaves the previous rows intact.
+  const { save, pending, savedAt, error, dirty } = useSaveController(
+    async (current: DraftVariable[]) => {
+      const taken = new Set<string>();
+      const payload = current
+        .filter((d) => d.variable_name.trim())
+        .map((d) => {
+          const slug = uniqueSlug(d.variable_name, taken);
+          taken.add(slug);
+          return {
+            variable_name: d.variable_name.trim(),
+            variable_slug: slug,
+            variable_type: d.variable_type,
+            role: d.role,
+            unit: d.unit || null,
+            value_labels: null,
+            measurement_timepoint: d.measurement_timepoint || null,
+            description: d.description || null,
+          };
+        });
+      const result = await saveVariables(versionId, studyId, payload);
+      return result.error ? { error: result.error } : { savedAt: Date.now() };
+    },
+    readOnly ? null : drafts,
+    true,
+  );
 
   function recompute(next: DraftVariable[]) {
     setDrafts(next);
@@ -80,32 +105,6 @@ export function SectionVariables({
 
   function update(i: number, patch: Partial<DraftVariable>) {
     recompute(drafts.map((d, idx) => (idx === i ? { ...d, ...patch } : d)));
-  }
-
-  function save() {
-    setError(null);
-    startTransition(async () => {
-      const taken = new Set<string>();
-      const payload = drafts
-        .filter((d) => d.variable_name.trim())
-        .map((d) => {
-          const slug = uniqueSlug(d.variable_name, taken);
-          taken.add(slug);
-          return {
-            variable_name: d.variable_name.trim(),
-            variable_slug: slug,
-            variable_type: d.variable_type,
-            role: d.role,
-            unit: d.unit || null,
-            value_labels: null,
-            measurement_timepoint: d.measurement_timepoint || null,
-            description: d.description || null,
-          };
-        });
-      const result = await saveVariables(versionId, studyId, payload);
-      if (result.error) setError(result.error);
-      else setSavedAt(Date.now());
-    });
   }
 
   return (
@@ -183,7 +182,7 @@ export function SectionVariables({
         )}
       </div>
 
-      <SaveBar onSave={save} pending={pending} savedAt={savedAt} error={error} disabled={readOnly} />
+      <SaveBar onSave={save} pending={pending} savedAt={savedAt} error={error} dirty={dirty} disabled={readOnly} />
     </div>
   );
 }
