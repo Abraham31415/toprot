@@ -13,6 +13,15 @@ const bigrams = (s: string): Map<string, number> => {
   return m;
 };
 
+function diceOfMaps(A: Map<string, number>, B: Map<string, number>, x: string, y: string): number {
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  let inter = 0, total = 0;
+  for (const [g, n] of A) { inter += Math.min(n, B.get(g) ?? 0); total += n; }
+  for (const n of B.values()) total += n;
+  return total ? (2 * inter) / total : 0;
+}
+
 /** Sorensen-Dice similarity of two normalised titles, from 0 to 1. */
 export function titleSimilarity(a: string, b: string): number {
   const x = normTitle(a), y = normTitle(b);
@@ -51,18 +60,21 @@ export function findDuplicates(refs: Ref[]): DupGroup[] {
     if (d) { if (byDoi.has(d)) union(byDoi.get(d)!, i, "doi", "exact"); else byDoi.set(d, i); }
     if (r.pmid) { if (byPmid.has(r.pmid)) union(byPmid.get(r.pmid)!, i, "pmid", "exact"); else byPmid.set(r.pmid, i); }
   });
-  // Title comparison, bucketed by the first 12 letters of the normalised title to avoid comparing every pair.
+  // Title comparison. Everything about a reference that the comparison needs is worked out once, the cheap tests (year,
+  // first author, DOI) run before the title measure, and references are bucketed by the start of the title so that a large
+  // import is not compared pairwise in full.
+  const info = refs.map((r) => { const nt = normTitle(r.title); return { nt, bg: bigrams(nt), doi: normalizeDoi(r.doi), fam: firstFamily(r), year: r.year ?? null, size: nt.replace(/ /g, "").length * 1 }; });
   const buckets = new Map<string, number[]>();
-  refs.forEach((r, i) => { const k = normTitle(r.title).replace(/ /g, "").slice(0, 8); if (k) (buckets.get(k) ?? buckets.set(k, []).get(k)!).push(i); });
+  info.forEach((x, i) => { const k = x.nt.replace(/ /g, "").slice(0, 8); if (k) (buckets.get(k) ?? buckets.set(k, []).get(k)!).push(i); });
   for (const idxs of buckets.values()) {
     for (let a = 0; a < idxs.length; a++) for (let b = a + 1; b < idxs.length; b++) {
-      const x = refs[idxs[a]], y = refs[idxs[b]];
-      if (find(idxs[a]) === find(idxs[b])) continue;
-      const dx = normalizeDoi(x.doi), dy = normalizeDoi(y.doi);
-      if (dx && dy && dx !== dy) continue; // different DOIs: different works (for example a paper and its correction)
-      if (titleSimilarity(x.title, y.title) < 0.92) continue;
+      const x = info[idxs[a]], y = info[idxs[b]];
+      if (x.doi && y.doi && x.doi !== y.doi) continue; // different DOIs: different works (for example a paper and its correction)
       if (x.year != null && y.year != null && Math.abs(x.year - y.year) > 1) continue;
-      if (firstFamily(x) && firstFamily(y) && firstFamily(x) !== firstFamily(y)) continue;
+      if (x.fam && y.fam && x.fam !== y.fam) continue;
+      if (Math.abs(x.size - y.size) > Math.max(x.size, y.size) * 0.2 + 2) continue; // titles of very different length cannot reach 0.92
+      if (find(idxs[a]) === find(idxs[b])) continue;
+      if (diceOfMaps(x.bg, y.bg, x.nt, y.nt) < 0.92) continue;
       union(idxs[a], idxs[b], "title", "likely");
     }
   }
@@ -78,6 +90,20 @@ export function mergeRefs(refs: Ref[]): Ref {
   const sorted = [...refs].sort((a, b) => richness(b) - richness(a));
   const out: Ref = { ...sorted[0], authors: [...sorted[0].authors] };
   for (const r of sorted.slice(1)) {
+    for (const k of ["journal", "containerTitle", "year", "month", "volume", "issue", "pages", "publisher", "doi", "pmid", "url", "abstract", "issn", "language", "notes"] as const) {
+      if (out[k] == null || out[k] === "") (out as Record<string, unknown>)[k] = r[k];
+    }
+    if (!out.authors.length && r.authors.length) out.authors = r.authors;
+    const kw = new Set([...(out.keywords ?? []), ...(r.keywords ?? [])]);
+    if (kw.size) out.keywords = [...kw];
+  }
+  return out;
+}
+
+/** Merge into a record the user chose to keep: only its blanks are filled from the others, and its own values are never changed. */
+export function mergeInto(keep: Ref, others: Ref[]): Ref {
+  const out: Ref = { ...keep, authors: [...keep.authors] };
+  for (const r of others) {
     for (const k of ["journal", "containerTitle", "year", "month", "volume", "issue", "pages", "publisher", "doi", "pmid", "url", "abstract", "issn", "language", "notes"] as const) {
       if (out[k] == null || out[k] === "") (out as Record<string, unknown>)[k] = r[k];
     }

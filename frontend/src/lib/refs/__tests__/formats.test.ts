@@ -272,3 +272,15 @@ describe("database conversion and CSL-JSON", () => {
     expect(Object.keys(bare).sort()).toEqual(["id", "title", "type"]);
   });
 });
+
+describe("duplicate detection at scale", () => {
+  it("handles a large import with similar titles quickly and still finds the real duplicates", () => {
+    const words = ["malaria", "vitamin", "zinc", "diarrhoea", "anaemia", "tuberculosis", "hiv", "measles", "cholera", "typhoid"];
+    const refs: Ref[] = Array.from({ length: 1500 }, (_, i) => A({ doi: undefined, title: `The effect of ${words[i % 10]} supplementation on outcomes in children study ${i}`, authors: [{ family: `Author${i % 40}`, given: "A" }], year: 2000 + (i % 20) }));
+    refs.push({ ...refs[10], doi: undefined }); // an exact repeat of record 10
+    const t0 = Date.now();
+    const groups = findDuplicates(refs);
+    expect(Date.now() - t0).toBeLessThan(5000);
+    expect(groups.some((g) => g.indexes.includes(10) && g.indexes.includes(1500))).toBe(true);
+  });
+});

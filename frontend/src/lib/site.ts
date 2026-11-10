@@ -71,11 +71,12 @@ export const FEATURES: Feature[] = [
     slug: "reference-manager",
     name: "Reference Manager",
     status: "available",
-    summary: "Add references by DOI, PubMed ID or title, with details pulled from CrossRef and PubMed.",
+    summary: "Keep a study's references organised: look up, import, tag, group, de-duplicate and export.",
     details: [
-      "Keep a reference list per study and reorder it.",
-      "Manual entry is available when a source cannot be found online.",
-      "Citation insertion inside a writing editor is planned, not yet available.",
+      "Add references by DOI or PubMed ID (details come from Crossref and PubMed), by typing them in, from the Literature Explorer, or by importing RIS, BibTeX or EndNote XML files.",
+      "Import from your own Zotero library using a read-only key that stays in your browser. Mendeley and EndNote are supported through their file exports. Live Mendeley sync is not available.",
+      "Edit details, add tags and notes, group references into collections, search and filter, find and merge duplicates, and export to RIS, BibTeX, EndNote XML or CSV.",
+      "Format a bibliography in any style from the official Citation Style Language repository, or use the Citation Formatter to turn [@key] markers in your text into formatted citations. A full word processor with built-in citations is planned, not yet available.",
     ],
   },
   {
