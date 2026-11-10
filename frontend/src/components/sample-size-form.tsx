@@ -43,13 +43,13 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <input
         type="number"
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
       />
     </label>
   );
@@ -58,10 +58,10 @@ function Field({
 function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="text-xs text-navy/65">{label}</p>
       <p
         className={`text-2xl font-semibold ${
-          highlight ? "text-zinc-950 dark:text-zinc-50" : "text-zinc-700 dark:text-zinc-300"
+          highlight ? "text-navy" : "text-navy/85"
         }`}
       >
         {value}
@@ -117,12 +117,12 @@ export function SampleSizeForm({
   return (
     <div className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">Design</span>
+        <span className="font-medium text-navy/85">Design</span>
         <select
           value={input.design_type}
           disabled={readOnly}
           onChange={(e) => set("design_type")(e.target.value as DesignType)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
         >
           {(Object.keys(DESIGN_TYPE_LABELS) as DesignType[]).map((t) => (
             <option key={t} value={t}>
@@ -216,7 +216,7 @@ export function SampleSizeForm({
           type="button"
           onClick={calculate}
           disabled={pending}
-          className="self-start rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="self-start rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
         >
           {pending ? "Calculating..." : "Calculate"}
         </button>
@@ -224,14 +224,14 @@ export function SampleSizeForm({
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {result && (
-        <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="flex flex-col gap-4 rounded-lg border border-line p-4">
           <div className="flex flex-wrap gap-6">
             {result.n_per_group !== null && <Stat label="Per group" value={result.n_per_group} />}
             <Stat label="Before dropout" value={result.n_before_dropout} />
             <Stat label="Total (after dropout)" value={result.n_total} highlight />
           </div>
 
-          <div className="rounded-lg bg-zinc-50 p-3 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <div className="rounded-lg bg-paper p-3 text-xs text-navy/75">
             <p className="font-mono">{result.formula_label}</p>
             <p className="mt-1">{result.citation}</p>
           </div>

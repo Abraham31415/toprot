@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { ConfirmForm } from "./confirm-form";
+import { PageShell } from "@/components/marketing/ui";
 
 export default async function AuthConfirmPage({
   searchParams,
@@ -9,9 +10,10 @@ export default async function AuthConfirmPage({
   const { token_hash: tokenHash, type } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-16 dark:bg-black">
+    <PageShell>
+    <div className="flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-navy">
           One more step
         </h1>
         {tokenHash && type ? (
@@ -26,5 +28,6 @@ export default async function AuthConfirmPage({
         )}
       </div>
     </div>
+    </PageShell>
   );
 }

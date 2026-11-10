@@ -42,8 +42,8 @@ export function SectionSampleSize({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">Sample size</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-lg font-semibold text-navy">Sample size</h2>
+        <p className="text-sm text-navy/65">
           Calculated by the document service, then stress-tested across dropout rate and effect
           size so you can see how required N moves.
         </p>

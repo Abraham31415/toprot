@@ -52,7 +52,7 @@ export function SectionObjectives({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+      <h2 className="text-lg font-semibold text-navy">
         Research question &amp; objectives
       </h2>
       <TextAreaField
@@ -63,14 +63,14 @@ export function SectionObjectives({
       />
 
       <div className="flex flex-col gap-3">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Objectives</span>
+        <span className="text-sm font-medium text-navy/85">Objectives</span>
         {items.map((o, i) => (
           <div key={i} className="flex gap-2">
             <select
               value={o.objective_type}
               disabled={readOnly}
               onChange={(e) => update(i, { objective_type: e.target.value as ObjectiveType })}
-              className="rounded-lg border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-line bg-white px-2 py-2 text-sm text-navy outline-none focus:border-navy/35 disabled:opacity-60"
             >
               <option value="primary">Primary</option>
               <option value="secondary">Secondary</option>
@@ -80,13 +80,13 @@ export function SectionObjectives({
               disabled={readOnly}
               onChange={(e) => update(i, { description: e.target.value })}
               placeholder="Describe the objective"
-              className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+              className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none focus:border-navy/35 disabled:opacity-60"
             />
             {!readOnly && (
               <button
                 type="button"
                 onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
-                className="rounded-lg border border-zinc-200 px-2.5 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-line px-2.5 text-navy/65 hover:bg-navy/5"
               >
                 ×
               </button>
@@ -97,7 +97,7 @@ export function SectionObjectives({
           <button
             type="button"
             onClick={() => setItems((prev) => [...prev, { objective_type: "secondary", description: "" }])}
-            className="self-start text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="self-start text-sm font-medium text-navy/75 hover:text-navy"
           >
             + Add objective
           </button>

@@ -36,7 +36,7 @@ export function SectionStatistics({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">Statistical plan</h2>
+      <h2 className="text-lg font-semibold text-navy">Statistical plan</h2>
       <TextAreaField
         label="Statistical methods"
         value={fields.statistical_methods}

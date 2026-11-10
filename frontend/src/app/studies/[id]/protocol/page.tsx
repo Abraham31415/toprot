@@ -70,7 +70,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
   const readOnly = version.status !== "draft" || !isOwner;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <div className="mx-auto max-w-6xl px-6 pt-10">
         <StudyNav studyId={study.id} active="protocol" />

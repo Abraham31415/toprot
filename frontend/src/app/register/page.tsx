@@ -1,17 +1,20 @@
 import { RegisterForm } from "./register-form";
+import { PageShell } from "@/components/marketing/ui";
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-16 dark:bg-black">
+    <PageShell>
+    <div className="flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-navy">
           Create your account
         </h1>
-        <p className="mt-1 mb-8 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 mb-8 text-sm text-navy/65">
           Plan. Run. Prove.
         </p>
         <RegisterForm />
       </div>
     </div>
+    </PageShell>
   );
 }

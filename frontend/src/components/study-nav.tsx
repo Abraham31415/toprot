@@ -11,7 +11,7 @@ const TABS = [
 
 export function StudyNav({ studyId, active }: { studyId: string; active: (typeof TABS)[number]["slug"] }) {
   return (
-    <nav className="mb-6 flex gap-1 overflow-x-auto border-b border-zinc-200 dark:border-zinc-800">
+    <nav className="mb-6 flex gap-1 overflow-x-auto border-b border-line">
       {TABS.map((tab) => (
         <Link
           key={tab.slug}
@@ -19,7 +19,7 @@ export function StudyNav({ studyId, active }: { studyId: string; active: (typeof
           className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
             active === tab.slug
               ? "border-b-2 border-teal text-teal"
-              : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              : "text-navy/65 hover:text-navy"
           }`}
         >
           {tab.label}

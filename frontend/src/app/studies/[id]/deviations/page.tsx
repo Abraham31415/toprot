@@ -40,12 +40,12 @@ export default async function DeviationsPage({ params }: { params: Promise<{ id:
   const isOwner = profile.id === study.owner_id;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-10">
         <StudyNav studyId={study.id} active="deviations" />
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">Deviation log</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{study.title}</p>
+        <h1 className="text-xl font-semibold text-navy">Deviation log</h1>
+        <p className="mt-1 text-sm text-navy/65">{study.title}</p>
 
         {isOwner && (
           <div className="mt-6">
@@ -55,24 +55,24 @@ export default async function DeviationsPage({ params }: { params: Promise<{ id:
 
         <div className="mt-6 flex flex-col gap-3">
           {!deviations?.length && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No deviations logged.</p>
+            <p className="text-sm text-navy/65">No deviations logged.</p>
           )}
           {deviations?.map((d) => (
             <div
               key={d.id}
-              className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+              className="rounded-lg border border-line bg-white p-4"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium capitalize text-zinc-900 dark:text-zinc-100">
+                <span className="text-sm font-medium capitalize text-navy">
                   {d.category.replace("_", " ")}
                 </span>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                <span className="text-sm text-navy/65">
                   {new Date(d.occurred_at).toLocaleDateString()}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">{d.description}</p>
+              <p className="mt-1 text-sm text-navy/85">{d.description}</p>
               {d.impact_assessment && (
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-navy/65">
                   Impact: {d.impact_assessment}
                 </p>
               )}

@@ -39,14 +39,14 @@ export default async function DeviationReportPage({ params }: { params: Promise<
     .order("generated_at", { ascending: false });
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-10">
         <StudyNav studyId={study.id} active="deviation-report" />
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold text-navy">
           End-of-study deviation report
         </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{study.title}</p>
+        <p className="mt-1 text-sm text-navy/65">{study.title}</p>
 
         <div className="mt-6">
           <ReportPanel

@@ -30,12 +30,12 @@ export default async function MilestonesPage({ params }: { params: Promise<{ id:
   const isOwner = profile.id === study.owner_id;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <StudyNav studyId={study.id} active="milestones" />
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">Milestone tracker</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{study.title}</p>
+        <h1 className="text-xl font-semibold text-navy">Milestone tracker</h1>
+        <p className="mt-1 text-sm text-navy/65">{study.title}</p>
 
         <div className="mt-6 flex flex-col gap-2">
           {MILESTONE_TYPES.map((type) => {

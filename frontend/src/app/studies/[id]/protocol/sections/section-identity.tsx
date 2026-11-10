@@ -40,7 +40,7 @@ export function SectionIdentity({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">Study identity</h2>
+      <h2 className="text-lg font-semibold text-navy">Study identity</h2>
       <TextField label="Full study title" value={fields.study_title} onChange={set("study_title")} disabled={readOnly} />
       <TextField label="Short title" value={fields.short_title} onChange={set("short_title")} disabled={readOnly} />
       <TextField

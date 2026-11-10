@@ -104,9 +104,9 @@ export function ReferenceManager({
   return (
     <div className="flex flex-col gap-6">
       {!readOnly && (
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Add a reference</p>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-xl border border-line bg-white p-4">
+          <p className="text-sm font-medium text-navy/85">Add a reference</p>
+          <p className="mt-1 text-xs text-navy/65">
             Enter a DOI, a PubMed ID, or a title. We'll pull the details from CrossRef or PubMed
             &mdash; never generated.
           </p>
@@ -115,33 +115,33 @@ export function ReferenceManager({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. 10.1001/jama.2020.1585, 32167524, or a title"
-              className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none focus:border-navy/35"
             />
             <button
               type="button"
               onClick={handleLookup}
               disabled={pending || !query.trim()}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
             >
               {pending ? "Looking up..." : "Look up"}
             </button>
           </div>
 
           {notFound && (
-            <p className="mt-3 text-sm text-amber-700 dark:text-amber-500">
+            <p className="mt-3 text-sm text-amber-700">
               Not found. Double-check the DOI/PMID, or try the exact article title.
             </p>
           )}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
           {preview && (
-            <div className="mt-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
-              <p className="text-sm text-zinc-800 dark:text-zinc-200">{formatVancouver(preview, references.length + 1)}</p>
+            <div className="mt-3 rounded-lg border border-line p-3">
+              <p className="text-sm text-navy/85">{formatVancouver(preview, references.length + 1)}</p>
               <button
                 type="button"
                 onClick={handleAdd}
                 disabled={pending}
-                className="mt-2 rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                className="mt-2 rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
               >
                 Add to references
               </button>
@@ -152,20 +152,20 @@ export function ReferenceManager({
 
       <div className="flex flex-col gap-3">
         {!references.length && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">No references yet.</p>
+          <p className="text-sm text-navy/65">No references yet.</p>
         )}
         {references.map((ref, i) => (
           <div
             key={ref.id}
-            className="flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950"
+            className="flex items-start justify-between gap-3 rounded-lg border border-line bg-white p-3"
           >
-            <p className="text-sm text-zinc-800 dark:text-zinc-200">{formatVancouver(toMetadata(ref), i + 1)}</p>
+            <p className="text-sm text-navy/85">{formatVancouver(toMetadata(ref), i + 1)}</p>
             {!readOnly && (
               <button
                 type="button"
                 onClick={() => handleDelete(ref.id)}
                 disabled={pending}
-                className="shrink-0 rounded-lg border border-zinc-200 px-2.5 text-zinc-500 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="shrink-0 rounded-lg border border-line px-2.5 text-navy/65 hover:bg-navy/5 disabled:opacity-50"
               >
                 ×
               </button>
@@ -179,14 +179,14 @@ export function ReferenceManager({
           <button
             type="button"
             onClick={() => download("references.ris", referencesToRIS(metadataList))}
-            className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5"
           >
             Export RIS
           </button>
           <button
             type="button"
             onClick={() => download("references.bib", referencesToBibTeX(metadataList))}
-            className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5"
           >
             Export BibTeX
           </button>

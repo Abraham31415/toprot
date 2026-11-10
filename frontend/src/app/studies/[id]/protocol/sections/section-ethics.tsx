@@ -35,7 +35,7 @@ export function SectionEthics({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+      <h2 className="text-lg font-semibold text-navy">
         Ethical considerations
       </h2>
       <TextField

@@ -13,7 +13,7 @@ export function CriteriaList({
 }) {
   return (
     <div className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <div className="flex flex-col gap-2">
         {items.map((item, i) => (
           <div key={i} className="flex gap-2">
@@ -25,13 +25,13 @@ export function CriteriaList({
                 next[i] = e.target.value;
                 onChange(next);
               }}
-              className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+              className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
             />
             {!readOnly && (
               <button
                 type="button"
                 onClick={() => onChange(items.filter((_, idx) => idx !== i))}
-                className="rounded-lg border border-zinc-200 px-2.5 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-line px-2.5 text-navy/65 hover:bg-navy/5"
               >
                 ×
               </button>
@@ -42,7 +42,7 @@ export function CriteriaList({
           <button
             type="button"
             onClick={() => onChange([...items, ""])}
-            className="self-start text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="self-start text-sm font-medium text-navy/75 hover:text-navy"
           >
             + Add criterion
           </button>

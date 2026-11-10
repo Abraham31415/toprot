@@ -51,25 +51,25 @@ export function OutputRow({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white p-4">
       <div>
-        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+        <p className="font-medium text-navy">
           {OUTPUT_LABELS[outputType]}
-          <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-normal text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="ml-2 rounded-full bg-navy/5 px-2 py-0.5 text-xs font-normal text-navy/75">
             {OUTPUT_INFO[outputType].format}
           </span>
         </p>
-        <p className="mt-0.5 max-w-md text-sm text-zinc-600 dark:text-zinc-400">{OUTPUT_INFO[outputType].description}</p>
+        <p className="mt-0.5 max-w-md text-sm text-navy/75">{OUTPUT_INFO[outputType].description}</p>
         {!implemented && (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">Coming in a later checkpoint</p>
+          <p className="text-sm text-navy/55">Coming in a later checkpoint</p>
         )}
         {implemented && existing && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-navy/65">
             Generated {new Date(existing.generated_at).toLocaleString()}
           </p>
         )}
         {implemented && !existing && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Not generated yet</p>
+          <p className="text-sm text-navy/65">Not generated yet</p>
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
@@ -81,7 +81,7 @@ export function OutputRow({
               type="button"
               disabled={pending}
               onClick={download}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5 disabled:opacity-50"
             >
               Download
             </button>

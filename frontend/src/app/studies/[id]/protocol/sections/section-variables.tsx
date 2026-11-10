@@ -110,8 +110,8 @@ export function SectionVariables({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">Variables</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-lg font-semibold text-navy">Variables</h2>
+        <p className="text-sm text-navy/65">
           Names auto-slug to snake_case on the right, matching the generated Stata code.
         </p>
       </div>
@@ -120,20 +120,20 @@ export function SectionVariables({
         {drafts.map((d, i) => (
           <div
             key={i}
-            className="grid grid-cols-1 gap-2 rounded-lg border border-zinc-200 p-3 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto] sm:items-center dark:border-zinc-800"
+            className="grid grid-cols-1 gap-2 rounded-lg border border-line p-3 sm:grid-cols-[1.5fr_1fr_1fr_1fr_auto] sm:items-center"
           >
             <input
               value={d.variable_name}
               disabled={readOnly}
               onChange={(e) => update(i, { variable_name: e.target.value })}
               placeholder="Variable name, e.g. Birth weight"
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none focus:border-navy/35 disabled:opacity-60"
             />
             <select
               value={d.variable_type}
               disabled={readOnly}
               onChange={(e) => update(i, { variable_type: e.target.value as VariableType })}
-              className="rounded-lg border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-line bg-white px-2 py-2 text-sm text-navy outline-none disabled:opacity-60"
             >
               {VARIABLE_TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -145,7 +145,7 @@ export function SectionVariables({
               value={d.role}
               disabled={readOnly}
               onChange={(e) => update(i, { role: e.target.value as VariableRole })}
-              className="rounded-lg border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-line bg-white px-2 py-2 text-sm text-navy outline-none disabled:opacity-60"
             >
               {VARIABLE_ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -158,13 +158,13 @@ export function SectionVariables({
               disabled={readOnly}
               onChange={(e) => update(i, { unit: e.target.value })}
               placeholder="Unit"
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+              className="rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none disabled:opacity-60"
             />
             {!readOnly && (
               <button
                 type="button"
                 onClick={() => recompute(drafts.filter((_, idx) => idx !== i))}
-                className="rounded-lg border border-zinc-200 px-2.5 py-2 text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-line px-2.5 py-2 text-navy/65 hover:bg-navy/5"
               >
                 ×
               </button>
@@ -175,7 +175,7 @@ export function SectionVariables({
           <button
             type="button"
             onClick={() => recompute([...drafts, emptyDraft()])}
-            className="self-start text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="self-start text-sm font-medium text-navy/75 hover:text-navy"
           >
             + Add variable
           </button>

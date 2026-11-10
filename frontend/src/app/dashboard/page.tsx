@@ -90,10 +90,10 @@ export default async function DashboardPage() {
   const locked = cards.filter((c) => c.version?.status === "registered").length;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">Your studies</h1>
+        <h1 className="text-xl font-semibold text-navy">Your studies</h1>
 
         {cards.length > 0 && (
           <dl className="mt-4 grid grid-cols-3 gap-3">
@@ -102,9 +102,9 @@ export default async function DashboardPage() {
               ["Average protocol completion", `${avg}%`],
               ["Protocols locked", String(locked)],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                <dt className="text-xs text-zinc-500 dark:text-zinc-400">{label}</dt>
-                <dd className="mt-1 text-2xl font-semibold text-zinc-950 dark:text-zinc-50">{value}</dd>
+              <div key={label} className="rounded-lg border border-line bg-white p-4">
+                <dt className="text-xs text-navy/65">{label}</dt>
+                <dd className="mt-1 text-2xl font-semibold text-navy">{value}</dd>
               </div>
             ))}
           </dl>
@@ -116,9 +116,9 @@ export default async function DashboardPage() {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {!cards.length && (
-            <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center sm:col-span-2 dark:border-zinc-700">
-              <p className="font-medium text-zinc-900 dark:text-zinc-100">No studies yet</p>
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-lg border border-dashed border-navy/25 p-8 text-center sm:col-span-2">
+              <p className="font-medium text-navy">No studies yet</p>
+              <p className="mt-1 text-sm text-navy/65">
                 Name your first study above to start building its protocol.
               </p>
             </div>
@@ -126,12 +126,12 @@ export default async function DashboardPage() {
           {cards.map(({ study, version, completion, stage }) => (
             <article
               key={study.id}
-              className="flex flex-col rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+              className="flex flex-col rounded-lg border border-line bg-white p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <Link
                   href={`/studies/${study.id}/protocol`}
-                  className="font-medium text-zinc-900 hover:text-teal dark:text-zinc-100"
+                  className="font-medium text-navy hover:text-teal"
                 >
                   {study.title}
                 </Link>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
                     className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
                       version.status === "registered"
                         ? "bg-teal/10 text-teal"
-                        : "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400"
+                        : "bg-navy/5 text-navy/75"
                     }`}
                   >
                     {version.status === "registered" ? "Locked" : "Draft"} v{version.version_number}
@@ -150,14 +150,14 @@ export default async function DashboardPage() {
 
               {completion && (
                 <div className="mt-3">
-                  <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="flex justify-between text-xs text-navy/65">
                     <span>Protocol</span>
                     <span>
                       {completion.percent}% ({completion.completeSections}/{completion.sections.length} sections)
                     </span>
                   </div>
                   <div
-                    className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900"
+                    className="mt-1 h-1.5 overflow-hidden rounded-full bg-navy/5"
                     role="progressbar"
                     aria-label={`Protocol completion for ${study.title}`}
                     aria-valuenow={completion.percent}
@@ -169,11 +169,11 @@ export default async function DashboardPage() {
                 </div>
               )}
 
-              <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-3 text-sm text-navy/65">
                 Stage: {stage} · enrollment {study.current_enrollment ?? 0}
               </p>
 
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-900">
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-sm">
                 {[
                   ["protocol", "Protocol"],
                   ["references", "References"],
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
                   <Link
                     key={slug}
                     href={`/studies/${study.id}/${slug}`}
-                    className="rounded-md px-2 py-1 font-medium text-zinc-600 hover:bg-zinc-100 hover:text-teal dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    className="rounded-md px-2 py-1 font-medium text-navy/75 hover:bg-navy/5 hover:text-teal"
                   >
                     {label}
                   </Link>

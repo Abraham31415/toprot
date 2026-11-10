@@ -11,14 +11,14 @@ export function ResetPasswordForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">New password</span>
+        <span className="font-medium text-navy/85">New password</span>
         <input
           name="password"
           type="password"
           autoComplete="new-password"
           required
           minLength={8}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35"
         />
       </label>
 
@@ -27,7 +27,7 @@ export function ResetPasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="rounded-lg bg-navy py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
       >
         {pending ? "Updating..." : "Update password"}
       </button>

@@ -11,7 +11,7 @@ export function OnboardingForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <div className="flex rounded-lg border border-zinc-200 p-1 dark:border-zinc-800">
+      <div className="flex rounded-lg border border-line p-1">
         {(["student", "supervisor"] as const).map((r) => (
           <button
             key={r}
@@ -19,8 +19,8 @@ export function OnboardingForm() {
             onClick={() => setRole(r)}
             className={`flex-1 rounded-md py-2 text-sm font-medium capitalize transition-colors ${
               role === r
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                ? "bg-navy text-white"
+                : "text-navy/65 hover:text-navy"
             }`}
           >
             {r}
@@ -30,11 +30,11 @@ export function OnboardingForm() {
       <input type="hidden" name="role" value={role} />
 
       {role === "student" ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-navy/65">
           Start your study in minutes.
         </p>
       ) : (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-navy/65">
           Creates a workspace for reviewing studies students invite you to.
         </p>
       )}
@@ -44,7 +44,7 @@ export function OnboardingForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="rounded-lg bg-navy py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
       >
         {pending ? "Saving..." : `Continue as ${role}`}
       </button>

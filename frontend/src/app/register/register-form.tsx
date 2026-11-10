@@ -16,7 +16,7 @@ export function RegisterForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <div className="flex rounded-lg border border-zinc-200 p-1 dark:border-zinc-800">
+      <div className="flex rounded-lg border border-line p-1">
         {(["student", "supervisor"] as const).map((r) => (
           <button
             key={r}
@@ -24,8 +24,8 @@ export function RegisterForm() {
             onClick={() => setRole(r)}
             className={`flex-1 rounded-md py-2 text-sm font-medium capitalize transition-colors ${
               role === r
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                ? "bg-navy text-white"
+                : "text-navy/65 hover:text-navy"
             }`}
           >
             {r}
@@ -35,20 +35,20 @@ export function RegisterForm() {
       <input type="hidden" name="role" value={role} />
 
       {role === "student" ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-navy/65">
           Start your study in minutes.
         </p>
       ) : (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-navy/65">
           Creates a workspace for reviewing studies students invite you to.
         </p>
       )}
 
       <GoogleSignInButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
-        <span className="text-xs text-zinc-400 dark:text-zinc-600">or</span>
-        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-px flex-1 bg-navy/10" />
+        <span className="text-xs text-navy/55">or</span>
+        <div className="h-px flex-1 bg-navy/10" />
       </div>
 
       <Field
@@ -90,14 +90,14 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="rounded-lg bg-navy py-2.5 text-sm font-medium text-white transition-colors hover:bg-teal disabled:opacity-50"
       >
         {pending ? "Creating account..." : `Create ${role} account`}
       </button>
 
-      <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="text-center text-sm text-navy/65">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-zinc-900 dark:text-zinc-100">
+        <Link href="/login" className="font-medium text-navy">
           Log in
         </Link>
       </p>
@@ -117,11 +117,11 @@ function Field({
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <input
         name={name}
         type={type}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+        className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35"
         {...rest}
       />
     </label>

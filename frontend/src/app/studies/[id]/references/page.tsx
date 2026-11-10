@@ -30,13 +30,13 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
   const isOwner = profile.id === study.owner_id;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-10">
         <StudyNav studyId={study.id} active="references" />
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">References</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{study.title}</p>
-        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+        <h1 className="text-xl font-semibold text-navy">References</h1>
+        <p className="mt-1 text-sm text-navy/65">{study.title}</p>
+        <p className="mt-3 text-sm text-navy/65">
           Every reference here comes straight from CrossRef or PubMed. ToProt never generates
           or guesses a citation.
         </p>

@@ -63,22 +63,22 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
   const isOwner = profile.id === study.owner_id;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-3xl px-6 py-10">
         <StudyNav studyId={study.id} active="outputs" />
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold text-navy">
           Generated outputs
         </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-navy/65">
           {study.title} · Protocol v{version.version_number} ({version.status})
         </p>
 
         <div
           className={`mt-4 rounded-lg border p-3 text-sm ${
             incomplete.length
-              ? "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
-              : "border-teal/30 bg-teal/5 text-zinc-700 dark:text-zinc-300"
+              ? "border-amber-300 bg-amber-50 text-amber-900"
+              : "border-teal/30 bg-teal/5 text-navy/85"
           }`}
         >
           {incomplete.length ? (

@@ -17,14 +17,14 @@ export function TextField({
 }) {
   return (
     <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <input
         type={type}
         value={value}
         placeholder={placeholder}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+        className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
       />
     </label>
   );
@@ -47,14 +47,14 @@ export function TextAreaField({
 }) {
   return (
     <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <textarea
         value={value}
         placeholder={placeholder}
         disabled={disabled}
         rows={rows}
         onChange={(e) => onChange(e.target.value)}
-        className="resize-y rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+        className="resize-y rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
       />
     </label>
   );
@@ -75,12 +75,12 @@ export function SelectField<T extends string>({
 }) {
   return (
     <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      <span className="font-medium text-navy/85">{label}</span>
       <select
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as T)}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-600"
+        className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35 disabled:opacity-60"
       >
         {options.map((o) => (
           <option key={o} value={o} className="capitalize">
@@ -113,12 +113,12 @@ export function SaveBar({
   if (disabled) return null;
 
   let status: { text: string; className: string };
-  if (pending) status = { text: "Saving...", className: "text-zinc-500 dark:text-zinc-400" };
+  if (pending) status = { text: "Saving...", className: "text-navy/65" };
   else if (error) status = { text: `Could not save: ${error}`, className: "text-red-600" };
   else if (dirty) {
     status = {
       text: auto ? "Unsaved changes. Saving shortly..." : "Unsaved changes. Select Save section to keep them.",
-      className: "text-amber-700 dark:text-amber-400",
+      className: "text-amber-700",
     };
   } else if (savedAt) {
     status = {
@@ -126,7 +126,7 @@ export function SaveBar({
       className: "text-teal",
     };
   } else {
-    status = { text: auto ? "Changes save automatically." : "Not saved yet.", className: "text-zinc-500 dark:text-zinc-400" };
+    status = { text: auto ? "Changes save automatically." : "Not saved yet.", className: "text-navy/65" };
   }
 
   return (

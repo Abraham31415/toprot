@@ -67,21 +67,21 @@ export function ProtocolForm({
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">{studyTitle}</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-xl font-semibold text-navy">{studyTitle}</h1>
+          <p className="text-sm text-navy/65">
             Protocol v{version.version_number} · {version.status}
             {readOnly && " · read-only"}
           </p>
         </div>
         <div className="w-44 shrink-0 text-right">
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm font-medium text-navy/85">
             {completion.percent}% complete
-            <span className="ml-1 font-normal text-zinc-500 dark:text-zinc-400">
+            <span className="ml-1 font-normal text-navy/65">
               ({completion.completeSections}/{SECTIONS.length} sections)
             </span>
           </p>
           <div
-            className="mt-1 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+            className="mt-1 h-2 overflow-hidden rounded-full bg-navy/10"
             role="progressbar"
             aria-label="Protocol completion"
             aria-valuenow={completion.percent}
@@ -107,12 +107,12 @@ export function ProtocolForm({
                 className={`flex items-center justify-between gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-navy text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+                    : "text-navy/75 hover:bg-navy/5"
                 }`}
               >
                 <span>{s.label}</span>
                 <span
-                  className={`text-xs ${isActive ? "text-white/80" : c.complete ? "text-teal" : "text-zinc-400"}`}
+                  className={`text-xs ${isActive ? "text-white/80" : c.complete ? "text-teal" : "text-navy/55"}`}
                   aria-label={c.complete ? "complete" : `${c.filled} of ${c.total} filled`}
                 >
                   {c.complete ? "✓" : `${c.filled}/${c.total}`}
@@ -123,7 +123,7 @@ export function ProtocolForm({
         </nav>
 
         <ProtocolLiveContext.Provider value={{ update: updateLive }}>
-          <div className="min-w-0 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="min-w-0 rounded-xl border border-line bg-white p-6">
             {active === "identity" && (
               <SectionIdentity version={version} studyId={studyId} readOnly={readOnly} />
             )}
@@ -159,12 +159,12 @@ export function ProtocolForm({
             {active === "ethics" && (
               <SectionEthics version={version} studyId={studyId} readOnly={readOnly} />
             )}
-            <div className="mt-6 flex justify-between border-t border-zinc-100 pt-4 dark:border-zinc-900">
+            <div className="mt-6 flex justify-between border-t border-line pt-4">
               <button
                 type="button"
                 disabled={activeIndex <= 0}
                 onClick={() => setActive(SECTIONS[activeIndex - 1].key)}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:invisible dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5 disabled:invisible"
               >
                 Previous
               </button>
@@ -172,7 +172,7 @@ export function ProtocolForm({
                 type="button"
                 disabled={activeIndex >= SECTIONS.length - 1}
                 onClick={() => setActive(SECTIONS[activeIndex + 1].key)}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:invisible dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5 disabled:invisible"
               >
                 Next section
               </button>

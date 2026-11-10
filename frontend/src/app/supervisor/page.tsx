@@ -62,12 +62,12 @@ export default async function SupervisorPage() {
   const versionsByStudy = byStudy(versions);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-12">
         {!!invitations?.length && (
           <div className="mb-10">
-            <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+            <h2 className="text-lg font-semibold text-navy">
               Pending invitations
             </h2>
             <div className="mt-3 flex flex-col gap-3">
@@ -83,7 +83,7 @@ export default async function SupervisorPage() {
 
         {!!amendments?.length && (
           <div className="mb-10">
-            <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+            <h2 className="text-lg font-semibold text-navy">
               Amendments awaiting your review
             </h2>
             <div className="mt-3 flex flex-col gap-3">
@@ -103,12 +103,12 @@ export default async function SupervisorPage() {
           </div>
         )}
 
-        <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold text-navy">
           Supervised studies
         </h1>
         <div className="mt-4 flex flex-col gap-3">
           {!attached?.length && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-navy/65">
               No studies attached yet. Students can invite you once they have one underway.
             </p>
           )}
@@ -136,18 +136,18 @@ export default async function SupervisorPage() {
               <Link
                 key={study.id}
                 href={`/studies/${study.id}/protocol`}
-                className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+                className="flex items-center justify-between rounded-lg border border-line bg-white p-4 transition-colors hover:border-navy/25"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">{study.title}</p>
+                    <p className="font-medium text-navy">{study.title}</p>
                     {stalled && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-400">
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
                         Stalled
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-navy/65">
                     {stage} · enrollment {study.current_enrollment} · {deviationCount} deviation
                     {deviationCount === 1 ? "" : "s"}
                   </p>

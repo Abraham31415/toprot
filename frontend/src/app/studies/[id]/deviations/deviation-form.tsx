@@ -34,14 +34,14 @@ export function DeviationForm({ studyId, versionId }: { studyId: string; version
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="flex flex-col gap-3 rounded-lg border border-line p-4">
       <div className="grid grid-cols-2 gap-3">
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">Category</span>
+          <span className="font-medium text-navy/85">Category</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as DeviationCategory)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none"
           >
             {DEVIATION_CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -51,31 +51,31 @@ export function DeviationForm({ studyId, versionId }: { studyId: string; version
           </select>
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">Date occurred</span>
+          <span className="font-medium text-navy/85">Date occurred</span>
           <input
             type="date"
             value={occurredAt}
             onChange={(e) => setOccurredAt(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+            className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none"
           />
         </label>
       </div>
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">Description</span>
+        <span className="font-medium text-navy/85">Description</span>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">Impact assessment (optional)</span>
+        <span className="font-medium text-navy/85">Impact assessment (optional)</span>
         <textarea
           value={impact}
           onChange={(e) => setImpact(e.target.value)}
           rows={2}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-zinc-900 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none"
         />
       </label>
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -83,7 +83,7 @@ export function DeviationForm({ studyId, versionId }: { studyId: string; version
         type="button"
         disabled={pending}
         onClick={submit}
-        className="self-start rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+        className="self-start rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
       >
         {pending ? "Logging..." : "Log deviation"}
       </button>

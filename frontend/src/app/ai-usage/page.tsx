@@ -42,32 +42,32 @@ export default async function AiUsagePage() {
   const home = profile.role === "supervisor" ? "/supervisor" : "/dashboard";
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-paper">
       <AppHeader profile={profile} />
       <main className="mx-auto max-w-2xl px-6 py-12">
-        <Link href={home} className="text-sm text-zinc-500 hover:underline dark:text-zinc-400">
+        <Link href={home} className="text-sm text-navy/65 hover:underline">
           Back
         </Link>
-        <h1 className="mt-2 text-xl font-semibold text-zinc-950 dark:text-zinc-50">AI credits</h1>
+        <h1 className="mt-2 text-xl font-semibold text-navy">AI credits</h1>
 
         {!headroom ? (
-          <p className="mt-4 rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+          <p className="mt-4 rounded-lg border border-line bg-white p-4 text-sm text-navy/75">
             Credit information is temporarily unavailable. Everything else in ToProt still works.
           </p>
         ) : (
           <>
-            <section className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <section className="mt-4 rounded-lg border border-line bg-white p-5">
+              <p className="text-sm text-navy/65">
                 {headroom.plan === "pro" ? "Toprot Pro" : "Free plan (introductory credits)"}
               </p>
-              <p className="mt-1 text-3xl font-semibold text-zinc-950 dark:text-zinc-50">
+              <p className="mt-1 text-3xl font-semibold text-navy">
                 {credits(headroom.availableMcr)}
-                <span className="ml-2 text-base font-normal text-zinc-500 dark:text-zinc-400">
+                <span className="ml-2 text-base font-normal text-navy/65">
                   of {credits(headroom.allowanceMcr)} credits remaining
                 </span>
               </p>
               <div
-                className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900"
+                className="mt-3 h-2 overflow-hidden rounded-full bg-navy/5"
                 role="progressbar"
                 aria-valuenow={pct}
                 aria-valuemin={0}
@@ -76,31 +76,31 @@ export default async function AiUsagePage() {
               >
                 <div className="h-full bg-purple-600" style={{ width: `${pct}%` }} />
               </div>
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="mt-3 text-sm text-navy/75">
                 {headroom.plan === "pro" && headroom.periodEnd
                   ? `Credits reset on ${date(headroom.periodEnd)}. Unused credits do not carry over.`
                   : "Introductory credits are one-time and do not reset. Upgrade to Toprot Pro for a fresh 2,000 credits every billing period."}
               </p>
               {headroom.reservedMcr > 0 && (
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-navy/65">
                   {credits(headroom.reservedMcr)} credits are held for requests still in progress.
                 </p>
               )}
               {headroom.availableMcr <= 0 && (
-                <p className="mt-3 text-sm text-amber-700 dark:text-amber-400">
+                <p className="mt-3 text-sm text-amber-700">
                   You are out of AI credits. All non-AI research tools (calculators, protocol editing, exports) keep working.
                 </p>
               )}
             </section>
 
             <section className="mt-8">
-              <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Recent AI activity</h2>
+              <h2 className="text-sm font-medium text-navy/85">Recent AI activity</h2>
               {!history?.length ? (
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">No AI requests yet.</p>
+                <p className="mt-2 text-sm text-navy/65">No AI requests yet.</p>
               ) : (
-                <div className="mt-2 overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="mt-2 overflow-x-auto rounded-lg border border-line bg-white">
                   <table className="w-full text-left text-sm">
-                    <thead className="border-b border-zinc-200 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                    <thead className="border-b border-line text-xs text-navy/65">
                       <tr>
                         <th className="px-3 py-2 font-medium">When</th>
                         <th className="px-3 py-2 font-medium">Feature</th>
@@ -110,11 +110,11 @@ export default async function AiUsagePage() {
                     </thead>
                     <tbody>
                       {history.map((e) => (
-                        <tr key={e.id} className="border-b border-zinc-100 last:border-0 dark:border-zinc-900">
-                          <td className="whitespace-nowrap px-3 py-2 text-zinc-600 dark:text-zinc-400">{dateTime(e.created_at)}</td>
-                          <td className="px-3 py-2 text-zinc-900 dark:text-zinc-100">{FEATURE_LABELS[e.feature_key] ?? e.feature_key}</td>
-                          <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{STATUS_LABELS[e.status] ?? e.status}</td>
-                          <td className="px-3 py-2 text-right tabular-nums text-zinc-900 dark:text-zinc-100">
+                        <tr key={e.id} className="border-b border-line last:border-0">
+                          <td className="whitespace-nowrap px-3 py-2 text-navy/75">{dateTime(e.created_at)}</td>
+                          <td className="px-3 py-2 text-navy">{FEATURE_LABELS[e.feature_key] ?? e.feature_key}</td>
+                          <td className="px-3 py-2 text-navy/75">{STATUS_LABELS[e.status] ?? e.status}</td>
+                          <td className="px-3 py-2 text-right tabular-nums text-navy">
                             {e.status === "committed" ? credits(Number(e.charged_mcr)) : "0"}
                           </td>
                         </tr>

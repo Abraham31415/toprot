@@ -7,9 +7,9 @@ import { updateMilestone } from "./actions";
 const STATUS_OPTIONS: MilestoneStatus[] = ["pending", "in_progress", "complete"];
 
 const STATUS_STYLES: Record<MilestoneStatus, string> = {
-  pending: "text-zinc-400 dark:text-zinc-600",
-  in_progress: "text-amber-600 dark:text-amber-400",
-  complete: "text-green-600 dark:text-green-400",
+  pending: "text-navy/55",
+  in_progress: "text-amber-600",
+  complete: "text-green-600",
 };
 
 export function MilestoneRow({
@@ -38,13 +38,13 @@ export function MilestoneRow({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2 rounded-lg border border-zinc-200 p-3 sm:grid-cols-[1.3fr_auto_auto_1.5fr_auto] sm:items-center dark:border-zinc-800">
+    <div className="grid grid-cols-1 gap-2 rounded-lg border border-line p-3 sm:grid-cols-[1.3fr_auto_auto_1.5fr_auto] sm:items-center">
       <p className={`text-sm font-medium ${STATUS_STYLES[status]}`}>{MILESTONE_LABELS[milestone.milestone_type]}</p>
       <select
         value={status}
         disabled={readOnly}
         onChange={(e) => setStatus(e.target.value as MilestoneStatus)}
-        className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-navy outline-none disabled:opacity-60"
       >
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s}>
@@ -57,21 +57,21 @@ export function MilestoneRow({
         value={targetDate}
         disabled={readOnly}
         onChange={(e) => setTargetDate(e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-navy outline-none disabled:opacity-60"
       />
       <input
         value={notes}
         disabled={readOnly}
         placeholder="Notes"
         onChange={(e) => setNotes(e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-900 outline-none disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+        className="rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-navy outline-none disabled:opacity-60"
       />
       {!readOnly ? (
         <button
           type="button"
           disabled={pending}
           onClick={save}
-          className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
         >
           {pending ? "..." : "Save"}
         </button>

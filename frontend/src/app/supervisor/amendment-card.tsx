@@ -29,16 +29,16 @@ export function AmendmentCard({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-      <p className="font-medium text-zinc-900 dark:text-zinc-100">{studyTitle}</p>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{reason}</p>
+    <div className="rounded-lg border border-line bg-white p-4">
+      <p className="font-medium text-navy">{studyTitle}</p>
+      <p className="mt-1 text-sm text-navy/75">{reason}</p>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       <div className="mt-3 flex gap-2">
         <button
           type="button"
           disabled={pending}
           onClick={() => respond("approved")}
-          className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+          className="rounded-lg bg-navy px-3 py-1.5 text-sm font-medium text-white hover:bg-teal disabled:opacity-50"
         >
           Acknowledge
         </button>
@@ -46,7 +46,7 @@ export function AmendmentCard({
           type="button"
           disabled={pending}
           onClick={() => respond("rejected")}
-          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
+          className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/75 hover:bg-navy/5 disabled:opacity-50"
         >
           Flag concern
         </button>

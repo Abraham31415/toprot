@@ -8,23 +8,23 @@ export function StressTestTable({ stressTest }: { stressTest: SampleSizeResult["
 
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <p className="mb-2 text-sm font-medium text-navy/85">
         Required N by {dropout_label.toLowerCase()} (rows) and {effect_label.toLowerCase()} (columns)
       </p>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
-              <th className="border border-zinc-200 p-2 text-left text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+              <th className="border border-line p-2 text-left text-navy/65">
                 {dropout_label} \ {effect_label}
               </th>
               {columns.map((col, i) => (
                 <th
                   key={i}
-                  className={`border border-zinc-200 p-2 text-right font-medium dark:border-zinc-800 ${
+                  className={`border border-line p-2 text-right font-medium ${
                     i === baseColIndex
-                      ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
-                      : "text-zinc-500 dark:text-zinc-400"
+                      ? "bg-navy/5 text-navy"
+                      : "text-navy/65"
                   }`}
                 >
                   {col.value}
@@ -35,16 +35,16 @@ export function StressTestTable({ stressTest }: { stressTest: SampleSizeResult["
           <tbody>
             {rows.map((row, r) => (
               <tr key={r}>
-                <td className="border border-zinc-200 p-2 font-medium text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+                <td className="border border-line p-2 font-medium text-navy/85">
                   {row.label}
                 </td>
                 {grid[r].map((n, c) => (
                   <td
                     key={c}
-                    className={`border border-zinc-200 p-2 text-right tabular-nums dark:border-zinc-800 ${
+                    className={`border border-line p-2 text-right tabular-nums ${
                       c === baseColIndex
-                        ? "bg-zinc-50 font-semibold text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
-                        : "text-zinc-700 dark:text-zinc-300"
+                        ? "bg-paper font-semibold text-navy"
+                        : "text-navy/85"
                     }`}
                   >
                     {n}
