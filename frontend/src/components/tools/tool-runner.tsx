@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, Download, FilePlus2, FolderPlus, Printer } from "lucide-react";
-import { insertMethodsIntoProtocol, listMyStudiesForTools, saveCalculationToStudy } from "@/app/tools/actions";
+import { applyToolAction, insertMethodsIntoProtocol, listMyStudiesForTools, saveCalculationToStudy } from "@/app/tools/actions";
+import { RowsEditor } from "./rows-editor";
 import { getCalculator } from "@/lib/tools/registry";
 import { parseNumbers } from "@/lib/tools/helpers";
 import type { Calculator, Field, ToolResult } from "@/lib/tools/types";
@@ -25,6 +26,8 @@ function resultToHtml(tool: Calculator, values: Record<string, string>, r: ToolR
 <h2>Inputs</h2><table border="1" cellpadding="4" style="border-collapse:collapse">${inputs}</table>
 ${r.headline ? `<h2>${escapeHtml(r.headline.label)}: ${escapeHtml(r.headline.value)}</h2>` : ""}
 ${rows ? `<table border="1" cellpadding="4" style="border-collapse:collapse">${rows}</table>` : ""}
+${(r.blocks ?? []).map((b) => `<h2>${escapeHtml(b.title)}</h2><p>${escapeHtml(b.text).replace(/\n/g, "<br>")}</p>`).join("")}
+${r.table ? `<table border="1" cellpadding="4" style="border-collapse:collapse"><tr>${r.table.head.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}</tr>${r.table.rows.map((row) => `<tr>${row.map((c) => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</table>` : ""}
 ${steps ? `<h2>Calculation steps</h2><ol>${steps}</ol>` : ""}
 <h2>Formula</h2><p>${escapeHtml(tool.formula)}</p>
 ${r.methods ? `<h2>Methods text</h2><p>${escapeHtml(r.methods)}</p>` : ""}
@@ -37,7 +40,7 @@ export function ToolRunner({ slug }: { slug: string }) {
     Object.fromEntries((tool?.fields ?? []).map((f) => [f.id, f.default])),
   );
   const [result, setResult] = useState<ToolResult | null>(null);
-  const [copied, setCopied] = useState<"methods" | "result" | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [studies, setStudies] = useState<{ id: string; title: string }[]>([]);
   const [studyId, setStudyId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,7 +72,7 @@ export function ToolRunner({ slug }: { slug: string }) {
     }
   }
 
-  async function copy(kind: "methods" | "result", text: string) {
+  async function copy(kind: string, text: string) {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(kind);
@@ -79,12 +82,12 @@ export function ToolRunner({ slug }: { slug: string }) {
     }
   }
 
-  async function toStudy(kind: "save" | "insert") {
+  async function toStudy(kind: "save" | "insert" | number) {
     if (!studyId) return;
     setBusy(true);
     setStatus(null);
     try {
-      const res = kind === "save" ? await saveCalculationToStudy(studyId, slug, values) : await insertMethodsIntoProtocol(studyId, slug, values);
+      const res = typeof kind === "number" ? await applyToolAction(studyId, slug, values, kind) : kind === "save" ? await saveCalculationToStudy(studyId, slug, values) : await insertMethodsIntoProtocol(studyId, slug, values);
       setStatus(res.error ? { ok: false, text: res.error } : { ok: true, text: res.message ?? "Done." });
     } catch {
       setStatus({ ok: false, text: "Could not reach the server. Try again." });
@@ -109,7 +112,9 @@ export function ToolRunner({ slug }: { slug: string }) {
 
   const inputClass = "mt-1 w-full rounded-md border border-navy/25 bg-white px-3 py-2 text-sm text-navy outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20";
 
-  const renderField = (f: Field) => (
+  const renderField = (f: Field) => f.kind === "rows" ? (
+    <RowsEditor key={f.id} field={f} value={values[f.id] ?? "[]"} onChange={(v) => setValues((s) => ({ ...s, [f.id]: v }))} />
+  ) : (
     <div key={f.id}>
       <label htmlFor={`f-${f.id}`} className="block text-sm font-medium text-navy">{f.label}</label>
       {f.kind === "select" ? (
@@ -117,7 +122,7 @@ export function ToolRunner({ slug }: { slug: string }) {
           {f.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : f.kind === "textarea" ? (
-        <textarea id={`f-${f.id}`} rows={4} className={`${inputClass} font-mono`} placeholder={f.placeholder} value={values[f.id]} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} />
+        <textarea id={`f-${f.id}`} rows={f.rows ?? 4} className={`${inputClass} font-mono`} placeholder={f.placeholder} value={values[f.id]} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} />
       ) : (
         <input id={`f-${f.id}`} type="number" inputMode="decimal" className={inputClass} value={values[f.id]} min={f.min} max={f.max} step={f.step ?? "any"} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} />
       )}
@@ -170,7 +175,7 @@ export function ToolRunner({ slug }: { slug: string }) {
             {result.headline && (
               <div className="rounded-lg bg-soft p-4">
                 <p className="text-sm text-navy/70">{result.headline.label}</p>
-                <p className="text-3xl font-semibold text-navy">{result.headline.value}</p>
+                <p className={`font-semibold text-navy ${result.headline.value.length > 40 ? "text-lg" : "text-3xl"}`}>{result.headline.value}</p>
               </div>
             )}
             {result.rows && (
@@ -186,6 +191,21 @@ export function ToolRunner({ slug }: { slug: string }) {
                   <thead><tr>{result.table.head.map((h) => <th key={h} className="border-b border-line px-2 py-1.5 text-left font-medium text-navy/70">{h}</th>)}</tr></thead>
                   <tbody>{result.table.rows.map((row, i) => <tr key={i}>{row.map((c, j) => <td key={j} className="border-b border-line px-2 py-1.5">{c}</td>)}</tr>)}</tbody>
                 </table>
+              </div>
+            )}
+            {result.blocks && (
+              <div className="mt-5 space-y-3">
+                {result.blocks.map((b) => (
+                  <div key={b.title} className="rounded-lg border border-line p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold text-navy">{b.title}</h3>
+                      <button type="button" onClick={() => copy(`block-${b.title}`, b.text)} className="inline-flex items-center gap-1 text-xs font-medium text-navy/70 hover:text-cobalt print:hidden">
+                        {copied === `block-${b.title}` ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied === `block-${b.title}` ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                    <p className="mt-2 whitespace-pre-line text-sm text-navy/85">{b.text}</p>
+                  </div>
+                ))}
               </div>
             )}
             {result.steps && (
@@ -237,6 +257,15 @@ export function ToolRunner({ slug }: { slug: string }) {
                       </button>
                     )}
                   </div>
+                  {result.apply && result.apply.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {result.apply.map((a, i) => (
+                        <button key={i} type="button" disabled={busy} onClick={() => toStudy(i)} className="inline-flex items-center gap-1.5 rounded-md border border-cobalt px-3 py-1.5 text-xs font-medium text-cobalt-dark hover:bg-soft disabled:opacity-50">
+                          <FilePlus2 className="h-3.5 w-3.5" /> {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <p className="mt-2 text-xs text-navy/60">Inserting adds to the Statistics section of the draft protocol and never overwrites your text. It is recalculated on the server from your inputs.</p>
                   {status && <p role="status" className={`mt-2 text-sm ${status.ok ? "text-teal-ink" : "text-red-700"}`}>{status.text}</p>}
                 </>

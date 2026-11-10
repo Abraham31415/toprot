@@ -3,7 +3,7 @@ export type FieldOption = { value: string; label: string };
 export type Field = {
   id: string;
   label: string;
-  kind: "number" | "select" | "textarea";
+  kind: "number" | "select" | "textarea" | "rows";
   default: string;
   help?: string;
   min?: number;
@@ -11,9 +11,39 @@ export type Field = {
   step?: number;
   options?: FieldOption[];
   placeholder?: string;
+  /** For kind "textarea": visible rows. */
+  rows?: number;
+  /** For kind "rows": the columns of a repeating table. The value is stored as a JSON array of objects. */
+  columns?: { id: string; label: string; kind: "text" | "select"; options?: FieldOption[]; placeholder?: string }[];
+  /** For kind "rows": a starting set of rows, as JSON. */
   /** Only show this field when the predicate returns true for the current values. */
   showIf?: { id: string; equals: string };
 };
+
+/** Protocol text fields a builder may append to. Research question is set only when empty. */
+export type ProtocolTextField =
+  | "research_question" | "study_design" | "target_population" | "setting" | "statistical_methods" | "primary_analysis"
+  | "data_collection_methods" | "data_sources" | "data_management_plan" | "consent_process"
+  | "risks_and_benefits" | "confidentiality_plan";
+
+export type ApplyVariable = {
+  variable_name: string;
+  variable_type: "continuous" | "categorical" | "binary" | "ordinal" | "date" | "text";
+  role: "exposure" | "outcome" | "covariate" | "identifier" | "other";
+  unit?: string | null;
+  measurement_timepoint?: string | null;
+  description?: string | null;
+};
+
+/** A change a builder can make to a study's draft protocol. Applied on the server after recomputation. */
+export type ApplyAction =
+  | { kind: "text"; label: string; field: ProtocolTextField; text: string }
+  | { kind: "list"; label: string; field: "inclusion_criteria" | "exclusion_criteria"; items: string[] }
+  | { kind: "objectives"; label: string; items: { objective_type: "primary" | "secondary"; description: string }[] }
+  | { kind: "variables"; label: string; items: ApplyVariable[] }
+  | { kind: "timeline"; label: string; start?: string; end?: string; milestones: { milestone_type: string; target_date: string }[] };
+
+export type ResultBlock = { title: string; text: string };
 
 export type ToolResult = {
   error?: string;
@@ -24,6 +54,10 @@ export type ToolResult = {
   notes?: string[];
   /** Copy-ready methodology / results sentence. */
   methods?: string;
+  /** Longer generated documents, each shown with a copy button. */
+  blocks?: ResultBlock[];
+  /** Ways to put this result into the protocol. Each is recomputed on the server before it is applied. */
+  apply?: ApplyAction[];
 };
 
 export type ToolCategory =
@@ -65,6 +99,8 @@ export type Calculator = ToolMeta & {
   /** Optional 2x2 layout for fields a, b, c, d. */
   tableLabels?: { rows: [string, string]; cols: [string, string]; title: string };
   formula: string;
+  /** Heading for the formula panel. Defaults to "Formula"; builders use "How it works". */
+  formulaLabel?: string;
   assumptions: string[];
   limitations: string[];
   references: string[];

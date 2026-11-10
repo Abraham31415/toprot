@@ -77,7 +77,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
 
           <aside className="space-y-6 text-sm text-navy/85">
             <section>
-              <h2 className="text-base font-semibold text-navy">Formula</h2>
+              <h2 className="text-base font-semibold text-navy">{tool.formulaLabel ?? "Formula"}</h2>
               <p className="mt-2 rounded-lg border border-line bg-white p-3 font-mono text-xs leading-5">{tool.formula}</p>
             </section>
             <section>
