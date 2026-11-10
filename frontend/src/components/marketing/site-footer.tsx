@@ -31,7 +31,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-white">
+    <footer className="print:hidden border-t border-line bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
           <p className="text-lg font-semibold text-navy">ToProt</p>

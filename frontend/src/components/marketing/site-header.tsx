@@ -8,7 +8,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm">
+    <header className="print:hidden sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/" className="text-lg font-semibold tracking-tight text-navy" onClick={() => setOpen(false)}>
           ToProt

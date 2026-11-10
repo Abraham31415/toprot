@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { BrainCircuit, Calculator, LayoutDashboard, LogOut, Menu, Users, X, type LucideIcon } from "lucide-react";
+import { BrainCircuit, Calculator, LayoutDashboard, LogOut, Menu, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 
@@ -14,6 +14,7 @@ function navFor(role: string | null): NavItem[] {
       : { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard };
   return [
     home,
+    { href: "/tools", label: "Research tools", icon: Wrench },
     { href: "/calculator", label: "Sample size", icon: Calculator },
     { href: "/ai-usage", label: "AI credits", icon: BrainCircuit },
   ];

@@ -13,6 +13,7 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 
 export const NAV_LINKS = [
   { href: "/features", label: "Features" },
+  { href: "/tools", label: "Research Tools" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/examples", label: "Examples" },
   { href: "/pricing", label: "Pricing" },
