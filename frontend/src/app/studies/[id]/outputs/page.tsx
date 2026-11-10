@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/app-header";
 import { StudyNav } from "@/components/study-nav";
 import { OUTPUT_ORDER } from "@/lib/protocol/outputs";
+import { computeCompletion } from "@/lib/protocol/completion";
+import { buildInitialSnapshot } from "@/lib/protocol/quality";
+import type { ObjectiveRow, ProtocolVersionRow, VariableRow } from "@/lib/protocol/types";
 import { OutputRow } from "./output-row";
 
 export default async function OutputsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,7 +18,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
 
   const { data: study } = await supabase
     .from("studies")
-    .select("id, title, owner_id")
+    .select("id, title, owner_id, current_enrollment")
     .eq("id", studyId)
     .single();
 
@@ -23,7 +26,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
 
   const { data: version } = await supabase
     .from("protocol_versions")
-    .select("id, version_number, status")
+    .select("*")
     .eq("study_id", studyId)
     .in("status", ["draft", "registered"])
     .order("version_number", { ascending: false })
@@ -31,6 +34,20 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
     .single();
 
   if (!version) notFound();
+
+  const [{ data: objectives }, { data: variables }] = await Promise.all([
+    supabase.from("protocol_objectives").select("*").eq("protocol_version_id", version.id),
+    supabase.from("protocol_variables").select("*").eq("protocol_version_id", version.id),
+  ]);
+  const completion = computeCompletion(
+    buildInitialSnapshot(
+      version as ProtocolVersionRow,
+      (objectives ?? []) as ObjectiveRow[],
+      (variables ?? []) as VariableRow[],
+      study.current_enrollment,
+    ),
+  );
+  const incomplete = completion.sections.filter((s) => !s.complete);
 
   const { data: outputs } = await supabase
     .from("generated_outputs")
@@ -48,7 +65,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
       <AppHeader profile={profile} />
-      <main className="mx-auto max-w-2xl px-6 py-10">
+      <main className="mx-auto max-w-3xl px-6 py-10">
         <StudyNav studyId={study.id} active="outputs" />
         <h1 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
           Generated outputs
@@ -56,6 +73,26 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
           {study.title} · Protocol v{version.version_number} ({version.status})
         </p>
+
+        <div
+          className={`mt-4 rounded-lg border p-3 text-sm ${
+            incomplete.length
+              ? "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+              : "border-teal/30 bg-teal/5 text-zinc-700 dark:text-zinc-300"
+          }`}
+        >
+          {incomplete.length ? (
+            <>
+              <p className="font-medium">Your protocol is {completion.percent}% complete.</p>
+              <p className="mt-1">
+                Documents are generated from the saved protocol, so anything still missing may leave gaps. Still needed:{" "}
+                {incomplete.map((s) => s.key.replaceAll("_", " ")).join(", ")}. Regenerate a document after you change the protocol.
+              </p>
+            </>
+          ) : (
+            <p>All protocol sections are filled in. Regenerate a document after you change the protocol. Always review generated documents before use.</p>
+          )}
+        </div>
 
         <div className="mt-6 flex flex-col gap-3">
           {OUTPUT_ORDER.map((type) => (

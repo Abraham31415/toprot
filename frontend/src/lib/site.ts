@@ -38,7 +38,8 @@ export const FEATURES: Feature[] = [
     summary: "Structured sections for identity, objectives, population, variables, statistics, data collection and ethics.",
     details: [
       "Enter study details once in guided sections instead of free-form documents.",
-      "Changes save automatically as you work.",
+      "Text sections save automatically after you stop typing. Objectives and variables save when you select Save, and unsaved changes are flagged.",
+      "A completion tracker shows which sections still need attention.",
       "Lock a protocol version when it is final, with supervisor review built in.",
     ],
   },

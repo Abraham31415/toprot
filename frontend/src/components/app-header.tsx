@@ -5,7 +5,7 @@ export function AppHeader({ profile }: { profile: Profile }) {
   return (
     <header className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
       <div>
-        <p className="font-semibold text-zinc-950 dark:text-zinc-50">ToProt</p>
+        <p className="font-semibold text-navy dark:text-zinc-50">ToProt</p>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {profile.full_name} · <span className="capitalize">{profile.role}</span>
         </p>

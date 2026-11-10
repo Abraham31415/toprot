@@ -21,7 +21,7 @@ const STEPS = [
   },
   {
     title: "Structure your protocol",
-    text: "Work through guided sections: objectives, population and eligibility, variables, sample size, statistical methods, data collection and ethics. Changes save as you go.",
+    text: "Work through guided sections: objectives, population and eligibility, variables, sample size, statistical methods, data collection and ethics. Most sections save automatically; objectives and variables use a Save button.",
     note: null,
   },
   {

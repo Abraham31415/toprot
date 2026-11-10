@@ -20,7 +20,7 @@ export default function DocsPage() {
         <h2>2. Build the protocol</h2>
         <p>
           Open the study and work through the sections: identity, objectives, population and eligibility, variables,
-          sample size, statistics, data collection and ethics. Changes save automatically.
+          sample size, statistics, data collection and ethics. Text sections save automatically after you stop typing; objectives and variables use a Save button. A progress bar shows how complete the protocol is.
         </p>
         <h2>3. Calculate sample size</h2>
         <p>
