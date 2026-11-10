@@ -210,6 +210,57 @@ export function repeatedMeasures(delta: number, sdv: number, rho: number, m: num
   };
 }
 
+/**
+ * 1:1 matched case-control (Schlesselman 1982). Discordant pairs needed for a McNemar-type test:
+ * m = [Z(a/2)/2 + Z(b) sqrt(P(1 - P))]^2 / (P - 1/2)^2, with P = OR / (1 + OR). Total pairs = m / psi,
+ * where psi is the probability a pair is discordant, assuming exposure is independent within pairs.
+ */
+export function matchedCaseControl(p0: number, oddsRatio: number, conf: number, power: number): SizeResult {
+  if (!inUnit(p0)) return { ok: false, error: "Exposure prevalence among controls must be between 0 and 1 (exclusive)." };
+  if (!(oddsRatio > 0) || oddsRatio === 1) return { ok: false, error: "Odds ratio must be positive and not equal to 1." };
+  if (!(conf > 0 && conf < 1) || !(power > 0 && power < 1)) return { ok: false, error: "Confidence and power must be between 0 and 1." };
+  const za = zA(conf), zb = zB(power);
+  const P = oddsRatio / (1 + oddsRatio);
+  const m = (za / 2 + zb * Math.sqrt(P * (1 - P))) ** 2 / (P - 0.5) ** 2;
+  const p1 = (oddsRatio * p0) / (1 - p0 + oddsRatio * p0);
+  const psi = p0 * (1 - p1) + p1 * (1 - p0);
+  const pairs = ceil(ceil(m) / psi);
+  const steps = [
+    `P (share of discordant pairs with the case exposed) = OR / (1 + OR) = ${fmt(P)}`,
+    `Discordant pairs m = [Z(a/2)/2 + Z(b) sqrt(P(1 - P))]^2 / (P - 0.5)^2 = ${fmt(m)}, round up: ${ceil(m)}`,
+    `Exposure among cases implied by the odds ratio: p1 = ${fmt(p1)}; probability a pair is discordant = p0(1 - p1) + p1(1 - p0) = ${fmt(psi)}`,
+    `Matched pairs = ${ceil(m)} / ${fmt(psi)} = ${fmt(ceil(m) / psi)}, round up: ${pairs}`,
+  ];
+  return { ok: true, steps, values: { discordantPairs: ceil(m), pairs, total: pairs * 2 }, headline: { label: "Matched pairs (1 case : 1 control)", value: pairs } };
+}
+
+/**
+ * Two-group comparison of a continuous outcome measured before and after. The variance of the
+ * treatment-effect estimate relative to a follow-up-only analysis is 1, 2(1 - rho) for a change
+ * score, or (1 - rho^2) for ANCOVA adjusting for baseline; rho is the baseline-follow-up correlation.
+ */
+export function prePost(delta: number, sdv: number, rho: number, analysis: "post" | "change" | "ancova", conf: number, power: number): SizeResult {
+  if (!(delta !== 0)) return { ok: false, error: "The difference to detect must be non-zero." };
+  if (!(sdv > 0)) return { ok: false, error: "Standard deviation must be greater than 0." };
+  if (!(rho >= 0 && rho < 1)) return { ok: false, error: "Baseline-follow-up correlation must be at least 0 and below 1." };
+  if (!(conf > 0 && conf < 1) || !(power > 0 && power < 1)) return { ok: false, error: "Confidence and power must be between 0 and 1." };
+  const za = zA(conf), zb = zB(power);
+  const factor = analysis === "post" ? 1 : analysis === "change" ? 2 * (1 - rho) : 1 - rho * rho;
+  const n1f = (2 * (za + zb) ** 2 * sdv ** 2 * factor) / delta ** 2;
+  const n1 = ceil(n1f);
+  const label = analysis === "post" ? "follow-up value only" : analysis === "change" ? "change from baseline" : "ANCOVA adjusting for baseline";
+  return {
+    ok: true,
+    steps: [
+      `Analysis: ${label}. Variance factor = ${analysis === "post" ? "1" : analysis === "change" ? `2(1 - rho) = ${fmt(factor)}` : `1 - rho^2 = ${fmt(factor)}`}`,
+      `n per group = 2 (Z(a/2) + Z(b))^2 SD^2 x factor / delta^2 = ${fmt(n1f)}`,
+      `Round up: ${n1} per group, ${2 * n1} in total`,
+    ],
+    values: { perGroup: n1, total: 2 * n1, factor },
+    headline: { label: "Participants per group", value: n1 },
+  };
+}
+
 /** Schoenfeld (1983) number of events for a log-rank comparison. */
 export function survivalEvents(hr: number, conf: number, power: number, ratio: number, overallEventProb?: number): SizeResult {
   if (!(hr > 0) || hr === 1) return { ok: false, error: "Hazard ratio must be positive and not equal to 1." };

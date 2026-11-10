@@ -83,6 +83,15 @@ describe("saved_calculations", () => {
     expect((await asUser(sup, (c) => c.query("select id from saved_calculations where study_id = $1", [s.study]))).rowCount).toBe(1);
     await expect(asUser(sup, (c) => insert(c, s.study))).rejects.toThrow(/row-level security/);
   });
+  it("lets only the owner delete a saved calculation", async () => {
+    const s = await newStudy();
+    const row = await asUser(s.owner, (c) => insert(c, s.study));
+    const stranger = await newUser();
+    const denied = await asUser(stranger, (c) => c.query("delete from saved_calculations where id = $1", [row.rows[0].id]));
+    expect(denied.rowCount).toBe(0);
+    const done = await asUser(s.owner, (c) => c.query("delete from saved_calculations where id = $1", [row.rows[0].id]));
+    expect(done.rowCount).toBe(1);
+  });
   it("is not accessible to the anon role", async () => {
     const c = await pool.connect();
     try {

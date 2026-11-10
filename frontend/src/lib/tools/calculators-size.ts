@@ -1,5 +1,5 @@
 import {
-  caseControl, clusterTrial, cohort, diagnosticAccuracy, kishDesignEffect, powerTwoMeans, powerTwoProportions,
+  caseControl, clusterTrial, matchedCaseControl, prePost, cohort, diagnosticAccuracy, kishDesignEffect, powerTwoMeans, powerTwoProportions,
   repeatedMeasures, singleMean, singleProportion, survivalEvents, twoMeans, twoProportions, pairedMeans,
   finitePopulation, nonresponseAdjust, designEffectCluster, ceil, type SizeResult,
 } from "../stats/samplesize";
@@ -19,6 +19,10 @@ const REF = {
   diggle: "Diggle PJ, Heagerty P, Liang KY, Zeger SL. Analysis of Longitudinal Data. 2nd ed. Oxford: Oxford University Press; 2002.",
   frison: "Frison L, Pocock SJ. Repeated measures in clinical trials: analysis using mean summary statistics and its implications for design. Stat Med. 1992;11(13):1685-1704.",
   cohen: "Cohen J. Statistical Power Analysis for the Behavioral Sciences. 2nd ed. Hillsdale: Lawrence Erlbaum; 1988.",
+  schlesselman: "Schlesselman JJ. Case-Control Studies: Design, Conduct, Analysis. New York: Oxford University Press; 1982.",
+  dupont: "Dupont WD. Power calculations for matched case-control studies. Biometrics. 1988;44(4):1157-1168.",
+  vickers: "Vickers AJ. The use of percentage change from baseline as an outcome in a controlled trial is statistically inefficient: a simulation study. BMC Med Res Methodol. 2001;1:6.",
+  borm: "Borm GF, Fransen J, Lemmens WAJG. A simple sample size formula for analysis of covariance in randomized clinical trials. J Clin Epidemiol. 2007;60(12):1234-1238.",
   hedges: "Hedges LV, Olkin I. Statistical Methods for Meta-Analysis. Orlando: Academic Press; 1985.",
 };
 
@@ -173,6 +177,48 @@ export const SIZE_CALCULATORS: Calculator[] = [
       if (!r.ok) return { error: r.error };
       return toResult(r, [["Cases", String(r.values.cases)], ["Controls", String(r.values.controls)], ["Exposure among cases (implied)", fmt(r.values.p1)]],
         `For an unmatched case-control study, detecting an odds ratio of ${fmt(n.or)} with ${fmt(n.p0 * 100, 0)}% exposure among controls, a two-sided α of ${alphaText(n.conf)} and ${fmt(n.power * 100, 0)}% power requires ${r.values.cases} cases and ${r.values.controls} controls (Kelsey et al., 1996; Fleiss et al., 2003).`);
+    },
+  },
+  {
+    slug: "sample-size-matched-case-control", name: "Matched Case-Control Study (1:1)", category: "sample-size", kind: "calculator",
+    summary: "Matched pairs needed to detect an odds ratio in a 1:1 matched case-control study.",
+    keywords: ["matched case-control", "McNemar", "discordant pairs", "Schlesselman", "odds ratio", "matched pairs"],
+    description: "Use this when each case is matched to one control. The analysis uses only pairs that differ in exposure (discordant pairs).",
+    fields: [
+      { id: "p0", label: "Exposure prevalence among controls", kind: "number", default: "0.3", min: 0.001, max: 0.999, step: 0.01 },
+      { id: "or", label: "Odds ratio to detect", kind: "number", default: "2", min: 0.01, step: 0.1 },
+      CONF_FIELD, POWER_FIELD,
+    ],
+    formula: "P = OR / (1 + OR);  m = [Z(a/2)/2 + Z(b) sqrt(P(1 - P))]^2 / (P - 0.5)^2 discordant pairs;  pairs = m / psi, psi = p0(1 - p1) + p1(1 - p0).",
+    assumptions: ["1:1 matching with a McNemar-type conditional analysis.", "Exposure is independent between a case and its matched control apart from the odds ratio. Strong matching on the exposure makes more pairs concordant, so more pairs are needed."],
+    limitations: ["Ignores correlation of exposure within matched pairs (Dupont 1988 adjusts for it).", "1:M matching needs a different formula."],
+    references: [REF.schlesselman, REF.dupont, REF.kelsey],
+    run: (n) => {
+      const r = matchedCaseControl(n.p0, n.or, n.conf, n.power);
+      return toResult(r, r.ok ? [["Discordant pairs needed", String(r.values.discordantPairs)], ["Matched pairs to recruit", String(r.values.pairs)], ["Total participants", String(r.values.total)]] : [],
+        r.ok ? `For a 1:1 matched case-control study, detecting an odds ratio of ${fmt(n.or)} with ${fmt(n.p0 * 100, 0)}% exposure among controls, a two-sided α of ${alphaText(n.conf)} and ${fmt(n.power * 100, 0)}% power requires ${r.values.discordantPairs} discordant pairs, or about ${r.values.pairs} matched pairs (Schlesselman, 1982).` : "");
+    },
+  },
+  {
+    slug: "sample-size-pre-post", name: "Baseline-Adjusted Comparison (Change Score or ANCOVA)", category: "sample-size", kind: "calculator",
+    summary: "Participants per group when comparing groups using a baseline measurement.",
+    keywords: ["baseline", "ANCOVA", "change score", "pre-post", "repeated measures", "Vickers", "Borm", "change from baseline"],
+    description: "Use this when an outcome is measured at baseline and follow-up. Adjusting for baseline (ANCOVA) needs the fewest participants whenever the two measurements are correlated.",
+    fields: [
+      { id: "analysis", label: "Planned analysis", kind: "select", default: "ancova", options: [{ value: "ancova", label: "ANCOVA adjusting for baseline" }, { value: "change", label: "Change from baseline" }, { value: "post", label: "Follow-up value only" }] },
+      { id: "delta", label: "Difference in means to detect", kind: "number", default: "5", step: 0.1 },
+      { id: "sd", label: "Standard deviation of the outcome", kind: "number", default: "20", min: 0.0001, step: 0.1 },
+      { id: "rho", label: "Correlation between baseline and follow-up", kind: "number", default: "0.5", min: 0, max: 0.99, step: 0.05 },
+      CONF_FIELD, POWER_FIELD,
+    ],
+    formula: "n per group = 2 (Z(a/2) + Z(b))^2 SD^2 x F / delta^2, with F = 1 (follow-up only), 2(1 - rho) (change score) or 1 - rho^2 (ANCOVA).",
+    assumptions: ["Randomised groups, so baseline means are equal in expectation.", "Constant SD at baseline and follow-up and a linear baseline-outcome relationship."],
+    limitations: ["Change scores need more participants than follow-up alone when rho is below 0.5.", "For several follow-up visits use the repeated measures tool."],
+    references: [REF.vickers, REF.borm, REF.frison],
+    run: (n, raw) => {
+      const r = prePost(n.delta, n.sd, n.rho, raw.analysis as "post" | "change" | "ancova", n.conf, n.power);
+      return toResult(r, r.ok ? [["Per group", String(r.values.perGroup)], ["Total", String(r.values.total)], ["Variance factor", fmt(r.values.factor)]] : [],
+        r.ok ? `Sample size for a baseline-adjusted two-group comparison used a variance factor of ${fmt(r.values.factor)} (baseline-follow-up correlation ${fmt(n.rho)}; Vickers, 2001; Borm et al., 2007). To detect a difference of ${fmt(n.delta)} (SD ${fmt(n.sd)}) with ${fmt(n.power * 100, 0)}% power at a two-sided α of ${alphaText(n.conf)}, ${r.values.perGroup} participants per group are needed.` : "");
     },
   },
   {

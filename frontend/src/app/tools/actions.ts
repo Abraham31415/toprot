@@ -44,6 +44,17 @@ export async function listMyStudiesForTools(): Promise<{ id: string; title: stri
   return data ?? [];
 }
 
+export async function deleteSavedCalculation(studyId: string, id: string): Promise<ToolActionResult> {
+  const profile = await getCurrentProfile();
+  if (!profile) return { error: "Sign in to delete calculations." };
+  const supabase = await createClient();
+  // Row-level security limits this to the study owner; filtering by study as well keeps the URL honest.
+  const { error } = await supabase.from("saved_calculations").delete().eq("id", id).eq("study_id", studyId);
+  if (error) return { error: error.message };
+  revalidatePath(`/studies/${studyId}/calculations`);
+  return { message: "Deleted." };
+}
+
 export async function saveCalculationToStudy(studyId: string, slug: string, raw: Record<string, string>): Promise<ToolActionResult> {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to save calculations." };
