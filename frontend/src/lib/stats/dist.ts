@@ -16,6 +16,9 @@ export const chi2Sf = (x: number, df: number): number => 1 - J.chisquare.cdf(x, 
 export const chi2Ppf = (p: number, df: number): number => J.chisquare.inv(p, df);
 export const fCdf = (x: number, d1: number, d2: number): number => J.centralF.cdf(x, d1, d2);
 export const betaPpf = (p: number, a: number, b: number): number => J.beta.inv(p, a, b);
+/** Studentized range distribution (Tukey), k groups and df error degrees of freedom. */
+export const tukeyCdf = (q: number, k: number, df: number): number => J.tukey.cdf(q, k, df);
+export const tukeyPpf = (p: number, k: number, df: number): number => J.tukey.inv(p, k, df);
 export const lnGamma = (x: number): number => J.gammaln(x);
 
 /** Two-sided critical z for a confidence level, e.g. 0.95 -> 1.959964. */

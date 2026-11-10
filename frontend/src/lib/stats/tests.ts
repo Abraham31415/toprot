@@ -1,4 +1,4 @@
-import { betaPpf, chi2Sf, fCdf, lnGamma, normCdf, tCdf, tPpf, zCrit } from "./dist";
+import { betaPpf, chi2Sf, fCdf, lnGamma, normCdf, tCdf, tPpf, tukeyCdf, tukeyPpf, zCrit } from "./dist";
 import type { Interval } from "./epi";
 
 export const sum = (x: number[]) => x.reduce((s, v) => s + v, 0);
@@ -123,6 +123,24 @@ export function oneWayAnova(groups: number[][]): AnovaResult {
     f, dfBetween: dfB, dfWithin: dfW, p: Math.max(0, 1 - fCdf(f, dfB, dfW)), ssBetween: ssB, ssWithin: ssW, msBetween: msB, msWithin: msW,
     etaSquared: ssB / (ssB + ssW), groups: groups.map((g) => ({ n: g.length, mean: mean(g), sd: g.length > 1 ? sd(g) : NaN })),
   };
+}
+
+export type TukeyPair = { i: number; j: number; diff: number; q: number; p: number; ci: Interval };
+
+/** Tukey-Kramer HSD: all pairwise comparisons after a one-way ANOVA, family-wise error controlled. */
+export function tukeyHsd(groups: number[][], conf = 0.95): { pairs: TukeyPair[]; qCrit: number; msWithin: number; dfWithin: number } {
+  const a = oneWayAnova(groups);
+  const k = groups.length;
+  const qCrit = tukeyPpf(conf, k, a.dfWithin);
+  const pairs: TukeyPair[] = [];
+  for (let i = 0; i < k; i++)
+    for (let j = i + 1; j < k; j++) {
+      const diff = a.groups[i].mean - a.groups[j].mean;
+      const se = Math.sqrt((a.msWithin / 2) * (1 / a.groups[i].n + 1 / a.groups[j].n));
+      const q = Math.abs(diff) / se;
+      pairs.push({ i, j, diff, q, p: Math.min(1, Math.max(0, 1 - tukeyCdf(q, k, a.dfWithin))), ci: { lower: diff - qCrit * se, upper: diff + qCrit * se } });
+    }
+  return { pairs, qCrit, msWithin: a.msWithin, dfWithin: a.dfWithin };
 }
 
 export function pearson(x: number[], y: number[], conf = 0.95) {

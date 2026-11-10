@@ -1,5 +1,5 @@
 import {
-  caseControl, clusterTrial, matchedCaseControl, prePost, cohort, diagnosticAccuracy, kishDesignEffect, powerTwoMeans, powerTwoProportions,
+  caseControl, clusterTrial, matchedCaseControlM, prePost, repeatedMeasuresGeneral, type RepeatedSummary, type CorrelationStructure, cohort, diagnosticAccuracy, kishDesignEffect, powerTwoMeans, powerTwoProportions,
   repeatedMeasures, singleMean, singleProportion, survivalEvents, twoMeans, twoProportions, pairedMeans,
   finitePopulation, nonresponseAdjust, designEffectCluster, ceil, type SizeResult,
 } from "../stats/samplesize";
@@ -180,23 +180,24 @@ export const SIZE_CALCULATORS: Calculator[] = [
     },
   },
   {
-    slug: "sample-size-matched-case-control", name: "Matched Case-Control Study (1:1)", category: "sample-size", kind: "calculator",
-    summary: "Matched pairs needed to detect an odds ratio in a 1:1 matched case-control study.",
-    keywords: ["matched case-control", "McNemar", "discordant pairs", "Schlesselman", "odds ratio", "matched pairs"],
-    description: "Use this when each case is matched to one control. The analysis uses only pairs that differ in exposure (discordant pairs).",
+    slug: "sample-size-matched-case-control", name: "Matched Case-Control Study (1:1 to 1:M)", category: "sample-size", kind: "calculator",
+    summary: "Matched sets needed to detect an odds ratio when each case is matched to one or more controls.",
+    keywords: ["matched case-control", "McNemar", "discordant pairs", "Schlesselman", "odds ratio", "matched pairs", "1:M matching", "conditional logistic"],
+    description: "Use this when each case is matched to one or more controls and the analysis is conditional (McNemar for 1:1, conditional logistic or Mantel-Haenszel for 1:M). Only matched sets with mixed exposure are informative.",
     fields: [
       { id: "p0", label: "Exposure prevalence among controls", kind: "number", default: "0.3", min: 0.001, max: 0.999, step: 0.01 },
       { id: "or", label: "Odds ratio to detect", kind: "number", default: "2", min: 0.01, step: 0.1 },
+      { id: "m", label: "Controls matched to each case", kind: "number", default: "1", min: 1, max: 10, step: 1, help: "Gains beyond about 4 controls per case are small." },
       CONF_FIELD, POWER_FIELD,
     ],
-    formula: "P = OR / (1 + OR);  m = [Z(a/2)/2 + Z(b) sqrt(P(1 - P))]^2 / (P - 0.5)^2 discordant pairs;  pairs = m / psi, psi = p0(1 - p1) + p1(1 - p0).",
-    assumptions: ["1:1 matching with a McNemar-type conditional analysis.", "Exposure is independent between a case and its matched control apart from the odds ratio. Strong matching on the exposure makes more pairs concordant, so more pairs are needed."],
-    limitations: ["Ignores correlation of exposure within matched pairs (Dupont 1988 adjusts for it).", "1:M matching needs a different formula."],
+    formula: "Sets N = [Z(a/2) sqrt(v0) + Z(b) sqrt(v1)]^2 / d^2, from the conditional probability pi_j = j OR / (j OR + M + 1 - j) that the case is the exposed member of a set with j exposed. For 1:1 this is Schlesselman's m / psi.",
+    assumptions: ["Conditional (matched) analysis with a score or McNemar-type test.", "Exposure is independent between members of a matched set apart from the odds ratio. Matching on a correlate of exposure raises the number of concordant sets and the sample needed."],
+    limitations: ["Ignores within-set correlation of exposure (Dupont 1988 adjusts for it).", "Fixed number of controls per case. Variable matching needs simulation."],
     references: [REF.schlesselman, REF.dupont, REF.kelsey],
     run: (n) => {
-      const r = matchedCaseControl(n.p0, n.or, n.conf, n.power);
-      return toResult(r, r.ok ? [["Discordant pairs needed", String(r.values.discordantPairs)], ["Matched pairs to recruit", String(r.values.pairs)], ["Total participants", String(r.values.total)]] : [],
-        r.ok ? `For a 1:1 matched case-control study, detecting an odds ratio of ${fmt(n.or)} with ${fmt(n.p0 * 100, 0)}% exposure among controls, a two-sided α of ${alphaText(n.conf)} and ${fmt(n.power * 100, 0)}% power requires ${r.values.discordantPairs} discordant pairs, or about ${r.values.pairs} matched pairs (Schlesselman, 1982).` : "");
+      const r = matchedCaseControlM(n.p0, n.or, n.conf, n.power, n.m);
+      return toResult(r, r.ok ? [["Matched sets (= cases)", String(r.values.sets)], ["Controls", String(r.values.controls)], ["Total participants", String(r.values.total)], ["Informative sets (mixed exposure)", `${fmt(r.values.informative * 100, 1)}%`]] : [],
+        r.ok ? `For a matched case-control study with ${fmt(n.m, 0)} control${n.m > 1 ? "s" : ""} per case, detecting an odds ratio of ${fmt(n.or)} with ${fmt(n.p0 * 100, 0)}% exposure among controls, a two-sided α of ${alphaText(n.conf)} and ${fmt(n.power * 100, 0)}% power requires ${r.values.sets} cases and ${r.values.controls} controls (conditional score test; Schlesselman, 1982).` : "");
     },
   },
   {
@@ -293,24 +294,27 @@ export const SIZE_CALCULATORS: Calculator[] = [
   },
   {
     slug: "sample-size-repeated-measures", name: "Repeated Measures", category: "sample-size", kind: "calculator",
-    summary: "Participants per group when comparing the average of several measurements per person.",
-    keywords: ["repeated measures", "longitudinal", "correlation", "Diggle", "Frison", "Pocock"],
-    description: "Use this when each person is measured several times and the groups are compared on the average of those measurements.",
+    summary: "Participants per group for repeated measurements: mean over visits, slope, or change from baseline, with compound-symmetry or AR(1) correlation.",
+    keywords: ["repeated measures", "longitudinal", "correlation", "Diggle", "Frison", "Pocock", "slope", "AR(1)", "compound symmetry", "change from baseline", "trend"],
+    description: "Use this when each person is measured several times. Choose what the comparison is based on and how the measurements correlate. Real correlations often fade with time between visits, so AR(1) is often more realistic than compound symmetry.",
     fields: [
-      { id: "delta", label: "Difference in means to detect", kind: "number", default: "5", step: 0.1 },
+      { id: "summary", label: "Comparison is based on", kind: "select", default: "mean", options: [{ value: "mean", label: "Mean over all visits" }, { value: "slope", label: "Slope (rate of change) over time" }, { value: "change", label: "Mean follow-up minus baseline" }] },
+      { id: "structure", label: "Correlation between visits", kind: "select", default: "cs", options: [{ value: "cs", label: "Compound symmetry (equal for all pairs)" }, { value: "ar1", label: "AR(1) (declines with time apart)" }] },
+      { id: "delta", label: "Difference to detect (slope: per visit)", kind: "number", default: "5", step: 0.1, help: "Difference in means, in the mean of follow-ups minus baseline, or in slope per visit, depending on the choice above." },
       { id: "sd", label: "Standard deviation of a single measurement", kind: "number", default: "20", min: 0.0001, step: 0.1 },
-      { id: "rho", label: "Correlation between repeated measures", kind: "number", default: "0.5", min: 0, max: 0.99, step: 0.05, help: "Within-person correlation, assumed equal for every pair of visits (compound symmetry)." },
-      { id: "m", label: "Number of measurements per person", kind: "number", default: "4", min: 1, max: 50, step: 1 },
-      CONF_FIELD, POWER_FIELD,
+      { id: "rho", label: "Correlation between repeated measures", kind: "number", default: "0.5", min: 0, max: 0.99, step: 0.05, help: "For AR(1) this is the correlation between consecutive visits." },
+      { id: "m", label: "Number of visits per person (include baseline)", kind: "number", default: "4", min: 1, max: 50, step: 1, help: "Mean over visits needs 1 or more. Slope and change from baseline need at least 2." },
+      CONF_FIELD, POWER_FIELD, NONRESPONSE_FIELD,
     ],
-    formula: "n per group = 2 (Z(a/2) + Z(b))^2 SD^2 [1 + (m - 1) rho] / (m x delta^2).",
-    assumptions: ["Compound symmetry (equal correlation between all pairs of visits).", "No missing visits, or a separate inflation for dropout.", "The comparison is of the mean over visits, not of a trend."],
-    limitations: ["Does not cover analyses of change from baseline or of slopes, which need different formulas.", "Real correlations often decay with time between visits."],
+    formula: "n per group = 2 (Z(a/2) + Z(b))^2 SD^2 v / delta^2, where v = c' R c is the variance of the chosen summary for one person (mean: c = 1/m; slope: least-squares weights; change: -1 for baseline, 1/(m - 1) for each follow-up) and R is the correlation matrix.",
+    assumptions: ["Equal variance at every visit and the chosen correlation structure.", "Complete data apart from the dropout inflation; equal spacing of visits for the slope.", "Two groups of equal size."],
+    limitations: ["Does not model missing-at-random dropout patterns, unequal spacing or random slopes. Use simulation for complex designs.", "The correlation has a large effect on the result. Take it from similar data."],
     references: [REF.diggle, REF.frison],
-    run: (n) => {
-      const r = repeatedMeasures(n.delta, n.sd, n.rho, n.m, n.conf, n.power);
-      return toResult(r, r.ok ? [["Per group", String(r.values.perGroup)], ["Total", String(r.values.total)]] : [],
-        r.ok ? `Sample size for comparing the mean of ${fmt(n.m, 0)} repeated measurements between two groups assumed a within-person correlation of ${fmt(n.rho)} (Diggle et al., 2002; Frison and Pocock, 1992). To detect a difference of ${fmt(n.delta)} (SD ${fmt(n.sd)}) with ${fmt(n.power * 100, 0)}% power at a two-sided α of ${alphaText(n.conf)}, ${r.values.perGroup} participants per group are needed.` : "");
+    run: (n, raw) => {
+      const r = repeatedMeasuresGeneral(raw.summary as RepeatedSummary, raw.structure as CorrelationStructure, n.delta, n.sd, n.rho, n.m, n.conf, n.power, n.nonresponse);
+      const what = raw.summary === "mean" ? "the mean over visits" : raw.summary === "slope" ? "the slope over time" : "the mean follow-up minus baseline";
+      return toResult(r, r.ok ? [["Per group", String(r.values.perGroup)], ["Total", String(r.values.total)], ["Variance factor", fmt(r.values.factor, 4)]] : [],
+        r.ok ? `Sample size for comparing ${what} between two groups with ${fmt(n.m, 0)} visits assumed ${raw.structure === "ar1" ? "AR(1)" : "compound-symmetric"} correlation of ${fmt(n.rho)} (Diggle et al., 2002; Frison and Pocock, 1992). To detect a difference of ${fmt(n.delta)} (SD ${fmt(n.sd)}) with ${fmt(n.power * 100, 0)}% power at a two-sided α of ${alphaText(n.conf)}, ${r.values.perGroup} participants per group are needed${n.nonresponse > 0 ? `, including ${fmt(n.nonresponse * 100, 0)}% dropout` : ""}.` : "");
     },
   },
   {

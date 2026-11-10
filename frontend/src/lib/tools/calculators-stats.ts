@@ -1,7 +1,7 @@
 import { analyzeDiagnostic, analyzeExposure, incidenceRate, validateTable, wilson } from "../stats/epi";
 import {
   chiSquare, clopperPearson, describe as describeData, fisherExact, linearRegression, logisticRegression, meanCi,
-  oneSampleT, oneWayAnova, pairedT, pearson, spearman, twoSampleT, type TTestResult,
+  oneSampleT, oneWayAnova, pairedT, pearson, spearman, tukeyHsd, twoSampleT, type TTestResult,
 } from "../stats/tests";
 import { CONF_FIELD, ci, confText, fmt, fmtP, parseList, pct, pctCi } from "./helpers";
 import type { Calculator, Field, ToolResult } from "./types";
@@ -21,6 +21,8 @@ const REF = {
   woolf: "Woolf B. On estimating the relation between blood group and disease. Ann Hum Genet. 1955;19:251-253.",
   levin: "Levin ML. The occurrence of lung cancer in man. Acta Unio Int Contra Cancrum. 1953;9:531-541.",
   simel: "Simel DL, Samsa GP, Matchar DB. Likelihood ratios with confidence: sample size estimation for diagnostic test studies. J Clin Epidemiol. 1991;44(8):763-770.",
+  tukey: "Tukey JW. Comparing individual means in the analysis of variance. Biometrics. 1949;5(2):99-114.",
+  kramer: "Kramer CY. Extension of multiple range tests to group means with unequal numbers of replications. Biometrics. 1956;12(3):307-310.",
   garwood: "Garwood F. Fiducial limits for the Poisson distribution. Biometrika. 1936;28:437-442.",
 };
 
@@ -205,6 +207,39 @@ export const STAT_CALCULATORS: Calculator[] = [
       if (groups.length < 3) return { error: "Enter at least three groups, one per line." };
       const r = oneWayAnova(groups);
       return { headline: { label: "p-value", value: fmtP(r.p) }, rows: [["F", fmt(r.f, 4)], ["df (between, within)", `${r.dfBetween}, ${r.dfWithin}`], ["Eta-squared", fmt(r.etaSquared, 3)]], table: { head: ["Group", "n", "Mean", "SD"], rows: r.groups.map((g, i) => [`${i + 1}`, String(g.n), fmt(g.mean, 3), fmt(g.sd, 3)]) }, notes: [NOTE], methods: `A one-way ANOVA showed F(${r.dfBetween}, ${r.dfWithin}) = ${fmt(r.f, 2)}, p ${r.p < 0.0001 ? "< 0.0001" : "= " + fmtP(r.p)}, η² = ${fmt(r.etaSquared, 2)}.` };
+    },
+  },
+  {
+    slug: "anova-post-hoc-tukey", name: "ANOVA Post-Hoc: Tukey-Kramer Pairwise Comparisons", category: "statistical", kind: "calculator",
+    summary: "Which groups differ after a one-way ANOVA, with family-wise error control and simultaneous intervals.",
+    keywords: ["post hoc", "Tukey", "HSD", "Tukey-Kramer", "pairwise comparisons", "multiple comparisons", "ANOVA"],
+    description: "Run this after a significant one-way ANOVA. Tukey's method compares every pair of groups while keeping the overall error rate at alpha.",
+    fields: [
+      { id: "groups", label: "Groups (one group per line)", kind: "textarea", default: "5.1 4.9 6.2 5.8 6.0 5.5 4.7 5.3 6.1 5.9\n4.8 5.2 5.9 5.1 5.6 5.0 4.9 5.4 5.7 5.2\n6.5 7.1 6.8 7.4 6.9 7.2 6.6 7.0" },
+      CONF_FIELD,
+    ],
+    formula: "q = |mean_i - mean_j| / sqrt((MS_within / 2)(1/n_i + 1/n_j)); p from the studentized range distribution with k groups and N - k df. Interval = difference +/- q_crit x SE (Tukey-Kramer for unequal n).",
+    assumptions: ["The same as one-way ANOVA: independent observations, roughly normal residuals, similar variances.", "All pairwise comparisons were planned as a family."],
+    limitations: ["Tukey is slightly conservative with unequal group sizes.", "Does not apply to unequal variances (use Games-Howell, not included)."],
+    references: [REF.tukey, REF.kramer, REF.pagano],
+    run: (n, raw) => {
+      const groups: number[][] = [];
+      for (const [i, line] of (raw.groups ?? "").split(/\n/).map((l) => l.trim()).filter(Boolean).entries()) {
+        const g = parseList(line, `Group ${i + 1}`, 2);
+        if (typeof g === "string") return { error: g };
+        groups.push(g);
+      }
+      if (groups.length < 3) return { error: "Enter at least three groups, one per line." };
+      const r = tukeyHsd(groups, n.conf);
+      const c = confText(n.conf);
+      const sig = r.pairs.filter((p) => p.p < 1 - n.conf);
+      return {
+        headline: { label: "Pairs significantly different", value: `${sig.length} of ${r.pairs.length}` },
+        table: { head: ["Comparison", "Mean difference", `${c} CI`, "Adjusted p"], rows: r.pairs.map((p) => [`Group ${p.i + 1} vs ${p.j + 1}`, fmt(p.diff, 4), ci(p.ci, 4), fmtP(p.p)]) },
+        rows: [["Critical q", fmt(r.qCrit, 4)], ["Error mean square", fmt(r.msWithin, 4)], ["Error df", String(r.dfWithin)]],
+        notes: ["Run this after the ANOVA. " + NOTE],
+        methods: `Pairwise comparisons used Tukey's HSD (Tukey-Kramer for unequal group sizes) with a family-wise α of ${fmt(1 - n.conf, 3)}. ${sig.length === 0 ? "No pair differed significantly." : "Significant differences: " + sig.map((p) => `group ${p.i + 1} vs ${p.j + 1} (difference ${fmt(p.diff, 2)}, adjusted p ${fmtP(p.p)})`).join("; ") + "."}`,
+      };
     },
   },
   {

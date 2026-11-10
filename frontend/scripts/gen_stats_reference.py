@@ -51,5 +51,7 @@ out["wilson"]=[[x_,n_,*map(float,proportion_confint(x_,n_,method="wilson"))] for
 out["cp"]=[[x_,n_,*map(float,proportion_confint(x_,n_,method="beta"))] for x_,n_ in ((12,40),(0,20),(20,20),(87,200))]
 out["poisson"]=[[e,pt,float(stats.chi2.ppf(.025,2*e)/2/pt) if e else 0.0,float(stats.chi2.ppf(.975,2*e+2)/2/pt)] for e,pt in ((10,1000),(0,500),(45,3200))]
 nip=NormalIndPower(); out["power"]={"n_d05":nip.solve_power(effect_size=0.5,alpha=.05,power=.8),"pow_64":float(nip.power(effect_size=0.5,nobs1=64,alpha=.05)),"pow_30_d08":float(nip.power(effect_size=0.8,nobs1=30,alpha=.05))}
+tk=stats.tukey_hsd(x,y,z); tci=tk.confidence_interval(0.95)
+out["tukey"]={"groups":[x,y,z],"pvalue":tk.pvalue.tolist(),"lo":tci.low.tolist(),"hi":tci.high.tolist(),"stat":tk.statistic.tolist(),"dist":[stats.studentized_range.cdf(3.5,3,12),stats.studentized_range.ppf(.95,3,12),stats.studentized_range.cdf(4.2,4,30)]}
 json.dump(out,open(__import__("sys").argv[1],"w"),indent=1,default=float)
 print("ok")
