@@ -1,0 +1,451 @@
+{
+ "header": {
+  "type": "esummary",
+  "version": "0.3"
+ },
+ "result": {
+  "32075071": {
+   "uid": "32075071",
+   "pubdate": "2020 Feb 14",
+   "epubdate": "2020 Feb 14",
+   "source": "Nutrients",
+   "authors": [
+    {
+     "name": "Oh C",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Keats EC",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Bhutta ZA",
+     "authtype": "Author",
+     "clusterid": ""
+    }
+   ],
+   "lastauthor": "Bhutta ZA",
+   "title": "Vitamin and Mineral Supplementation During Pregnancy on Maternal, Birth, Child Health and Development Outcomes in Low- and Middle-Income Countries: A Systematic Review and Meta-Analysis.",
+   "sorttitle": "vitamin and mineral supplementation during pregnancy on maternal birth child health and development outcomes in low and middle income countries a systematic review and meta analysis",
+   "volume": "12",
+   "issue": "2",
+   "pages": "",
+   "lang": [
+    "eng"
+   ],
+   "nlmuniqueid": "101521595",
+   "issn": "",
+   "essn": "2072-6643",
+   "pubtype": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ],
+   "recordstatus": "PubMed - indexed for MEDLINE",
+   "pubstatus": "3",
+   "articleids": [
+    {
+     "idtype": "pubmed",
+     "idtypen": 1,
+     "value": "32075071"
+    },
+    {
+     "idtype": "pmc",
+     "idtypen": 8,
+     "value": "PMC7071347"
+    },
+    {
+     "idtype": "pmcid",
+     "idtypen": 5,
+     "value": "pmc-id: PMC7071347;"
+    },
+    {
+     "idtype": "doi",
+     "idtypen": 3,
+     "value": "10.3390/nu12020491"
+    },
+    {
+     "idtype": "pii",
+     "idtypen": 4,
+     "value": "nu12020491"
+    }
+   ],
+   "history": [
+    {
+     "pubstatus": "received",
+     "date": "2019/12/23 00:00"
+    },
+    {
+     "pubstatus": "revised",
+     "date": "2020/01/29 00:00"
+    },
+    {
+     "pubstatus": "accepted",
+     "date": "2020/02/05 00:00"
+    },
+    {
+     "pubstatus": "entrez",
+     "date": "2020/02/21 06:00"
+    },
+    {
+     "pubstatus": "pubmed",
+     "date": "2020/02/23 06:00"
+    },
+    {
+     "pubstatus": "medline",
+     "date": "2020/12/18 06:00"
+    },
+    {
+     "pubstatus": "pmc-release",
+     "date": "2020/02/01 00:00"
+    }
+   ],
+   "references": [],
+   "attributes": [
+    "Has Abstract"
+   ],
+   "pmcrefcount": 128,
+   "fulljournalname": "Nutrients",
+   "elocationid": "doi: 10.3390/nu12020491",
+   "doctype": "citation",
+   "srccontriblist": [],
+   "booktitle": "",
+   "medium": "",
+   "edition": "",
+   "publisherlocation": "",
+   "publishername": "",
+   "srcdate": "",
+   "reportnumber": "",
+   "availablefromurl": "",
+   "locationlabel": "",
+   "doccontriblist": [],
+   "docdate": "",
+   "bookname": "",
+   "chapter": "",
+   "sortpubdate": "2020/02/14 00:00",
+   "sortfirstauthor": "Oh C",
+   "vernaculartitle": ""
+  },
+  "35294044": {
+   "uid": "35294044",
+   "pubdate": "2022 Mar 16",
+   "epubdate": "2022 Mar 16",
+   "source": "Cochrane Database Syst Rev",
+   "authors": [
+    {
+     "name": "Imdad A",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Mayo-Wilson E",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Haykal MR",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Regan A",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Sidhu J",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Smith A",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Bhutta ZA",
+     "authtype": "Author",
+     "clusterid": ""
+    }
+   ],
+   "lastauthor": "Bhutta ZA",
+   "title": "Vitamin A supplementation for preventing morbidity and mortality in children from six months to five years of age.",
+   "sorttitle": "vitamin a supplementation for preventing morbidity and mortality in children from six months to five years of age",
+   "volume": "3",
+   "issue": "3",
+   "pages": "CD008524",
+   "lang": [
+    "eng"
+   ],
+   "nlmuniqueid": "100909747",
+   "issn": "1361-6137",
+   "essn": "1469-493X",
+   "pubtype": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ],
+   "recordstatus": "PubMed - indexed for MEDLINE",
+   "pubstatus": "3",
+   "articleids": [
+    {
+     "idtype": "pubmed",
+     "idtypen": 1,
+     "value": "35294044"
+    },
+    {
+     "idtype": "pmc",
+     "idtypen": 8,
+     "value": "PMC8925277"
+    },
+    {
+     "idtype": "pmcid",
+     "idtypen": 5,
+     "value": "pmc-id: PMC8925277;"
+    },
+    {
+     "idtype": "doi",
+     "idtypen": 3,
+     "value": "10.1002/14651858.CD008524.pub4"
+    }
+   ],
+   "history": [
+    {
+     "pubstatus": "entrez",
+     "date": "2022/03/16 12:14"
+    },
+    {
+     "pubstatus": "pubmed",
+     "date": "2022/03/17 06:00"
+    },
+    {
+     "pubstatus": "medline",
+     "date": "2022/04/16 06:00"
+    },
+    {
+     "pubstatus": "pmc-release",
+     "date": "2023/03/16 00:00"
+    }
+   ],
+   "references": [
+    {
+     "refsource": "Cochrane Database Syst Rev. 2017 Mar 11;3:CD008524. doi: 10.1002/14651858.CD008524.pub3.",
+     "reftype": "Update of",
+     "pmid": 28282701,
+     "note": ""
+    }
+   ],
+   "attributes": [
+    "Has Abstract"
+   ],
+   "pmcrefcount": 231,
+   "fulljournalname": "The Cochrane database of systematic reviews",
+   "elocationid": "doi: 10.1002/14651858.CD008524.pub4",
+   "doctype": "citation",
+   "srccontriblist": [],
+   "booktitle": "",
+   "medium": "",
+   "edition": "",
+   "publisherlocation": "",
+   "publishername": "",
+   "srcdate": "",
+   "reportnumber": "",
+   "availablefromurl": "",
+   "locationlabel": "",
+   "doccontriblist": [],
+   "docdate": "",
+   "bookname": "",
+   "chapter": "",
+   "sortpubdate": "2022/03/16 00:00",
+   "sortfirstauthor": "Imdad A",
+   "vernaculartitle": ""
+  },
+  "38169175": {
+   "uid": "38169175",
+   "pubdate": "2024 Feb",
+   "epubdate": "2023 Dec 27",
+   "source": "Clin Nutr",
+   "authors": [
+    {
+     "name": "Wilschanski M",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Munck A",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Carrion E",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Cipolli M",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Collins S",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Colombo C",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Declercq D",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Hatziagorou E",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Hulst J",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Kalnins D",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Katsagoni CN",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Mainz JG",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Ribes-Koninckx C",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Smith C",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Smith T",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Van Biervliet S",
+     "authtype": "Author",
+     "clusterid": ""
+    },
+    {
+     "name": "Chourdakis M",
+     "authtype": "Author",
+     "clusterid": ""
+    }
+   ],
+   "lastauthor": "Chourdakis M",
+   "title": "ESPEN-ESPGHAN-ECFS guideline on nutrition care for cystic fibrosis.",
+   "sorttitle": "espen espghan ecfs guideline on nutrition care for cystic fibrosis",
+   "volume": "43",
+   "issue": "2",
+   "pages": "413-445",
+   "lang": [
+    "eng"
+   ],
+   "nlmuniqueid": "8309603",
+   "issn": "0261-5614",
+   "essn": "1532-1983",
+   "pubtype": [
+    "Journal Article",
+    "Practice Guideline"
+   ],
+   "recordstatus": "PubMed - indexed for MEDLINE",
+   "pubstatus": "256",
+   "articleids": [
+    {
+     "idtype": "pubmed",
+     "idtypen": 1,
+     "value": "38169175"
+    },
+    {
+     "idtype": "doi",
+     "idtypen": 3,
+     "value": "10.1016/j.clnu.2023.12.017"
+    },
+    {
+     "idtype": "pii",
+     "idtypen": 4,
+     "value": "S0261-5614(23)00457-0"
+    }
+   ],
+   "history": [
+    {
+     "pubstatus": "received",
+     "date": "2023/11/17 00:00"
+    },
+    {
+     "pubstatus": "revised",
+     "date": "2023/12/13 00:00"
+    },
+    {
+     "pubstatus": "accepted",
+     "date": "2023/12/18 00:00"
+    },
+    {
+     "pubstatus": "medline",
+     "date": "2024/02/05 06:43"
+    },
+    {
+     "pubstatus": "pubmed",
+     "date": "2024/01/04 01:18"
+    },
+    {
+     "pubstatus": "entrez",
+     "date": "2024/01/03 11:20"
+    }
+   ],
+   "references": [],
+   "attributes": [
+    "Has Abstract"
+   ],
+   "pmcrefcount": "",
+   "fulljournalname": "Clinical nutrition (Edinburgh, Scotland)",
+   "elocationid": "doi: 10.1016/j.clnu.2023.12.017",
+   "doctype": "citation",
+   "srccontriblist": [],
+   "booktitle": "",
+   "medium": "",
+   "edition": "",
+   "publisherlocation": "",
+   "publishername": "",
+   "srcdate": "",
+   "reportnumber": "",
+   "availablefromurl": "",
+   "locationlabel": "",
+   "doccontriblist": [],
+   "docdate": "",
+   "bookname": "",
+   "chapter": "",
+   "sortpubdate": "2024/02/01 00:00",
+   "sortfirstauthor": "Wilschanski M",
+   "vernaculartitle": ""
+  },
+  "uids": [
+   "38169175",
+   "35294044",
+   "32075071"
+  ]
+ }
+}

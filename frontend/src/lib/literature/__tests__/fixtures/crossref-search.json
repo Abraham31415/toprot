@@ -1,0 +1,143 @@
+{
+ "status": "ok",
+ "message-type": "work-list",
+ "message-version": "1.0.0",
+ "message": {
+  "facets": {},
+  "total-results": 842322,
+  "items": [
+   {
+    "publisher": "BMJ",
+    "issue": "3",
+    "abstract": "<jats:sec><jats:title>Background</jats:title><jats:p>Biannual vitamin A supplementation is a well-established survival tool for preschool children 6 months and older in vitamin A deficient populations but this schedule misses the opportunity to intervene on most young infant deaths. Randomised trials of neonatal vitamin A supplementation (NVAS) in the first few days of life to assess its impact on under 6-month mortality in low/middle-income countries have had varying results.</jats:p></jats:sec><jats:sec><jats:title>Methods</jats:title><jats:p>Investigators of 11 published randomised placebo-controlled NVAS trials (n=163 567 children) reanalysed their data according to an agreed plan and pooled the primary outcomes of mortality from supplementation through 6 and 12 months of age using random effects models and meta-regression. One investigator withdrew but allowed use of the data.</jats:p></jats:sec><jats:sec><jats:title>Findings</jats:title><jats:p>Overall there was no effect of NVAS on infant survival through 6 (risk ratio (RR) 0.97; 95% CI 0.89 to 1.06) or 12 months of age (RR 1.00; 95% CI 0.93 to 1.08) but results varied by study population characteristics.</jats:p><jats:p>NVAS significantly reduced 6-month mortality among the trials conducted in Southern Asia (RR 0.87; 95% CI 0.77 to 0.98), in contexts with moderate or severe vitamin A deficiency (defined as 10% or higher proportion of women with serum retinol &lt;0.7 µmol/L or 5% or more women with night blindness) (RR 0.87; 95% CI 0.80 to 0.94), early infant mortality was 30 or more per 1000 live births (RR 0.91; 95% CI 0.85 to 0.98), 75% or more of infant mortality occurred in the first 6 months of life (RR 0.92; 95% CI 0.84 to 1.01), or where &gt;32% mothers had no schooling (RR 0.88; 95% CI 0.80 to 0.96). NVAS did not reduce mortality in the first 6 months of life in trials conducted in Africa, in contexts characterised by a low prevalence of vitamin A deficiency, lower rates of infant mortality and where maternal education was more prevalent. There was a suggestion of increased infant mortality in trials conducted in Africa (RR 1.07; 95% CI 1.00 to 1.15).</jats:p><jats:p>Individual-level characteristics such as sex, birth weight, gestational age and size, age at dosing, parity, time of breast feeding initiation, maternal education and maternal vitamin A supplementation did not modify the impact of NVAS.</jats:p></jats:sec><jats:sec><jats:title>Conclusion</jats:title><jats:p>NVAS reduced infant mortality in South Asia, in contexts where the prevalence of maternal vitamin A deficiency is moderate to severe and early infant mortality is high; but it had no beneficial effect on infant survival in Africa, in contexts where the prevalence of maternal vitamin A deficiency is lower, early infant mortality is low.</jats:p></jats:sec>",
+    "DOI": "10.1136/archdischild-2018-315242",
+    "type": "journal-article",
+    "page": "217-226",
+    "is-referenced-by-count": 27,
+    "title": [
+     "Early neonatal vitamin A supplementation and infant mortality: an individual participant data meta-analysis of randomised controlled trials"
+    ],
+    "volume": "104",
+    "author": [
+     {
+      "name": "Neonatal Vitamin A Supplementation Evidence group",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Archives of Disease in Childhood"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2018,
+       11,
+       13
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1136/archdischild-2018-315242",
+    "ISSN": [
+     "0003-9888",
+     "1468-2044"
+    ]
+   },
+   {
+    "publisher": "BMJ",
+    "issue": "1",
+    "DOI": "10.1136/archdischild-2018-316764",
+    "type": "journal-article",
+    "page": "96-98",
+    "is-referenced-by-count": 0,
+    "title": [
+     "Early neonatal vitamin A supplementation and infant mortality: two alternative hypotheses"
+    ],
+    "volume": "106",
+    "author": [
+     {
+      "ORCID": "https://orcid.org/0000-0001-6102-3810",
+      "authenticated-orcid": false,
+      "given": "Christine Stabell",
+      "family": "Benn",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Archives of Disease in Childhood"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2020,
+       1,
+       16
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1136/archdischild-2018-316764",
+    "ISSN": [
+     "0003-9888",
+     "1468-2044"
+    ]
+   },
+   {
+    "publisher": "Wiley",
+    "DOI": "10.1002/cca.475",
+    "type": "journal-article",
+    "is-referenced-by-count": 0,
+    "title": [
+     "Can vitamin D supplementation prevent mortality in adults?"
+    ],
+    "author": [
+     {
+      "given": "William Cayley",
+      "family": "Jr",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Cochrane Clinical Answers"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2015,
+       12,
+       15
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1002/cca.475",
+    "ISSN": [
+     "2050-4217"
+    ]
+   }
+  ],
+  "items-per-page": 3,
+  "query": {
+   "start-index": 0,
+   "search-terms": null
+  }
+ }
+}

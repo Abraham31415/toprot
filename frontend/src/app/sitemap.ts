@@ -3,7 +3,7 @@ import { SITE_URL } from "@/lib/site";
 import { CALCULATORS } from "@/lib/tools/registry";
 
 // Only indexable public pages. /resources is excluded while it has no published guides.
-const PATHS = ["", "/features", "/how-it-works", "/examples", "/pricing", "/about", "/docs", "/calculator", "/tools", "/contact", "/privacy", "/terms"];
+const PATHS = ["", "/features", "/how-it-works", "/examples", "/pricing", "/about", "/docs", "/calculator", "/tools", "/literature", "/contact", "/privacy", "/terms"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [...PATHS, ...CALCULATORS.map((c) => `/tools/${c.slug}`)];

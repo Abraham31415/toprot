@@ -1,0 +1,1397 @@
+{
+ "meta": {
+  "notice": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address. Get a free key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys with {\"email\": \"<your user's email>\"}; we email them a link, and the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+  "count": 607,
+  "db_response_time_ms": 83,
+  "page": 1,
+  "per_page": 3,
+  "groups_count": null,
+  "x_query": {
+   "oql": "get works since 2010-01-01 with (vitamin A supplementation child mortality) in the title or abstract",
+   "x_new_oql": "get works since 2010-01-01 with (vitamin A supplementation child mortality) in the title or abstract",
+   "oqo": {
+    "get_rows": "works",
+    "filter_rows": [
+     {
+      "column_id": "from_publication_date",
+      "value": "2010-01-01"
+     },
+     {
+      "column_id": "title_and_abstract.search",
+      "value": "vitamin A supplementation child mortality",
+      "operator": "has"
+     }
+    ]
+   },
+   "url": "/works?filter=from_publication_date:2010-01-01,title_and_abstract.search:vitamin A supplementation child mortality&per_page=3&page=1",
+   "order": "best matches first",
+   "order_default": true
+  },
+  "cost_usd": 0.001
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W1551921569",
+   "doi": "https://doi.org/10.1159/000337445",
+   "title": "Vitamin A Supplementation, Infectious Disease and Child Mortality: A Summary of the Evidence",
+   "publication_year": 2012,
+   "publication_date": "2012-01-01",
+   "type": "conference-paper",
+   "language": "en",
+   "cited_by_count": 10,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5050187496",
+      "display_name": "Andrew Thorne‐Lyman",
+      "orcid": "https://orcid.org/0000-0001-5917-4126",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-5917-4126"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I136199984",
+       "display_name": "Harvard University",
+       "ror": "https://ror.org/03vek6s52",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Andrew Thorne-Lyman",
+     "raw_affiliation_strings": [
+      "Department of Nutrition, Harvard School of Public Health, Boston, MA, USA",
+      "#N#        #N#        Department of Nutrition, Harvard School of Public Health, Boston, MA, USA"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Department of Nutrition, Harvard School of Public Health, Boston, MA, USA",
+       "institution_ids": [
+        "https://openalex.org/I136199984"
+       ]
+      },
+      {
+       "raw_affiliation_string": "#N#        #N#        Department of Nutrition, Harvard School of Public Health, Boston, MA, USA",
+       "institution_ids": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5006605977",
+      "display_name": "Wafaie Wahib Fawzi",
+      "orcid": "https://orcid.org/0000-0002-2908-600X",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-2908-600X"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I136199984",
+       "display_name": "Harvard University",
+       "ror": "https://ror.org/03vek6s52",
+       "country_code": "US",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Wafaie W. Fawzi",
+     "raw_affiliation_strings": [
+      "Harvard University"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Harvard University",
+       "institution_ids": [
+        "https://openalex.org/I136199984"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1159/000337445",
+    "doi": "https://doi.org/10.1159/000337445",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1159/000337445",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4210170451",
+     "display_name": "Nestlé Nutrition Institute Workshop series",
+     "issn_l": "1664-2147",
+     "issn": [
+      "1664-2147",
+      "1664-2155"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "cwts-core",
+      "medline"
+     ],
+     "host_organization": "https://openalex.org/P4310317820",
+     "host_organization_name": "Karger Publishers",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310317820"
+     ],
+     "host_organization_lineage_names": [
+      "Karger Publishers"
+     ],
+     "type": "book series"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Nestlé Nutrition Institute Workshop Series",
+    "raw_type": "book-chapter"
+   },
+   "open_access": {
+    "is_oa": false,
+    "oa_status": "closed",
+    "oa_url": null,
+    "any_repository_has_fulltext": false
+   },
+   "biblio": {
+    "volume": "70",
+    "issue": null,
+    "first_page": "79",
+    "last_page": "90"
+   },
+   "ids": {
+    "openalex": "https://openalex.org/W1551921569",
+    "doi": "https://doi.org/10.1159/000337445",
+    "mag": "1551921569",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/25825298"
+   },
+   "abstract_inverted_index": {
+    "This": [
+     0
+    ],
+    "manuscript": [
+     1
+    ],
+    "reviews": [
+     2
+    ],
+    "the": [
+     3,
+     7,
+     47,
+     146,
+     157
+    ],
+    "evidence": [
+     4,
+     89
+    ],
+    "related": [
+     5
+    ],
+    "to": [
+     6,
+     57
+    ],
+    "effects": [
+     8,
+     39,
+     51,
+     67,
+     76
+    ],
+    "of": [
+     9,
+     14,
+     25,
+     62,
+     130,
+     148,
+     159
+    ],
+    "vitamin": [
+     10
+    ],
+    "A": [
+     11,
+     123
+    ],
+    "(VA)": [
+     12
+    ],
+    "supplementation": [
+     13,
+     24,
+     98,
+     108,
+     129,
+     151
+    ],
+    "women": [
+     15,
+     132
+    ],
+    "and": [
+     16,
+     21,
+     34,
+     46,
+     86
+    ],
+    "children": [
+     17,
+     26
+    ],
+    "on": [
+     18,
+     40,
+     52,
+     68,
+     117
+    ],
+    "child": [
+     19,
+     139
+    ],
+    "health": [
+     20
+    ],
+    "mortality.": [
+     22
+    ],
+    "VA": [
+     23,
+     97,
+     110,
+     150
+    ],
+    "aged": [
+     27
+    ],
+    "6-59": [
+     28
+    ],
+    "months": [
+     29
+    ],
+    "has": [
+     30,
+     113
+    ],
+    "been": [
+     31
+    ],
+    "well": [
+     32
+    ],
+    "studied,": [
+     33
+    ],
+    "meta-analyses": [
+     35
+    ],
+    "have": [
+     36
+    ],
+    "consistently": [
+     37
+    ],
+    "demonstrated": [
+     38
+    ],
+    "all-cause": [
+     41
+    ],
+    "mortality,": [
+     42,
+     70
+    ],
+    "yet": [
+     43
+    ],
+    "its": [
+     44
+    ],
+    "mechanisms": [
+     45
+    ],
+    "reasons": [
+     48
+    ],
+    "for": [
+     49,
+     79
+    ],
+    "heterogeneous": [
+     50
+    ],
+    "mortality": [
+     53,
+     64,
+     80,
+     119
+    ],
+    "across": [
+     54
+    ],
+    "trials": [
+     55,
+     161
+    ],
+    "continue": [
+     56
+    ],
+    "be": [
+     58,
+     154
+    ],
+    "debated.": [
+     59
+    ],
+    "Recent": [
+     60
+    ],
+    "meta-analysis": [
+     61,
+     125
+    ],
+    "cause-specific": [
+     63
+    ],
+    "suggests": [
+     65,
+     90
+    ],
+    "beneficial": [
+     66,
+     75
+    ],
+    "diarrheal": [
+     69
+    ],
+    "with": [
+     71,
+     96,
+     109
+    ],
+    "null": [
+     72
+    ],
+    "but": [
+     73
+    ],
+    "potentially": [
+     74
+    ],
+    "also": [
+     77
+    ],
+    "present": [
+     78
+    ],
+    "from": [
+     81
+    ],
+    "measles,": [
+     82
+    ],
+    "lower": [
+     83
+    ],
+    "respiratory": [
+     84
+    ],
+    "infection,": [
+     85
+    ],
+    "meningitis.": [
+     87
+    ],
+    "Some": [
+     88
+    ],
+    "that": [
+     91,
+     127,
+     152
+    ],
+    "pneumonia": [
+     92
+    ],
+    "severity": [
+     93
+    ],
+    "may": [
+     94
+    ],
+    "increase": [
+     95
+    ],
+    "in": [
+     99,
+     120
+    ],
+    "this": [
+     100
+    ],
+    "age": [
+     101
+    ],
+    "group,": [
+     102
+    ],
+    "particularly": [
+     103
+    ],
+    "among": [
+     104
+    ],
+    "well-nourished": [
+     105
+    ],
+    "children.": [
+     106
+    ],
+    "Maternal": [
+     107
+    ],
+    "during": [
+     111
+    ],
+    "pregnancy": [
+     112
+    ],
+    "not": [
+     114,
+     137
+    ],
+    "shown": [
+     115
+    ],
+    "benefits": [
+     116,
+     147
+    ],
+    "neonatal": [
+     118,
+     149
+    ],
+    "large": [
+     121
+    ],
+    "trials.": [
+     122
+    ],
+    "recent": [
+     124
+    ],
+    "suggested": [
+     126
+    ],
+    "high-dose": [
+     128
+    ],
+    "lactating": [
+     131
+    ],
+    "immediately": [
+     133
+    ],
+    "following": [
+     134
+    ],
+    "delivery": [
+     135
+    ],
+    "did": [
+     136
+    ],
+    "affect": [
+     138
+    ],
+    "survival.": [
+     140
+    ],
+    "There": [
+     141
+    ],
+    "is": [
+     142
+    ],
+    "still": [
+     143
+    ],
+    "uncertainty": [
+     144
+    ],
+    "around": [
+     145
+    ],
+    "should": [
+     153
+    ],
+    "resolved": [
+     155
+    ],
+    "once": [
+     156
+    ],
+    "findings": [
+     158
+    ],
+    "ongoing": [
+     160
+    ],
+    "are": [
+     162
+    ],
+    "reported.": [
+     163
+    ]
+   },
+   "keywords": [
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-supplementation",
+     "display_name": "vitamin A supplementation",
+     "score": 1
+    },
+    {
+     "id": "https://openalex.org/keywords/child-mortality",
+     "display_name": "child mortality",
+     "score": 0.9660000205039978
+    },
+    {
+     "id": "https://openalex.org/keywords/infectious-diseases",
+     "display_name": "infectious diseases",
+     "score": 0.7070000171661377
+    },
+    {
+     "id": "https://openalex.org/keywords/children-aged-6-59-months",
+     "display_name": "children aged 6-59 months",
+     "score": 0.8040000200271606
+    },
+    {
+     "id": "https://openalex.org/keywords/measles-mortality",
+     "display_name": "measles mortality",
+     "score": 0.8550000190734863
+    },
+    {
+     "id": "https://openalex.org/keywords/lower-respiratory-tract-infection",
+     "display_name": "lower respiratory tract infection",
+     "score": 0.9750000238418579
+    },
+    {
+     "id": "https://openalex.org/keywords/meningitis",
+     "display_name": "meningitis",
+     "score": 0.9430000185966492
+    },
+    {
+     "id": "https://openalex.org/keywords/pneumonia-severity",
+     "display_name": "pneumonia severity",
+     "score": 0.9309999942779541
+    },
+    {
+     "id": "https://openalex.org/keywords/maternal-vitamin-a-supplementation",
+     "display_name": "maternal vitamin A supplementation",
+     "score": 0.6840000152587891
+    },
+    {
+     "id": "https://openalex.org/keywords/neonatal-vitamin-a-supplementation",
+     "display_name": "neonatal vitamin A supplementation",
+     "score": 0.8610000014305115
+    },
+    {
+     "id": "https://openalex.org/keywords/lactating-women",
+     "display_name": "lactating women",
+     "score": 0.9240000247955322
+    },
+    {
+     "id": "https://openalex.org/keywords/neonatal-mortality",
+     "display_name": "neonatal mortality",
+     "score": 0.6480000019073486
+    }
+   ]
+  },
+  {
+   "id": "https://openalex.org/W3024919774",
+   "doi": null,
+   "title": "[Limited knowledge of the effect on child mortality of vaccinations and vitamin A supplementation].",
+   "publication_year": 2018,
+   "publication_date": "2018-10-29",
+   "type": "article",
+   "language": "da",
+   "cited_by_count": 0,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5067394566",
+      "display_name": "Ane Bærent Fisker",
+      "orcid": "https://orcid.org/0000-0002-8521-0992",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-8521-0992"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": false,
+     "raw_author_name": "Ane Bærent Fisker",
+     "raw_affiliation_strings": [
+      "abf@ssi.dk"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "abf@ssi.dk",
+       "institution_ids": []
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5076247026",
+      "display_name": "Sanne Marie Thysen",
+      "orcid": "https://orcid.org/0000-0003-4541-3901",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-4541-3901"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": false,
+     "raw_author_name": "Sanne Marie Thysen",
+     "raw_affiliation_strings": [],
+     "raw_orcid": null,
+     "affiliations": []
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5044591266",
+      "display_name": "Christine Stabell Benn",
+      "orcid": "https://orcid.org/0000-0001-6102-3810",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-6102-3810"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": false,
+     "raw_author_name": "Christine Stabell Benn",
+     "raw_affiliation_strings": [],
+     "raw_orcid": null,
+     "affiliations": []
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5028407518",
+      "display_name": "Peter Aaby",
+      "orcid": "https://orcid.org/0000-0001-8331-1389",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-8331-1389"
+      ]
+     },
+     "institutions": [],
+     "countries": [],
+     "is_corresponding": false,
+     "raw_author_name": "Peter Aaby",
+     "raw_affiliation_strings": [],
+     "raw_orcid": null,
+     "affiliations": []
+    }
+   ],
+   "primary_location": {
+    "id": "pmid:30375963",
+    "doi": null,
+    "is_oa": false,
+    "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/30375963",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S4306525036",
+     "display_name": "PubMed",
+     "issn_l": null,
+     "issn": null,
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": false,
+     "listed_in": [],
+     "host_organization": "https://openalex.org/I1299303238",
+     "host_organization_name": "National Institutes of Health",
+     "host_organization_lineage": [
+      "https://openalex.org/I1299303238"
+     ],
+     "host_organization_lineage_names": [],
+     "type": "repository"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Ugeskrift for laeger",
+    "raw_type": "Journal Article"
+   },
+   "open_access": {
+    "is_oa": false,
+    "oa_status": "closed",
+    "oa_url": null,
+    "any_repository_has_fulltext": false
+   },
+   "biblio": {
+    "volume": "180",
+    "issue": "44",
+    "first_page": null,
+    "last_page": null
+   },
+   "ids": {
+    "openalex": "https://openalex.org/W3024919774",
+    "mag": "3024919774",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/30375963"
+   },
+   "abstract_inverted_index": {
+    "Preventive": [
+     0
+    ],
+    "health": [
+     1
+    ],
+    "interventions,": [
+     2
+    ],
+    "including": [
+     3
+    ],
+    "the": [
+     4,
+     20,
+     27,
+     62
+    ],
+    "vaccination": [
+     5
+    ],
+    "and": [
+     6,
+     49,
+     65
+    ],
+    "vitamin": [
+     7,
+     50,
+     66
+    ],
+    "A": [
+     8,
+     51,
+     67
+    ],
+    "supplementation": [
+     9,
+     52
+    ],
+    "programmes,": [
+     10
+    ],
+    "are": [
+     11,
+     29
+    ],
+    "implemented": [
+     12
+    ],
+    "in": [
+     13,
+     44
+    ],
+    "low-income": [
+     14
+    ],
+    "countries": [
+     15
+    ],
+    "with": [
+     16,
+     32
+    ],
+    "little": [
+     17
+    ],
+    "assessment": [
+     18
+    ],
+    "of": [
+     19,
+     36,
+     41
+    ],
+    "real-life": [
+     21
+    ],
+    "effects": [
+     22,
+     54,
+     71
+    ],
+    "on": [
+     23
+    ],
+    "child": [
+     24,
+     77
+    ],
+    "mortality.": [
+     25
+    ],
+    "Nevertheless,": [
+     26
+    ],
+    "programmes": [
+     28
+    ],
+    "frequently": [
+     30
+    ],
+    "credited": [
+     31
+    ],
+    "large,": [
+     33
+    ],
+    "finite": [
+     34
+    ],
+    "numbers": [
+     35
+    ],
+    "deaths": [
+     37
+    ],
+    "prevented.": [
+     38
+    ],
+    "Forty": [
+     39
+    ],
+    "years": [
+     40
+    ],
+    "demographic": [
+     42
+    ],
+    "surveillance": [
+     43
+    ],
+    "Guinea-Bissau": [
+     45
+    ],
+    "indicates,": [
+     46
+    ],
+    "that": [
+     47
+    ],
+    "vaccines": [
+     48
+    ],
+    "have": [
+     53
+    ],
+    "beyond": [
+     55
+    ],
+    "what": [
+     56
+    ],
+    "can": [
+     57
+    ],
+    "be": [
+     58
+    ],
+    "explained": [
+     59
+    ],
+    "by": [
+     60
+    ],
+    "preventing": [
+     61
+    ],
+    "target": [
+     63
+    ],
+    "infections": [
+     64
+    ],
+    "deficiency.": [
+     68
+    ],
+    "Taking": [
+     69
+    ],
+    "these": [
+     70
+    ],
+    "into": [
+     72
+    ],
+    "account": [
+     73
+    ],
+    "would": [
+     74
+    ],
+    "substantially": [
+     75
+    ],
+    "improve": [
+     76
+    ],
+    "health.": [
+     78
+    ]
+   },
+   "keywords": [
+    {
+     "id": "https://openalex.org/keywords/child-mortality",
+     "display_name": "child mortality",
+     "score": 0.8569999933242798
+    },
+    {
+     "id": "https://openalex.org/keywords/vaccination",
+     "display_name": "vaccination",
+     "score": 0.5320000052452087
+    },
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-supplementation",
+     "display_name": "vitamin A supplementation",
+     "score": 0.9950000047683716
+    },
+    {
+     "id": "https://openalex.org/keywords/preventive-health-interventions",
+     "display_name": "preventive health measures",
+     "score": 0.7429999709129333
+    },
+    {
+     "id": "https://openalex.org/keywords/low-income-countries",
+     "display_name": "low-income countries",
+     "score": 0.6439999938011169
+    },
+    {
+     "id": "https://openalex.org/keywords/demographic-surveillance",
+     "display_name": "demographic surveillance",
+     "score": 0.699999988079071
+    },
+    {
+     "id": "https://openalex.org/keywords/guinea-bissau",
+     "display_name": "Guinea-Bissau",
+     "score": 0.8870000243186951
+    },
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-deficiency",
+     "display_name": "vitamin A deficiency",
+     "score": 0.8109999895095825
+    }
+   ]
+  },
+  {
+   "id": "https://openalex.org/W4226146519",
+   "doi": "https://doi.org/10.1093/ajcn/nqac082",
+   "title": "Estimates of child mortality reductions attributed to vitamin A supplementation in sub-Saharan Africa: scale up, scale back, or refocus?",
+   "publication_year": 2022,
+   "publication_date": "2022-04-05",
+   "type": "article",
+   "language": "en",
+   "cited_by_count": 15,
+   "authorships": [
+    {
+     "author_position": "first",
+     "author": {
+      "id": "https://openalex.org/A5050812160",
+      "display_name": "Kaleab Baye",
+      "orcid": "https://orcid.org/0000-0001-7298-1096",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-7298-1096"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I4537092",
+       "display_name": "Addis Ababa University",
+       "ror": "https://ror.org/038b8e254",
+       "country_code": "ET",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I4537092"
+       ]
+      }
+     ],
+     "countries": [
+      "ET"
+     ],
+     "is_corresponding": true,
+     "raw_author_name": "Kaleab Baye",
+     "raw_affiliation_strings": [
+      "Center for Food Science and Nutrition, College of Natural and Computational Sciences, Addis Ababa University, Addis Ababa, Ethiopia",
+      "Research Center for Inclusive Development in Africa, Addis Ababa, Ethiopia"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Center for Food Science and Nutrition, College of Natural and Computational Sciences, Addis Ababa University, Addis Ababa, Ethiopia",
+       "institution_ids": [
+        "https://openalex.org/I4537092"
+       ]
+      },
+      {
+       "raw_affiliation_string": "Research Center for Inclusive Development in Africa, Addis Ababa, Ethiopia",
+       "institution_ids": []
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5005195746",
+      "display_name": "Arnaud Laillou",
+      "orcid": "https://orcid.org/0000-0002-2315-223X",
+      "observed_orcids": [
+       "https://orcid.org/0000-0002-2315-223X"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I112289208",
+       "display_name": "United Nations Children's Fund",
+       "ror": "https://ror.org/02dg0pv02",
+       "country_code": "US",
+       "type": "other",
+       "lineage": [
+        "https://openalex.org/I112289208",
+        "https://openalex.org/I1286959531"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Arnaud Laillou",
+     "raw_affiliation_strings": [
+      "Nutrition Section, UNICEF Ethiopia, Addis Ababa, Ethiopia"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Nutrition Section, UNICEF Ethiopia, Addis Ababa, Ethiopia",
+       "institution_ids": [
+        "https://openalex.org/I112289208"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5074365496",
+      "display_name": "Yohannes Seyoum",
+      "orcid": "https://orcid.org/0000-0003-2109-4344",
+      "observed_orcids": [
+       "https://orcid.org/0000-0003-2109-4344"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I4537092",
+       "display_name": "Addis Ababa University",
+       "ror": "https://ror.org/038b8e254",
+       "country_code": "ET",
+       "type": "education",
+       "lineage": [
+        "https://openalex.org/I4537092"
+       ]
+      }
+     ],
+     "countries": [
+      "ET"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Yohannes Seyoum",
+     "raw_affiliation_strings": [
+      "Center for Food Science and Nutrition, College of Natural and Computational Sciences, Addis Ababa University, Addis Ababa, Ethiopia"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "Center for Food Science and Nutrition, College of Natural and Computational Sciences, Addis Ababa University, Addis Ababa, Ethiopia",
+       "institution_ids": [
+        "https://openalex.org/I4537092"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5005260850",
+      "display_name": "Charity Zvandaziva",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I112289208",
+       "display_name": "United Nations Children's Fund",
+       "ror": "https://ror.org/02dg0pv02",
+       "country_code": "US",
+       "type": "other",
+       "lineage": [
+        "https://openalex.org/I112289208",
+        "https://openalex.org/I1286959531"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Charity Zvandaziva",
+     "raw_affiliation_strings": [
+      "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya",
+       "institution_ids": [
+        "https://openalex.org/I112289208"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "middle",
+     "author": {
+      "id": "https://openalex.org/A5077691760",
+      "display_name": "Kudakwashe Chimanya",
+      "orcid": null,
+      "observed_orcids": []
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I112289208",
+       "display_name": "United Nations Children's Fund",
+       "ror": "https://ror.org/02dg0pv02",
+       "country_code": "US",
+       "type": "other",
+       "lineage": [
+        "https://openalex.org/I112289208",
+        "https://openalex.org/I1286959531"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Kudakwashe Chimanya",
+     "raw_affiliation_strings": [
+      "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya",
+       "institution_ids": [
+        "https://openalex.org/I112289208"
+       ]
+      }
+     ]
+    },
+    {
+     "author_position": "last",
+     "author": {
+      "id": "https://openalex.org/A5009823132",
+      "display_name": "Mara Nyawo",
+      "orcid": "https://orcid.org/0000-0001-8011-9914",
+      "observed_orcids": [
+       "https://orcid.org/0000-0001-8011-9914"
+      ]
+     },
+     "institutions": [
+      {
+       "id": "https://openalex.org/I112289208",
+       "display_name": "United Nations Children's Fund",
+       "ror": "https://ror.org/02dg0pv02",
+       "country_code": "US",
+       "type": "other",
+       "lineage": [
+        "https://openalex.org/I112289208",
+        "https://openalex.org/I1286959531"
+       ]
+      }
+     ],
+     "countries": [
+      "US"
+     ],
+     "is_corresponding": false,
+     "raw_author_name": "Mara Nyawo",
+     "raw_affiliation_strings": [
+      "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya"
+     ],
+     "raw_orcid": null,
+     "affiliations": [
+      {
+       "raw_affiliation_string": "UNICEF Eastern and Southern Africa Regional Office (ESARO), Nairobi, Kenya",
+       "institution_ids": [
+        "https://openalex.org/I112289208"
+       ]
+      }
+     ]
+    }
+   ],
+   "primary_location": {
+    "id": "doi:10.1093/ajcn/nqac082",
+    "doi": "https://doi.org/10.1093/ajcn/nqac082",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1093/ajcn/nqac082",
+    "pdf_url": null,
+    "source": {
+     "id": "https://openalex.org/S71285955",
+     "display_name": "American Journal of Clinical Nutrition",
+     "issn_l": "0002-9165",
+     "issn": [
+      "0002-9165",
+      "1938-3207"
+     ],
+     "is_oa": false,
+     "is_in_doaj": false,
+     "is_core": true,
+     "listed_in": [
+      "anvur-class-a",
+      "anvur-scientific",
+      "cwts-core",
+      "dongbi-a",
+      "doyens",
+      "jufo-3",
+      "ki-jl-3",
+      "medline",
+      "norway-2",
+      "poland-140",
+      "russia-white-list-1",
+      "vabb-shw"
+     ],
+     "host_organization": "https://openalex.org/P4310320990",
+     "host_organization_name": "Elsevier BV",
+     "host_organization_lineage": [
+      "https://openalex.org/P4310320990"
+     ],
+     "host_organization_lineage_names": [
+      "Elsevier BV"
+     ],
+     "type": "journal"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "The American Journal of Clinical Nutrition",
+    "raw_type": "journal-article"
+   },
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "bronze",
+    "oa_url": "https://doi.org/10.1093/ajcn/nqac082",
+    "any_repository_has_fulltext": false
+   },
+   "biblio": {
+    "volume": "116",
+    "issue": "2",
+    "first_page": "426",
+    "last_page": "434"
+   },
+   "ids": {
+    "openalex": "https://openalex.org/W4226146519",
+    "doi": "https://doi.org/10.1093/ajcn/nqac082",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/35380631"
+   },
+   "abstract_inverted_index": null,
+   "keywords": [
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-supplementation",
+     "display_name": "vitamin A supplementation",
+     "score": 0.9990000128746033
+    },
+    {
+     "id": "https://openalex.org/keywords/child-mortality",
+     "display_name": "child mortality",
+     "score": 0.9890000224113464
+    },
+    {
+     "id": "https://openalex.org/keywords/sub-saharan-africa",
+     "display_name": "sub-Saharan Africa",
+     "score": 0.8659999966621399
+    },
+    {
+     "id": "https://openalex.org/keywords/lives-saved-tool",
+     "display_name": "Lives Saved Tool",
+     "score": 0.9290000200271606
+    },
+    {
+     "id": "https://openalex.org/keywords/averted-deaths",
+     "display_name": "mortality averted",
+     "score": 0.6830000281333923
+    },
+    {
+     "id": "https://openalex.org/keywords/scale-up",
+     "display_name": "scale-up",
+     "score": 0.9110000133514404
+    },
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-status",
+     "display_name": "vitamin A status",
+     "score": 0.5709999799728394
+    },
+    {
+     "id": "https://openalex.org/keywords/vitamin-a-fortification",
+     "display_name": "vitamin A fortification",
+     "score": 0.8960000276565552
+    },
+    {
+     "id": "https://openalex.org/keywords/cause-specific-mortality",
+     "display_name": "cause-specific mortality",
+     "score": 0.6019999980926514
+    },
+    {
+     "id": "https://openalex.org/keywords/intervention-coverage",
+     "display_name": "intervention coverage",
+     "score": 0.44999998807907104
+    }
+   ]
+  }
+ ],
+ "group_by": []
+}

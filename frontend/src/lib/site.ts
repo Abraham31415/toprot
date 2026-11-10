@@ -14,6 +14,7 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const NAV_LINKS = [
   { href: "/features", label: "Features" },
   { href: "/tools", label: "Research Tools" },
+  { href: "/literature", label: "Literature" },
   { href: "/how-it-works", label: "How it works" },
   { href: "/examples", label: "Examples" },
   { href: "/pricing", label: "Pricing" },
@@ -109,9 +110,13 @@ export const FEATURES: Feature[] = [
   {
     slug: "literature-explorer",
     name: "Literature Explorer",
-    status: "planned",
-    summary: "Search PubMed, OpenAlex and Crossref from inside a study.",
-    details: ["Planned. Not available yet."],
+    status: "available",
+    summary: "Search OpenAlex, PubMed and Crossref, open the original paper, and save records to a study.",
+    details: [
+      "Search by keyword, title, author, journal, DOI and year, with filters for open access (where the source records it), work type and, in PubMed, study type.",
+      "Results are bibliographic records and abstracts only. ToProt does not hold full texts. A free-version link appears only when the source reports one.",
+      "Export selected records to RIS, BibTeX, EndNote XML or CSV, build an evidence table, or save records to a study. Saved records are fetched again from their source so only verified details are stored.",
+    ],
   },
   {
     slug: "pdf-library",
