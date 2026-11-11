@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { getTemplate, type TemplateId } from "@/lib/writing/templates";
 import { NewManuscriptForm } from "./new-manuscript-form";
+import { DeleteManuscriptButton } from "./delete-button";
 
 export const metadata = { title: "Writing" };
 
@@ -38,14 +39,15 @@ export default async function WritingPage({ params }: { params: Promise<{ id: st
         ) : (
           <ul className="mt-2 divide-y divide-line rounded-md border border-line bg-white">
             {manuscripts!.map((m) => (
-              <li key={m.id}>
-                <Link href={`/studies/${study.id}/writing/${m.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-soft/40">
+              <li key={m.id} className="flex items-center hover:bg-soft/40">
+                <Link href={`/studies/${study.id}/writing/${m.id}`} className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3">
                   <FileText className="h-4 w-4 shrink-0 text-cobalt" aria-hidden="true" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-navy">{m.title}</span>
                     <span className="block text-xs text-navy/60">{getTemplate(m.template as TemplateId).name} · {m.word_count.toLocaleString()} words · edited {new Date(m.updated_at).toLocaleDateString()}</span>
                   </span>
                 </Link>
+                {isOwner && <DeleteManuscriptButton studyId={study.id} id={m.id} title={m.title} />}
               </li>
             ))}
           </ul>
