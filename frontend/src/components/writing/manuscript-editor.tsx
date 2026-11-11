@@ -25,6 +25,8 @@ type Manuscript = { id: string; studyId: string; studyTitle: string; title: stri
 type SavedRef = RefRow & { id: string };
 type Status = "saved" | "dirty" | "saving" | "error" | "conflict";
 
+// ProseMirror's JSON can share objects with non-plain prototypes, which React refuses to send to a server action. A JSON round trip makes plain copies.
+const plainJson = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 const AUTOSAVE_MS = 1500;
 const MAX_FIGURE_BYTES = 5 * 1024 * 1024;
 const FIGURE_TYPES: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif" };
@@ -98,7 +100,7 @@ export function ManuscriptEditor({ manuscript, references, readOnly, userId }: {
     if (!dirty.current && !snapshot) return true;
     const run = (async () => {
       setStatus("saving"); dirty.current = false;
-      const r = await saveManuscript(studyId, id, revision.current, titleRef.current, editor.getJSON(), snapshot ? { snapshot: true, label: snapshot } : {});
+      const r = await saveManuscript(studyId, id, revision.current, titleRef.current, plainJson(editor.getJSON()), snapshot ? { snapshot: true, label: snapshot } : {});
       if (r.ok) {
         revision.current = r.revision; setSavedAt(new Date()); setMessage(null);
         setStatus(dirty.current ? "dirty" : "saved");
@@ -273,7 +275,7 @@ export function ManuscriptEditor({ manuscript, references, readOnly, userId }: {
   const resolveOverwrite = async () => {
     if (!editor) return;
     setStatus("saving");
-    const r = await overwriteManuscript(studyId, id, titleRef.current, editor.getJSON());
+    const r = await overwriteManuscript(studyId, id, titleRef.current, plainJson(editor.getJSON()));
     if (r.ok) { revision.current = r.revision; conflict.current = false; dirty.current = false; setStatus("saved"); setSavedAt(new Date()); setMessage("Saved. The other copy was kept in the version history."); }
     else { setStatus("conflict"); setMessage(r.error); }
   };
