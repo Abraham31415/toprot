@@ -104,9 +104,14 @@ export const FEATURES: Feature[] = [
   {
     slug: "academic-editor",
     name: "Academic Writing Editor",
-    status: "planned",
-    summary: "A rich-text editor with citation insertion and an automatic bibliography.",
-    details: ["Planned. Not available yet."],
+    status: "available",
+    summary: "Write manuscripts inside a study, with citations from its references, an automatic bibliography, autosave and version history.",
+    details: [
+      "A rich-text editor (headings, lists, tables, figures with captions) with starting structures for research proposals, original articles, systematic reviews (PRISMA 2020 headings), case reports (CARE headings), theses, dissertations and conference abstracts. Templates add headings only.",
+      "Insert citations from the study's own references. The in-text citations and the reference list update when you change the citation style.",
+      "Autosave, named versions and restore. Export to Word (.docx) or to PDF through your browser's print dialog.",
+      "Spelling help comes from your browser. There is no AI writing in the editor, and it does not check or improve your reporting.",
+    ],
   },
   {
     slug: "literature-explorer",
@@ -122,9 +127,14 @@ export const FEATURES: Feature[] = [
   {
     slug: "pdf-library",
     name: "PDF Research Library",
-    status: "planned",
-    summary: "Upload, read and annotate PDFs, then ask questions grounded in the document.",
-    details: ["Planned. Not available yet."],
+    status: "available",
+    summary: "Upload PDFs, search inside them, annotate, compare, and ask questions answered from their own text.",
+    details: [
+      "A private library: up to 20 MB and 400 pages per PDF, 100 PDFs and 100 MB in total. Only you can see your files.",
+      "Text and basic metadata are read from each PDF. Scanned PDFs are stored but cannot be searched, because there is no OCR.",
+      "Search inside your PDFs, read page by page, highlight passages, add notes, and link a PDF to one of a study's references.",
+      "Questions and paper comparisons use AI credits. Answers are drawn only from passages found in your PDFs, and every quote is checked against the PDF text. Verified quotes are shown separately from the AI's own wording, with the PDF page.",
+    ],
   },
 ];
 
