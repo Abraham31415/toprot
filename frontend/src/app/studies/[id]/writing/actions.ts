@@ -64,7 +64,7 @@ export async function saveManuscript(
   if ("error" in s) return { ok: false, error: s.error };
   if (!isUuid(id) || !Number.isInteger(baseRevision) || baseRevision < 1) return { ok: false, error: "Invalid request." };
   let doc: Doc;
-  try { doc = validateDoc(content, id); } catch (e) { return { ok: false, error: e instanceof DocError ? e.message : "Invalid content." }; }
+  try { doc = validateDoc(content, id); } catch (e) { console.error("saveManuscript validation failed", e); return { ok: false, error: e instanceof DocError || (e as Error)?.name === "DocError" ? (e as Error).message : `Invalid content (${(e as Error)?.name}: ${String((e as Error)?.message).slice(0, 120)}).` }; }
   const t = cleanTitle(title);
   if (!t) return { ok: false, error: "The title must be 1 to 200 characters." };
   const wordCount = countWords(doc);

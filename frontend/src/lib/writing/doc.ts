@@ -27,7 +27,9 @@ const MARKS = new Set(["bold", "italic", "underline", "strike", "code", "supersc
 export const FIGURE_PATH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpe?g|gif)$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-export class DocError extends Error {}
+export class DocError extends Error {
+  name = "DocError";
+}
 
 export function safeHref(href: unknown): string | null {
   if (typeof href !== "string") return null;
