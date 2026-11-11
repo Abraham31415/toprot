@@ -431,3 +431,44 @@ describe("manuscript figure storage", () => {
     await expect(put(a.owner, n(), 10)).rejects.toThrow(/row-level security/);
   });
 });
+
+describe("assistant migration", () => {
+  it("registers three tiers with escalating limits and model chains", async () => {
+    const r = (await pool.query("select feature_key, model_chain, max_output_tokens, max_input_chars, max_iterations, max_tool_calls, max_op_cost_micro_usd from ai_features where feature_key like 'assistant_%' order by max_op_cost_micro_usd")).rows;
+    expect(r.map((x) => x.feature_key)).toEqual(["assistant_light", "assistant_standard", "assistant_deep"]);
+    expect(r[0].model_chain[0]).toBe("claude-haiku-5-5");
+    expect(r[1].model_chain[0]).toBe("claude-sonnet-5-5");
+    expect(r[2].model_chain[0]).toBe("claude-opus-5-5");
+    for (let i = 1; i < 3; i++) for (const k of ["max_output_tokens", "max_input_chars", "max_iterations", "max_tool_calls", "max_op_cost_micro_usd"]) expect(Number(r[i][k])).toBeGreaterThan(Number(r[i - 1][k]));
+    for (const x of r) expect(x.max_iterations).toBeLessThanOrEqual(8);
+  });
+  it("registers the request-limit settings", async () => {
+    const r = (await pool.query("select key from ai_settings where key like 'assistant_%'")).rows.map((x) => x.key);
+    expect(r).toEqual(expect.arrayContaining(["assistant_daily_requests_per_user", "assistant_max_message_chars", "assistant_max_document_chars", "assistant_max_tool_output_chars", "assistant_deep_requires_pro"]));
+  });
+  it("keeps conversations private and read-only for users; only the server can write messages", async () => {
+    const a = await newUser(), b = await newUser();
+    const t = (await pool.query("insert into assistant_threads (owner_id, title) values ($1, 'Q') returning id", [a])).rows[0].id;
+    await pool.query("insert into assistant_messages (thread_id, owner_id, role, content) values ($1, $2, 'user', '{\"text\":\"hi\"}')", [t, a]);
+    expect((await asUser(a, (c) => c.query("select id from assistant_messages"))).rowCount).toBe(1);
+    expect((await asUser(b, (c) => c.query("select id from assistant_messages"))).rowCount).toBe(0);
+    expect((await asUser(b, (c) => c.query("select id from assistant_threads"))).rowCount).toBe(0);
+    await expect(asUser(a, (c) => c.query("insert into assistant_messages (thread_id, owner_id, role, content) values ($1, $2, 'assistant', '{}')", [t, a]))).rejects.toThrow(/row-level security/);
+    await expect(asUser(a, (c) => c.query("insert into assistant_threads (owner_id, title) values ($1, 'x')", [a]))).rejects.toThrow(/row-level security/);
+    await expect(asUser(a, (c) => c.query("update assistant_messages set content = '{}'::jsonb"))).resolves.toMatchObject({ rowCount: 0 });
+    await asUser(b, (c) => c.query("delete from assistant_threads where id = $1", [t]));
+    expect((await pool.query("select 1 from assistant_threads where id = $1", [t])).rowCount).toBe(1);
+    await asUser(a, (c) => c.query("delete from assistant_threads where id = $1", [t]));
+    expect((await pool.query("select 1 from assistant_messages where thread_id = $1", [t])).rowCount).toBe(0);
+  });
+  it("validates roles, tiers, titles and size", async () => {
+    const a = await newUser();
+    const t = (await pool.query("insert into assistant_threads (owner_id, title) values ($1, 'Q') returning id", [a])).rows[0].id;
+    await expect(pool.query("insert into assistant_messages (thread_id, owner_id, role, content) values ($1, $2, 'system', '{}')", [t, a])).rejects.toThrow(/check/);
+    await expect(pool.query("insert into assistant_messages (thread_id, owner_id, role, tier, content) values ($1, $2, 'assistant', 'huge', '{}')", [t, a])).rejects.toThrow(/check/);
+    await expect(pool.query("insert into assistant_threads (owner_id, title) values ($1, '  ')", [a])).rejects.toThrow(/check/);
+    await expect(pool.query("insert into assistant_threads (owner_id, title) values ($1, $2)", [a, "x".repeat(201)])).rejects.toThrow(/check/);
+    const big = JSON.stringify({ text: Array.from({ length: 30000 }, (_, i) => `w${i * 7919}`).join(" ") });
+    await expect(pool.query("insert into assistant_messages (thread_id, owner_id, role, content) values ($1, $2, 'user', $3::jsonb)", [t, a, big])).rejects.toThrow(/content_size/);
+  });
+});

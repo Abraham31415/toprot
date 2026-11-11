@@ -13,7 +13,7 @@ const DB_NAME = "toprot_protocol_test";
 const MIGRATIONS = path.resolve(__dirname, "../../../../../supabase/migrations");
 const SHIM = path.resolve(__dirname, "../../ai/__tests__/fixtures/supabase-shim.sql");
 // outputs_storage needs the Supabase storage schema and the AI migration is unrelated.
-const SKIP = [/outputs_storage/, /ai_usage_credits/, /writing_and_pdf_library/, /research_pdfs_storage/, /manuscript_figures_storage/];
+const SKIP = [/outputs_storage/, /ai_usage_credits/, /writing_and_pdf_library/, /research_pdfs_storage/, /manuscript_figures_storage/, /ai_research_assistant/];
 
 let pool: Pool;
 

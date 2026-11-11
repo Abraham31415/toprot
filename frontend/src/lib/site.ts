@@ -136,6 +136,18 @@ export const FEATURES: Feature[] = [
       "Questions and paper comparisons use AI credits. Answers are drawn only from passages found in your PDFs, and every quote is checked against the PDF text. Verified quotes are shown separately from the AI's own wording, with the PDF page.",
     ],
   },
+  {
+    slug: "ai-assistant",
+    name: "AI Research Assistant",
+    status: "available",
+    summary: "Ask for help on your own project: brainstorming, protocol and methodology review, literature summaries, writing and analysis planning.",
+    details: [
+      "Eleven tasks. The assistant reads your protocol, saved references, uploaded PDFs and manuscripts through limited, read-only tools. It cannot change anything in your project.",
+      "Every answer is labelled as AI. Sources it points to are checked against your documents, and quotations are verified word for word. Anything citation-shaped that is not one of your saved references is removed, so it cannot invent a reference.",
+      "A server-side router picks a lighter or stronger model for each request. Each request has hard limits on input, output, steps, document reads, cost and frequency. It uses AI credits and needs the AI service to be switched on.",
+      "It is an aid, not an authority. It does not approve, score or replace your supervisor or ethics committee.",
+    ],
+  },
 ];
 
 export const LEGAL_LAST_UPDATED = "9 November 2026";

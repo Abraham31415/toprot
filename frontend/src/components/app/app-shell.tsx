@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { BrainCircuit, Calculator, LayoutDashboard, BookOpen, Library, LogOut, Menu, PenLine, Quote, Users, Wrench, X, type LucideIcon } from "lucide-react";
+import { BrainCircuit, Calculator, LayoutDashboard, BookOpen, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 
@@ -20,6 +20,7 @@ function navFor(role: string | null): NavItem[] {
     { href: "/writing", label: "Writing", icon: PenLine },
     { href: "/library", label: "PDF library", icon: Library },
     { href: "/calculator", label: "Sample size", icon: Calculator },
+    { href: "/assistant", label: "AI assistant", icon: Sparkles },
     { href: "/ai-usage", label: "AI credits", icon: BrainCircuit },
   ];
 }
