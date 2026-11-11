@@ -59,7 +59,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         {note && <p role="status" className={`mt-3 rounded-md px-3 py-2 text-sm ${note.tone === "good" ? "bg-teal/10 text-teal-ink" : "bg-amber-50 text-amber-900"}`}>{note.text}</p>}
 
         {!h ? (
-          <p className="mt-4 rounded-lg border border-line bg-white p-4 text-sm text-navy/75">Credit information is temporarily unavailable. Everything else in ToProt still works.</p>
+          <p className="mt-4 rounded-lg border border-line bg-white p-4 text-sm text-navy/75">Credit information is temporarily unavailable. Everything else in ToProt still works.{overview.headroomError ? <span className="mt-1 block text-xs text-navy/50">Technical detail: {overview.headroomError}</span> : null}</p>
         ) : (
           <>
             <section aria-labelledby="plan-h" className="mt-4 rounded-lg border border-line bg-white p-5">
