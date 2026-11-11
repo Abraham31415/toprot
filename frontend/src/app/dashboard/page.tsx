@@ -264,12 +264,14 @@ export default async function DashboardPage() {
             <>
               <p className="text-2xl font-semibold text-navy">
                 {credits(headroom.availableMcr)}
-                <span className="ml-2 text-sm font-normal text-navy/65">
-                  of {credits(headroom.allowanceMcr)} remaining
-                </span>
+                <span className="ml-2 text-sm font-normal text-navy/65">credits available</span>
               </p>
-              <Link href="/ai-usage" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cobalt">
-                Usage details <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <p className="mt-1 text-xs text-navy/65">
+                {credits(headroom.subscriptionAvailableMcr)} of {credits(headroom.allowanceMcr)} from your plan
+                {headroom.purchasedAvailableMcr > 0 ? `, plus ${credits(headroom.purchasedAvailableMcr)} purchased` : ""}
+              </p>
+              <Link href="/billing" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cobalt">
+                Billing and usage <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </>
           ) : (

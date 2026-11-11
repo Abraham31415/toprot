@@ -50,6 +50,7 @@ export type AiErrorCode =
   | "unauthenticated"
   | "unavailable" // config could not be loaded: fail closed
   | "feature_disabled"
+  | "plan_required" // the user's plan does not include this AI feature
   | "invalid_request"
   | "input_too_large"
   | "insufficient_credits"
@@ -86,6 +87,7 @@ export const USER_MESSAGES: Record<AiErrorCode, string> = {
   unauthenticated: "Please sign in to use AI features.",
   unavailable: "AI features are temporarily unavailable. Everything else in ToProt still works.",
   feature_disabled: "This AI feature is currently switched off.",
+  plan_required: "This feature is part of Toprot Pro. Open Billing to see the plans.",
   invalid_request: "That request could not be processed.",
   input_too_large: "This is too long for AI review. Shorten the text and try again.",
   insufficient_credits:

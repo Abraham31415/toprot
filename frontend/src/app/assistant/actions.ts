@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { USER_MESSAGES, getHeadroom, runAiOperation } from "@/lib/ai";
+import { USER_MESSAGES, runAiOperation } from "@/lib/ai";
 import { loadConfig } from "@/lib/ai/ledger";
 import { isUuid } from "@/lib/refs/validate";
 import { runAgent, type CreateFn } from "@/lib/assistant/agent";
@@ -107,10 +107,11 @@ export async function askAssistant(input: AskInput): Promise<AskResult> {
   ].filter(Boolean).join("\n");
   const userText = `${card}\n\nRequest: ${message}`;
   const contextChars = userText.length + history.reduce((n, h) => n + h.content.length, 0);
-  let plan: "pro" | "intro" = "intro";
-  try { plan = (await getHeadroom(admin, user.id)).plan; } catch { /* fall back to the free plan */ }
+  // The plan (a row in the plans table, resolved in Postgres) decides whether the deep tier is allowed.
+  let deepByPlan = !limits.deepRequiresPro;
+  try { const r = await admin.rpc("ai_plan_allows", { p_user: user.id, p_feature: "assistant_deep" }); if (!r.error) deepByPlan = r.data === true; } catch { /* keep the setting-based default */ }
   const route = routeRequest(
-    { task: task.id, messageChars: message.length, contextChars, documentCount: scope.length + (manuscriptId ? 1 : 0), thorough: !!input.thorough, deepAllowed: !limits.deepRequiresPro || plan === "pro" },
+    { task: task.id, messageChars: message.length, contextChars, documentCount: scope.length + (manuscriptId ? 1 : 0), thorough: !!input.thorough, deepAllowed: deepByPlan },
     !!studyId, scope.length > 0, !!manuscriptId,
   );
 

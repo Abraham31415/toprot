@@ -30,7 +30,12 @@ export interface Headroom {
   allowanceMcr: number;
   usedMcr: number;
   reservedMcr: number;
+  /** Subscription (or introductory) credits plus purchased credits. */
   availableMcr: number;
+  planKey: string;
+  subscriptionAvailableMcr: number;
+  purchasedAvailableMcr: number;
+  purchasedNextExpiry: string | null;
   platformRemainingMicroUsd: number;
   creditValueMicroUsd: number;
 }
@@ -124,6 +129,10 @@ export async function getHeadroom(db: RpcClient, userId: string): Promise<Headro
     usedMcr: Number(r.used_mcr),
     reservedMcr: Number(r.reserved_mcr),
     availableMcr: Number(r.available_mcr),
+    planKey: (r.plan_key as string | undefined) ?? (r.plan === "pro" ? "pro" : "free"),
+    subscriptionAvailableMcr: Number(r.subscription_available_mcr ?? r.available_mcr),
+    purchasedAvailableMcr: Number(r.purchased_available_mcr ?? 0),
+    purchasedNextExpiry: (r.purchased_next_expiry as string | null | undefined) ?? null,
     platformRemainingMicroUsd: Number(r.platform_remaining_micro_usd),
     creditValueMicroUsd: Number(r.credit_value_micro_usd),
   };

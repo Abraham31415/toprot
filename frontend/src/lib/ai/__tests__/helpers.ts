@@ -35,6 +35,13 @@ export class TestDb implements RpcClient {
     );
     await db.pool.query(shim);
     await db.pool.query(migration);
+    // TEST_WITH_BILLING=1 reruns the whole ledger suite on top of the billing migration, to prove it changes nothing
+    // for users without purchased credits.
+    if (process.env.TEST_WITH_BILLING) {
+      await db.pool.query("create table public.studies (id uuid primary key default gen_random_uuid(), owner_id uuid not null, title text)");
+      await db.pool.query("alter table auth.users add column if not exists created_at timestamptz not null default now()");
+      await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261115090000_billing_plans_payments.sql"), "utf8"));
+    }
     return db;
   }
 

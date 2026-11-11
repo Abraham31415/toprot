@@ -21,7 +21,7 @@ function navFor(role: string | null): NavItem[] {
     { href: "/library", label: "PDF library", icon: Library },
     { href: "/calculator", label: "Sample size", icon: Calculator },
     { href: "/assistant", label: "AI assistant", icon: Sparkles },
-    { href: "/ai-usage", label: "AI credits", icon: BrainCircuit },
+    { href: "/billing", label: "Billing and credits", icon: BrainCircuit },
   ];
 }
 
@@ -39,7 +39,7 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const items = navFor(role);
   const isActive = (href: string) =>
-    pathname === href || (href !== "/calculator" && href !== "/ai-usage" && pathname.startsWith("/studies/") && href === items[0].href);
+    pathname === href || (href !== "/calculator" && href !== "/billing" && pathname.startsWith("/studies/") && href === items[0].href);
 
   const nav = (
     <>

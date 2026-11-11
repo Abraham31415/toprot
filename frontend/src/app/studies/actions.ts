@@ -27,6 +27,9 @@ export async function createStudy(
     .select("id")
     .single();
 
+  if (studyError?.message?.includes("plan_project_limit")) {
+    return { error: `You have reached the project limit for your plan${studyError.details ? ` (${studyError.details})` : ""}. Open Billing to see the plans.` };
+  }
   if (studyError || !study) {
     return { error: studyError?.message ?? "Could not create study." };
   }

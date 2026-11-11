@@ -150,4 +150,4 @@ export const FEATURES: Feature[] = [
   },
 ];
 
-export const LEGAL_LAST_UPDATED = "9 November 2026";
+export const LEGAL_LAST_UPDATED = "11 November 2026";
