@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { loadCatalog, formatMoney } from "@/lib/billing/catalog";
 import { credits, loadBillingOverview } from "@/lib/billing/data";
-import { checkoutReady, loadFlwConfig } from "@/lib/billing/flutterwave";
+import { providerInfo, providerReady } from "@/lib/billing/provider";
 import { PurchasePanel } from "./purchase-panel";
 
 export const metadata = { title: "Billing and AI credits" };
@@ -38,7 +38,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     loadCatalog(admin).catch(() => null),
     admin.from("billing_settings").select("value_num").eq("key", "renewal_window_days").maybeSingle(),
   ]);
-  const ready = checkoutReady(loadFlwConfig());
+  const ready = providerReady();
+  const provider = providerInfo();
   const windowDays = Number(windowRow.data?.value_num ?? 3);
   const h = overview.headroom;
   const sub = overview.subscription;
@@ -46,7 +47,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const freePlan = catalog?.plans.find((p) => !p.isPaid) ?? null;
   const activePaid = h && h.planKey !== "free" && sub?.periodEnd ? sub : null;
   const msLeft = activePaid?.periodEnd ? new Date(activePaid.periodEnd).getTime() - Date.now() : null;
-  const canBuyPlan = !!paidPlan && (msLeft === null || msLeft <= windowDays * 86400_000);
+  const managed = !!activePaid && activePaid.autoRenews && !activePaid.cancelAtPeriodEnd;
+  const canBuyPlan = !!paidPlan && !managed && (msLeft === null || activePaid?.autoRenews || msLeft <= windowDays * 86400_000);
   const used = h && h.allowanceMcr > 0 ? Math.min(100, Math.round((h.usedMcr / h.allowanceMcr) * 100)) : 0;
   const home = profile.role === "supervisor" ? "/supervisor" : "/dashboard";
   const note = checkout ? CHECKOUT_NOTE[checkout] : null;
@@ -71,7 +73,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 <div><dt className="text-navy/60">Next credit reset</dt><dd className="font-medium text-navy">{h.planKey !== "free" && h.periodEnd ? date(h.periodEnd) : "Not applicable (introductory credits do not reset)"}</dd></div>
                 <div><dt className="text-navy/60">Projects</dt><dd className="font-medium text-navy">{(() => { const p = catalog?.plans.find((x) => x.key === h.planKey); return p ? (p.maxProjects === null ? "Unlimited" : `Up to ${p.maxProjects}`) : "-"; })()}</dd></div>
               </dl>
-              {h.planKey !== "free" && h.periodEnd && <p className="mt-3 text-xs text-navy/60">Subscriptions are paid one month at a time and do not renew automatically. You can renew during the last {windowDays} days of the period; unused plan credits do not carry over.</p>}
+              {h.planKey !== "free" && h.periodEnd && (activePaid?.autoRenews
+                ? <p className="mt-3 text-xs text-navy/60">{activePaid.cancelAtPeriodEnd ? `Renewal is cancelled. Your plan stays active until ${date(h.periodEnd)} and then ends.` : `Renews automatically each month until you cancel (next renewal around ${date(h.periodEnd)}). Cancelling keeps your plan until the end of the period you paid for. Unused plan credits do not carry over.`}</p>
+                : <p className="mt-3 text-xs text-navy/60">This plan does not renew automatically. You can renew during the last {windowDays} days of the period; unused plan credits do not carry over.</p>)}
             </section>
 
             <section aria-labelledby="credits-h" className="mt-4 rounded-lg border border-line bg-white p-5">
@@ -95,7 +99,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               {h.availableMcr <= 0 && <p className="mt-3 text-sm text-amber-800">You are out of AI credits. Calculators, protocol editing, references and exports keep working.</p>}
             </section>
 
-            {catalog && <PurchasePanel catalog={catalog} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canBuyPlan={canBuyPlan} renewLabel={activePaid ? "Renew" : "Upgrade"} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} />}
+            {catalog && <PurchasePanel catalog={{ ...catalog, currencies: catalog.currencies.filter((c) => provider.currencies.includes(c)) }} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canBuyPlan={canBuyPlan} renewLabel={activePaid ? "Renew" : "Upgrade"} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} providerName={provider.name} autoRenews={provider.autoRenews} processorNote={provider.processorNote} canCancel={managed} />}
 
             <section aria-labelledby="ops-h" className="mt-8">
               <h2 id="ops-h" className="text-sm font-medium text-navy/85">Recent AI operations</h2>

@@ -36,10 +36,10 @@ export default function TermsPage() {
         <ul>
           <li>AI features use credits. A request is charged for the processing it actually used. Failed requests are not charged. AI features may be limited or paused, for example when credits run out.</li>
           <li>The Free plan includes limited projects and a one-time introductory allowance of AI credits. Toprot Pro and prepaid credit packs are paid. Current prices, quotas and plan contents are shown on the <a href="/pricing">pricing page</a> and may change; a change does not affect a period you have already paid for.</li>
-          <li>Each month of Toprot Pro is a separate one-month payment. Nothing renews automatically and you are never charged unless you complete a payment. Plan credits reset each billing period and unused plan credits do not carry over.</li>
+          <li>Toprot Pro is billed monthly and renews automatically each month until you cancel. You can cancel at any time from the Billing page; cancelling stops future charges and your plan stays active until the end of the period you have already paid for. Plan credits reset each billing period and unused plan credits do not carry over. You are never charged for anything you have not completed a payment for.</li>
           <li>Prepaid credit packs are separate from plan credits. Plan credits are used first. Purchased credits expire on the date shown at purchase and on your billing page, and expired credits cannot be used or refunded.</li>
           <li>A plan or credits are added only after the payment has been confirmed with the payment provider.</li>
-          <li>Payments are processed by Flutterwave. ToProt does not see or store your card or mobile money details.</li>
+          <li>Payments are processed by Dodo Payments, which acts as the merchant of record: it sells to you, collects any sales tax or VAT that applies, and issues your receipt. Prices on our site are shown before tax. ToProt does not see or store your payment details.</li>
           <li>If something goes wrong with a payment, or you believe you were charged in error, contact us and we will look into it. Refunds are considered case by case.</li>
         </ul>
         <h2>Availability</h2>

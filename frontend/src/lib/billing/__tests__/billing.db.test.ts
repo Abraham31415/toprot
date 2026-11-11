@@ -18,6 +18,7 @@ beforeAll(async () => {
   await db.pool.query("create table public.studies (id uuid primary key default gen_random_uuid(), owner_id uuid not null, title text)");
   await db.pool.query("alter table auth.users add column if not exists created_at timestamptz not null default now()");
   await db.pool.query(readFileSync(MIG, "utf8"));
+  await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261116090000_billing_provider_dodo.sql"), "utf8"));
   await db.pool.query(`insert into public.ai_features (feature_key, description, model_chain, max_output_tokens, max_input_chars, max_iterations, max_tool_calls, max_op_cost_micro_usd) values
     ('pdf_qa', 'x', array['claude-sonnet-5-5'], 3000, 60000, 1, 0, 1000000),
     ('assistant_deep', 'x', array['claude-sonnet-5-5'], 3000, 60000, 1, 0, 1000000),
@@ -471,6 +472,9 @@ describe("who can call and read what", () => {
       "select public.billing_refund_payment(gen_random_uuid(), 'x')",
       "select public.ai_plan_allows(auth.uid(), 'pdf_qa')",
       "select public.is_app_admin(auth.uid())",
+      "select public.billing_link_provider_subscription('abcdefghijklmnopqrstuv', 'sub_1')",
+      "select public.billing_start_renewal_payment('dodo', 'sub_1', 'pay_1')",
+      "select public.billing_mark_subscription_cancel('dodo', 'sub_1', true)",
       "select public.ai_get_headroom(auth.uid())",
     ];
     for (const role of ["authenticated", "anon"] as const) {
@@ -500,5 +504,91 @@ describe("who can call and read what", () => {
     expect((await as("anon", null, (c) => c.query("select pack_key from credit_packs"))).rowCount).toBe(3);
     await expect(as("anon", null, (c) => c.query("update billing_prices set amount = 0.01"))).rejects.toThrow(/permission denied/);
     await expect(as("authenticated", await db.newUser(), (c) => c.query("insert into credit_packs (pack_key, name, credits, expiry_days) values ('free_credits', 'x', 999999, 365)"))).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("Dodo Payments: automatic renewals and cancellation", () => {
+  const dpay = async (user: string, kind: "subscription" | "pack", product: string) => {
+    const tx = ref();
+    const r = (await db.rpc("billing_create_payment", { p_user: user, p_kind: kind, p_product: product, p_currency: "USD", p_tx_ref: tx, p_provider: "dodo" })).data as Record<string, unknown>;
+    return { tx, r };
+  };
+  const fulfil = async (tx: string, amount: unknown, txn = `pay_${randomUUID()}`) =>
+    (await db.rpc("billing_fulfill_payment", { p_tx_ref: tx, p_provider_txn: txn, p_provider_status: "successful", p_amount: amount, p_currency: "USD", p_method: "card" })).data as Record<string, unknown>;
+  const subscribe = async (user: string, subId = `sub_${randomUUID()}`) => {
+    const { tx, r } = await dpay(user, "subscription", "pro");
+    expect(r.ok).toBe(true);
+    expect((await fulfil(tx, r.amount)).ok).toBe(true);
+    await db.rpc("billing_link_provider_subscription", { p_tx_ref: tx, p_provider_subscription_id: subId });
+    return { tx, subId };
+  };
+  const periodEnd = async (u: string) => ((await db.pool.query("select current_period_end from ai_subscriptions where user_id = $1", [u])).rows[0].current_period_end as Date).getTime();
+
+  it("records the provider on the payment, and the provider products table is closed to browser roles", async () => {
+    const u = await db.newUser();
+    const { tx } = await dpay(u, "pack", "credits_2000");
+    expect((await db.pool.query("select provider from payments where tx_ref = $1", [tx])).rows[0].provider).toBe("dodo");
+    await expect(as("authenticated", u, (c) => c.query("select * from billing_provider_products"))).rejects.toThrow(/permission denied/);
+    await expect(as("anon", null, (c) => c.query("insert into billing_provider_products values ('dodo','pack','x','pdt_1')"))).rejects.toThrow(/permission denied/);
+  });
+  it("links the provider subscription to the buyer only after a successful subscription payment", async () => {
+    const u = await db.newUser();
+    const { tx, r } = await dpay(u, "subscription", "pro");
+    expect(((await db.rpc("billing_link_provider_subscription", { p_tx_ref: tx, p_provider_subscription_id: "sub_early" })).data as Record<string, unknown>).code).toBe("not_applicable");
+    await fulfil(tx, r.amount);
+    expect(((await db.rpc("billing_link_provider_subscription", { p_tx_ref: tx, p_provider_subscription_id: "sub_ok1" })).data as Record<string, unknown>).ok).toBe(true);
+    const row = (await db.pool.query("select provider_subscription_id, plan, status from ai_subscriptions where user_id = $1", [u])).rows[0];
+    expect(row).toMatchObject({ provider_subscription_id: "sub_ok1", plan: "pro", status: "active" });
+  });
+  it("will not attach one provider subscription to two users", async () => {
+    const a = await db.newUser(), b = await db.newUser();
+    await subscribe(a, "sub_shared");
+    const { tx, r } = await dpay(b, "subscription", "pro");
+    await fulfil(tx, r.amount);
+    expect(((await db.rpc("billing_link_provider_subscription", { p_tx_ref: tx, p_provider_subscription_id: "sub_shared" })).data as Record<string, unknown>).code).toBe("subscription_belongs_to_another_user");
+  });
+  it("blocks buying Pro twice while it auto-renews, but allows it once renewal is cancelled", async () => {
+    const u = await db.newUser();
+    const { subId } = await subscribe(u);
+    expect((await dpay(u, "subscription", "pro")).r).toMatchObject({ ok: false, code: "already_subscribed" });
+    await db.rpc("billing_mark_subscription_cancel", { p_provider: "dodo", p_provider_subscription_id: subId, p_cancel: true });
+    expect((await dpay(u, "subscription", "pro")).r.ok).toBe(true);
+  });
+  it("turns a renewal charge into a payment that fulfils like any other, once, extending the period", async () => {
+    const u = await db.newUser();
+    const { subId } = await subscribe(u);
+    const before = await periodEnd(u);
+    const s1 = (await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: subId, p_provider_payment_id: "pay_renew1" })).data as Record<string, unknown>;
+    expect(s1).toMatchObject({ ok: true, existing: false });
+    const pr = (await db.pool.query("select amount, user_id from payments where tx_ref = $1", [s1.tx_ref])).rows[0];
+    expect(pr.user_id).toBe(u);
+    expect((await fulfil(String(s1.tx_ref), pr.amount, "pay_renew1")).ok).toBe(true);
+    const after = await periodEnd(u);
+    expect(after).toBeGreaterThan(before);
+    const s2 = (await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: subId, p_provider_payment_id: "pay_renew1" })).data as Record<string, unknown>;
+    expect(s2).toMatchObject({ ok: true, existing: true, tx_ref: s1.tx_ref });
+    expect((await fulfil(String(s1.tx_ref), pr.amount, "pay_renew1")).duplicate).toBe(true);
+    expect(await periodEnd(u)).toBe(after);
+  });
+  it("rejects a renewal amount below our price, and a renewal for an unknown subscription", async () => {
+    const u = await db.newUser();
+    const { subId } = await subscribe(u);
+    const s = (await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: subId, p_provider_payment_id: "pay_cheap" })).data as Record<string, unknown>;
+    expect((await fulfil(String(s.tx_ref), 0.01, "pay_cheap")).ok).toBe(false);
+    expect(((await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: "sub_nope", p_provider_payment_id: "pay_x1" })).data as Record<string, unknown>).code).toBe("unknown_subscription");
+  });
+  it("records cancellation as a flag that does not end access early", async () => {
+    const u = await db.newUser();
+    const { subId } = await subscribe(u);
+    expect(((await db.rpc("billing_mark_subscription_cancel", { p_provider: "dodo", p_provider_subscription_id: subId, p_cancel: true })).data as Record<string, unknown>).ok).toBe(true);
+    const row = (await db.pool.query("select cancel_at_period_end, status, plan, current_period_end > now() as live from ai_subscriptions where user_id = $1", [u])).rows[0];
+    expect(row).toMatchObject({ cancel_at_period_end: true, status: "active", plan: "pro", live: true });
+    expect(((await db.rpc("billing_mark_subscription_cancel", { p_provider: "dodo", p_provider_subscription_id: "sub_unknown", p_cancel: true })).data as Record<string, unknown>).ok).toBe(false);
+  });
+  it("keeps flutterwave callers working with the default provider", async () => {
+    const u = await db.newUser();
+    const { r, tx } = await pay(u, "pack", "credits_2000");
+    expect(r.ok).toBe(true);
+    expect((await db.pool.query("select provider from payments where tx_ref = $1", [tx])).rows[0].provider).toBe("flutterwave");
   });
 });

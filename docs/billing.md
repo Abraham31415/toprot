@@ -11,7 +11,30 @@ Schema: `supabase/migrations/20261115090000_billing_plans_payments.sql` (extends
 - **Payments.** A `pending` payment row is created at the stored price *before* checkout. Credits or a subscription are issued only by `billing_fulfill_payment`, which the backend calls after it has re-fetched the transaction from Flutterwave and checked status, reference, amount and currency. It is idempotent, and one provider transaction can never pay for two orders.
 - **Three ways a payment is confirmed**, all running the same verification: the customer's redirect (`/billing/return`), the webhook (`/api/billing/webhook`), and a daily reconciliation job (`/api/billing/maintenance`) that re-checks anything still pending and expires credits.
 
-## Going live: checklist
+## Dodo Payments (the active provider when `DODO_PAYMENTS_API_KEY` is set)
+
+Schema: `supabase/migrations/20261116090000_billing_provider_dodo.sql`. Dodo is a merchant of record: it sells to the customer, handles tax and pays ToProt out. It renews Pro monthly automatically. The Flutterwave code stays in the repo but is used only when no Dodo key is set. Dodo mobile money support is **not confirmed**; checkout is in USD.
+
+Setup, in test mode first:
+
+1. Apply the Dodo migration in Supabase.
+2. In Dodo (Test Mode) create 4 products: Pro as a **monthly subscription at $7.99**, and three **one-time** products at $4.99, $9.99 and $16.99 (the 2,000, 5,000 and 10,000 credit packs). Prices must match the database; a payment below the stored price is rejected.
+3. Map them (the `pdt_` ids are not secret):
+   ```sql
+   insert into billing_provider_products (provider, kind, product_key, product_id) values
+     ('dodo', 'plan', 'pro', 'pdt_...'),
+     ('dodo', 'pack', 'credits_2000', 'pdt_...'),
+     ('dodo', 'pack', 'credits_5000', 'pdt_...'),
+     ('dodo', 'pack', 'credits_10000', 'pdt_...');
+   ```
+4. In Dodo, Developer > Webhooks: add `https://toprot.vercel.app/api/billing/dodo-webhook`, subscribe to payment and subscription events, and copy the signing secret.
+5. In Vercel set `DODO_PAYMENTS_API_KEY` (test key), `DODO_PAYMENTS_WEBHOOK_SECRET` (`whsec_...`) and `CRON_SECRET`, then redeploy.
+6. Make a test purchase. The plan or credits appear only after the backend has re-fetched the payment from Dodo and checked product, amount and currency. A repeated webhook changes nothing.
+7. Live: finish Dodo's product information and verification, use the live key and set `BILLING_LIVE_ENABLED=true`. A live key is refused without that flag.
+
+Behaviour: a renewal arrives as `payment.succeeded` for a known subscription and is verified like a first payment. Cancelling stops renewal at the end of the paid period; access is kept until then. Refunds are done by hand (`billing_refund_payment`) after refunding in Dodo. Prices are shown before tax. Not yet exercised against Dodo's live API: confirm one purchase, one renewal and one cancellation in test mode.
+
+## Going live with Flutterwave (dormant alternative): checklist
 
 1. Apply the migration in Supabase (production).
 2. Create a Flutterwave account and use **test mode** first. Copy the test **secret key** (`FLWSECK_TEST-...`).

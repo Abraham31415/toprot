@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           <li>Supabase: database, authentication and file storage.</li>
           <li>Vercel: web hosting.</li>
           <li>Anthropic: when you use an AI feature (reviewer questions, the research assistant, or questions about your PDFs), the text it needs is sent to Anthropic to generate the response: for example your question and the parts of your protocol, references, manuscript or PDF passages that the request uses.</li>
-          <li>Flutterwave: when you pay for a plan or credits, your email address and the payment amount are shared with Flutterwave, which collects your card or mobile money details itself. ToProt never receives them. We keep a record of each payment (amount, currency, status and date) and your credit transactions.</li>
+          <li>Dodo Payments: when you pay for a plan or credits, your email address and the item you are buying are shared with Dodo Payments, which collects your payment details, billing address and any tax information itself. ToProt never receives them. We keep a record of each payment (amount, currency, status and date), the provider's payment and subscription references, and your credit transactions.</li>
           <li>Resend: sending account and notification emails.</li>
           <li>CrossRef and PubMed: reference lookups send the identifier or title you enter.</li>
           <li>Google: only if you choose to sign in with Google.</li>

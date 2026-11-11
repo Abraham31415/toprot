@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ButtonLink, Container, PageHeading, PageShell } from "@/components/marketing/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatMoney, loadCatalog, type Catalog } from "@/lib/billing/catalog";
-import { checkoutReady, loadFlwConfig } from "@/lib/billing/flutterwave";
+import { providerInfo, providerReady } from "@/lib/billing/provider";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -18,7 +18,8 @@ async function load(): Promise<Catalog | null> {
 
 export default async function PricingPage() {
   const catalog = await load();
-  const onSale = checkoutReady(loadFlwConfig()).ok;
+  const onSale = providerReady().ok;
+  const provider = providerInfo();
   const free = catalog?.plans.find((p) => !p.isPaid);
   const pro = catalog?.plans.find((p) => p.isPaid);
   const proPrice = pro?.prices.find((p) => p.currency === "USD") ?? pro?.prices[0];
@@ -49,7 +50,7 @@ export default async function PricingPage() {
                   <p className="mt-2 text-3xl font-semibold">{proPrice ? formatMoney(proPrice.amount, proPrice.currency) : "-"}<span className="text-base font-normal text-navy/60"> / month</span></p>
                   <p className="mt-1 text-sm text-navy/70">{pro.tagline}</p>
                   <ul className="mt-4 ml-5 list-disc space-y-2 text-sm text-navy/80">{pro.bullets.map((b) => <li key={b}>{b}</li>)}<li>{pro.monthlyCredits.toLocaleString()} AI credits each billing period</li></ul>
-                  <p className="mt-4 text-xs text-navy/60">Each month is a separate payment and nothing renews automatically. The price is an initial proposal and may change.</p>
+                  <p className="mt-4 text-xs text-navy/60">{provider.autoRenews ? "Billed monthly and renewed automatically until you cancel; cancel any time and keep your plan to the end of the paid period. " : "Each month is a separate payment and nothing renews automatically. "}The price is an initial proposal and may change.</p>
                   <div className="mt-4">{onSale ? <ButtonLink href="/billing">Upgrade</ButtonLink> : null}</div>
                 </section>
               )}
@@ -77,7 +78,7 @@ export default async function PricingPage() {
             <div className="mt-3 max-w-3xl space-y-3 text-sm leading-6 text-navy/80">
               <p>One credit is worth a fixed amount of AI processing cost. A request is charged for what it actually used, including every model step and any paid tools, and nothing is charged when a request fails. Larger and more complex tasks use a stronger model and cost more.</p>
               <p>When credits run out, AI features pause. Your studies, calculators, references, literature search, citation formatting and document generation keep working. You can see your balance, usage and payment history on the Billing page after signing in.</p>
-              <p>Payments are processed by Flutterwave, so you can pay by international card or, where UGX prices are offered, Ugandan Mobile Money. A plan or credits are added only after the payment has been confirmed.</p>
+              <p>{provider.processorNote} A plan or credits are added only after the payment has been confirmed.</p>
             </div>
           </>
         )}

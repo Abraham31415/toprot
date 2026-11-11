@@ -2,12 +2,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { formatMoney, type Catalog } from "@/lib/billing/catalog";
-import { startCheckout } from "./actions";
+import { cancelRenewal, startCheckout } from "./actions";
 
 const btn = "rounded-md bg-cobalt px-4 py-2 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50";
 
-export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, canBuyPlan, renewLabel, nextRenewal, windowDays }: {
+export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, canBuyPlan, renewLabel, nextRenewal, windowDays, providerName, autoRenews, processorNote, canCancel }: {
   catalog: Catalog; ready: boolean; readyMessage: string; currentPlanKey: string; canBuyPlan: boolean; renewLabel: string; nextRenewal: string | null; windowDays: number;
+  providerName: string; autoRenews: boolean; processorNote: string; canCancel: boolean;
 }) {
   const [currency, setCurrency] = useState(catalog.currencies[0] ?? "USD");
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +17,14 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
   const paid = catalog.plans.find((p) => p.isPaid);
   const priceIn = (prices: { currency: string; amount: number }[]) => prices.find((p) => p.currency === currency);
   const mobileMoney = useMemo(() => currency === "UGX", [currency]);
+  const [cancelled, setCancelled] = useState(false);
+  const cancel = () => start(async () => {
+    if (!window.confirm("Stop the monthly renewal? You keep your plan until the end of the period you have already paid for.")) return;
+    setError(null); setBusy("cancel");
+    const r = await cancelRenewal();
+    setBusy(null);
+    if (r.error) setError(r.error); else setCancelled(true);
+  });
 
   const go = (kind: "subscription" | "pack", key: string) => start(async () => {
     setError(null); setBusy(`${kind}:${key}`);
@@ -48,13 +57,15 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
             return (
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 {p ? <p className="text-lg font-semibold text-navy">{formatMoney(p.amount, p.currency)}<span className="text-sm font-normal text-navy/60"> per month</span></p> : <p className="text-sm text-navy/65">Not available in {currency}.</p>}
-                <button type="button" className={btn} disabled={!ready || !p || !canBuyPlan || !!busy} onClick={() => go("subscription", paid.key)}>{busy === `subscription:${paid.key}` ? "Opening checkout..." : `${renewLabel} for one month`}</button>
+                <button type="button" className={btn} disabled={!ready || !p || !canBuyPlan || !!busy} onClick={() => go("subscription", paid.key)}>{busy === `subscription:${paid.key}` ? "Opening checkout..." : autoRenews ? `${renewLabel === "Renew" ? "Resubscribe" : "Subscribe"} monthly` : `${renewLabel} for one month`}</button>
+                {canCancel && !cancelled && <button type="button" className="rounded-md border border-navy/25 px-4 py-2 text-sm font-medium text-navy hover:border-cobalt disabled:opacity-50" disabled={!!busy} onClick={cancel}>{busy === "cancel" ? "Cancelling..." : "Cancel renewal"}</button>}
+                {cancelled && <span role="status" className="text-sm text-teal-ink">Renewal cancelled. Your plan stays active until the end of the paid period.</span>}
               </div>
             );
           })()}
           <p className="mt-2 text-xs text-navy/60">
             {currentPlanKey !== "free" && !canBuyPlan && nextRenewal ? `Your plan is paid until ${nextRenewal}. You can renew in the last ${windowDays} days. ` : ""}
-            Each month is a separate payment. Nothing renews automatically, and you will not be charged unless you complete a payment.
+            {autoRenews ? "Billed monthly and renewed automatically until you cancel. You can cancel at any time and keep your plan until the end of the period you paid for." : "Each month is a separate payment. Nothing renews automatically, and you will not be charged unless you complete a payment."}
           </p>
         </div>
       )}
@@ -77,7 +88,7 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
         </ul>
       </div>
       <p className="mt-3 text-xs text-navy/60">
-        Payments are processed by Flutterwave, which handles your card or mobile money details; ToProt never sees them. {mobileMoney ? "Mobile Money (MTN and Airtel) is paid in UGX and is a one-off payment for each month or pack. " : "To pay with Ugandan Mobile Money, choose UGX when it is offered. "}
+        {processorNote} {providerName === "Flutterwave" ? (mobileMoney ? "Mobile Money (MTN and Airtel) is paid in UGX and is a one-off payment for each month or pack. " : "To pay with Ugandan Mobile Money, choose UGX when it is offered. ") : "Prices are shown before any tax; tax is added at checkout where it applies. "}
         Credits and plans are added only after the payment has been confirmed with the payment provider, which normally takes a moment.
       </p>
     </section>
