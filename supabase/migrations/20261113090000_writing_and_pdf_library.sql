@@ -276,11 +276,19 @@ revoke execute on function public.search_pdf_chunks(text, uuid[], int) from anon
 -- 3. AI features -------------------------------------------------------------------------
 -- Document questions and paper comparison are metered like every other AI feature.
 
-insert into public.ai_features
-  (feature_key, description, model_chain, max_output_tokens, max_input_chars, max_iterations, max_tool_calls, max_op_cost_micro_usd)
-values
-  ('pdf_qa', 'Grounded questions about the user''s uploaded PDFs',
-   array['claude-sonnet-5-5', 'claude-haiku-5-5'], 3000, 60000, 1, 0, 150000),
-  ('pdf_compare', 'Side-by-side comparison of uploaded PDFs, every cell tied to a quoted passage',
-   array['claude-sonnet-5-5', 'claude-haiku-5-5'], 4000, 90000, 1, 0, 250000)
-on conflict (feature_key) do nothing;
+-- Only registered where the AI credit system (20261109120000_ai_usage_credits.sql) exists. Without it, document
+-- questions fail closed ("unavailable") and everything else in this migration works.
+do $$
+begin
+  if to_regclass('public.ai_features') is not null then
+    insert into public.ai_features
+      (feature_key, description, model_chain, max_output_tokens, max_input_chars, max_iterations, max_tool_calls, max_op_cost_micro_usd)
+    values
+      ('pdf_qa', 'Grounded questions about the user''s uploaded PDFs',
+       array['claude-sonnet-5-5', 'claude-haiku-5-5'], 3000, 60000, 1, 0, 150000),
+      ('pdf_compare', 'Side-by-side comparison of uploaded PDFs, every cell tied to a quoted passage',
+       array['claude-sonnet-5-5', 'claude-haiku-5-5'], 4000, 90000, 1, 0, 250000)
+    on conflict (feature_key) do nothing;
+  end if;
+end
+$$;
