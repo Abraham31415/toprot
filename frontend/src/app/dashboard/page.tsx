@@ -156,7 +156,19 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-8">
       <h1 className="text-2xl font-semibold tracking-tight text-navy">Welcome back, {firstName}</h1>
-      <p className="mt-1 text-sm text-navy/65">Pick up a project or start a new one.</p>
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <p className="text-sm text-navy/65">Pick up a project or start a new one.</p>
+        {headroom && (
+          <Link
+            href="/billing"
+            aria-label={headroom.planKey === "free" ? "You are on the Free plan. Open billing to upgrade." : "You are on Toprot Pro. Open billing."}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${headroom.planKey === "free" ? "bg-navy/5 text-navy/75 hover:bg-navy/10" : "bg-teal/10 text-teal-ink hover:bg-teal/20"}`}
+          >
+            {headroom.planKey === "free" ? "Free plan" : "Toprot Pro"}
+            {headroom.planKey === "free" && <span className="text-cobalt">Upgrade</span>}
+          </Link>
+        )}
+      </div>
 
       <div className="mt-5">
         <NewStudyForm />
@@ -262,6 +274,10 @@ export default async function DashboardPage() {
         <Panel title="AI credits" icon={BrainCircuit}>
           {headroom ? (
             <>
+              <p className="mb-2 text-xs font-medium text-navy/65">
+                Plan: <span className="text-navy">{headroom.planKey === "free" ? "Free" : "Toprot Pro"}</span>
+                {headroom.planKey !== "free" && headroom.periodEnd ? ` (current period ends ${fmtDate(headroom.periodEnd)})` : ""}
+              </p>
               <p className="text-2xl font-semibold text-navy">
                 {credits(headroom.availableMcr)}
                 <span className="ml-2 text-sm font-normal text-navy/65">credits available</span>
