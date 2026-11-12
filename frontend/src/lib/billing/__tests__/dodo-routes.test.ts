@@ -10,13 +10,15 @@ vi.mock("@/lib/supabase/admin", () => ({
     from: (table: string) => {
       const q: Record<string, unknown> = {};
       q.select = () => q; q.eq = () => q;
-      q.maybeSingle = async () => ({ data: table === "payments" ? { kind: "pack", product_key: "credits_2000" } : { product_id: "pdt_pack2000" }, error: null });
+      q.maybeSingle = async () => ({ data: table === "payments" ? { kind: "pack", product_key: "credits_2000", provider: "dodo", user_id: paymentOwner, status: paymentStatus } : { product_id: "pdt_pack2000" }, error: null });
       return q;
     },
   }),
 }));
 
 let recentPayment: { status: string } | null = null;
+let paymentOwner = "user-1";
+let paymentStatus = "pending";
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "user-1", email: "a@b.org" } } }) },
@@ -30,7 +32,7 @@ const payment = (over: Record<string, unknown> = {}) => ({ payment_id: "pay_1", 
 let fetchImpl: (url: string) => Response = () => new Response(JSON.stringify(payment()), { status: 200 });
 
 beforeEach(() => {
-  recentPayment = null;
+  recentPayment = null; paymentOwner = "user-1"; paymentStatus = "pending";
   rpcCalls.length = 0;
   fetchImpl = () => new Response(JSON.stringify(payment()), { status: 200 });
   process.env.DODO_PAYMENTS_API_KEY = "dodo_test_abc123";
@@ -149,5 +151,27 @@ describe("GET /billing/return (Dodo)", () => {
     expect((await GET(get("?payment_id=pay_unrelated"))).headers.get("location")).toMatch(/checkout=success$/);
     recentPayment = null;
     expect((await GET(get("?payment_id=pay_unrelated"))).headers.get("location")).toMatch(/checkout=unknown$/);
+  });
+  it("recognises the customer's own order by our reference without needing any column access of their own", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    paymentStatus = "succeeded";
+    expect((await GET(get(`?tx_ref=${REF}`))).headers.get("location")).toMatch(/checkout=success$/);
+    paymentStatus = "pending";
+    expect((await GET(get(`?tx_ref=${REF}`))).headers.get("location")).toMatch(/checkout=pending$/);
+    paymentStatus = "failed";
+    expect((await GET(get(`?tx_ref=${REF}`))).headers.get("location")).toMatch(/checkout=failed$/);
+  });
+  it("verifies with Dodo when both our reference and Dodo's payment id are present", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    const res = await GET(get(`?tx_ref=${REF}&payment_id=pay_1&status=succeeded`));
+    expect(res.headers.get("location")).toMatch(/checkout=success$/);
+    expect(rpcCalls.find((c) => c.fn === "billing_fulfill_payment")?.args).toMatchObject({ p_amount: 4.99 });
+  });
+  it("shows another customer's reference as unknown, and verifies nothing for it", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    paymentOwner = "someone-else";
+    expect((await GET(get(`?tx_ref=${REF}&payment_id=pay_1`))).headers.get("location")).toMatch(/checkout=unknown$/);
+    expect(rpcCalls).toHaveLength(0);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

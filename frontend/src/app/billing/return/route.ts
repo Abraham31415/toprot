@@ -50,11 +50,12 @@ export async function GET(req: NextRequest) {
     return to("unknown");
   }
 
-  // Row-level security: the user can only see their own payments, so this also proves the payment is theirs.
-  const { data: own } = await supabase.from("payments").select("id, status").eq("tx_ref", txRef).maybeSingle();
-  if (!own) return to("unknown");
+  // Signed-in users may not filter payments by tx_ref (that column is not granted to them), so look the order up with the
+  // server's own access and prove it is theirs by comparing its owner with the signed-in user. Anyone else's reference, or an
+  // unknown one, looks exactly the same: "unknown".
   const admin = createAdminClient();
-  const { data: row } = await admin.from("payments").select("provider").eq("tx_ref", txRef).maybeSingle();
+  const { data: row } = await admin.from("payments").select("provider, user_id").eq("tx_ref", txRef).maybeSingle();
+  if (!row || row.user_id !== user.id) return to("unknown");
 
   try {
     if (row?.provider === "dodo") {
