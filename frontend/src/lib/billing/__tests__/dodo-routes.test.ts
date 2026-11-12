@@ -142,4 +142,12 @@ describe("GET /billing/return (Dodo)", () => {
     expect(rpcCalls).toHaveLength(0);
     expect(fetch).not.toHaveBeenCalled();
   });
+  it("when Dodo's payment id does not match one of our orders, shows the latest payment instead of 'not found'", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    fetchImpl = () => new Response(JSON.stringify(payment({ metadata: {} })), { status: 200 });
+    recentPayment = { status: "succeeded" };
+    expect((await GET(get("?payment_id=pay_unrelated"))).headers.get("location")).toMatch(/checkout=success$/);
+    recentPayment = null;
+    expect((await GET(get("?payment_id=pay_unrelated"))).headers.get("location")).toMatch(/checkout=unknown$/);
+  });
 });

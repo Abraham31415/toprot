@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         if (r.outcome === "fulfilled" || r.outcome === "duplicate") return to("success");
         if (r.outcome === "failed" || r.outcome === "rejected") return to("failed");
         if (r.outcome === "pending") return to("pending");
-        return to("unknown");
+        // "ignored" (Dodo's payment id did not map to one of our orders): fall through to the latest-payment check below.
       } catch {
         return to("pending");
       }
