@@ -37,7 +37,18 @@ export async function GET(req: NextRequest) {
       }
     }
   }
-  if (!txRef.startsWith("toprot-")) return to("unknown");
+  if (!txRef.startsWith("toprot-")) {
+    // Neither our reference nor a usable payment id came back (Dodo's subscription redirect can look like this). Fall back to
+    // this customer's own most recent payment from the last hour. Row-level security means only their own rows can be seen,
+    // and the status shown is whatever the verified webhook or verification has already recorded; nothing is granted here.
+    console.info(JSON.stringify({ evt: "billing_return_without_reference", params: [...req.nextUrl.searchParams.keys()].slice(0, 12) }));
+    const since = new Date(Date.now() - 3600_000).toISOString();
+    const { data: recent } = await supabase.from("payments").select("status").gte("created_at", since).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (recent?.status === "succeeded") return to("success");
+    if (recent?.status === "pending") return to("pending");
+    if (recent?.status === "failed") return to("failed");
+    return to("unknown");
+  }
 
   // Row-level security: the user can only see their own payments, so this also proves the payment is theirs.
   const { data: own } = await supabase.from("payments").select("id, status").eq("tx_ref", txRef).maybeSingle();

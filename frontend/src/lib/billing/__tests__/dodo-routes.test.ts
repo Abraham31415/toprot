@@ -16,8 +16,12 @@ vi.mock("@/lib/supabase/admin", () => ({
   }),
 }));
 
+let recentPayment: { status: string } | null = null;
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: "user-1", email: "a@b.org" } } }) }, from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }) }),
+  createClient: async () => ({
+    auth: { getUser: async () => ({ data: { user: { id: "user-1", email: "a@b.org" } } }) },
+    from: () => { const q: Record<string, unknown> = {}; for (const m of ["select", "eq", "gte", "order", "limit"]) q[m] = () => q; q.maybeSingle = async () => ({ data: recentPayment }); return q; },
+  }),
 }));
 
 const SECRET = "whsec_" + Buffer.from("a-test-webhook-secret-value-0123456789").toString("base64");
@@ -26,6 +30,7 @@ const payment = (over: Record<string, unknown> = {}) => ({ payment_id: "pay_1", 
 let fetchImpl: (url: string) => Response = () => new Response(JSON.stringify(payment()), { status: 200 });
 
 beforeEach(() => {
+  recentPayment = null;
   rpcCalls.length = 0;
   fetchImpl = () => new Response(JSON.stringify(payment()), { status: 200 });
   process.env.DODO_PAYMENTS_API_KEY = "dodo_test_abc123";
@@ -123,5 +128,18 @@ describe("GET /billing/return (Dodo)", () => {
     const { GET } = await import("@/app/billing/return/route");
     expect((await GET(get("?payment_id=../x"))).headers.get("location")).toMatch(/checkout=unknown$/);
     expect((await GET(get(""))).headers.get("location")).toMatch(/checkout=unknown$/);
+  });
+  it("with no reference and no payment id, shows the outcome of the customer's own most recent payment", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    recentPayment = { status: "succeeded" };
+    expect((await GET(get("?subscription_id=sub_1&status=active"))).headers.get("location")).toMatch(/checkout=success$/);
+    recentPayment = { status: "pending" };
+    expect((await GET(get("?status=active"))).headers.get("location")).toMatch(/checkout=pending$/);
+    recentPayment = { status: "failed" };
+    expect((await GET(get(""))).headers.get("location")).toMatch(/checkout=failed$/);
+    recentPayment = null;
+    expect((await GET(get(""))).headers.get("location")).toMatch(/checkout=unknown$/);
+    expect(rpcCalls).toHaveLength(0);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });
