@@ -13,7 +13,7 @@ export function LoginForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-navy/85">Email</span>
+        <span className="font-medium text-ink-soft">Email</span>
         <input
           name="email"
           type="email"
@@ -21,13 +21,13 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35"
+          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
         <div className="flex items-center justify-between">
-          <span className="font-medium text-navy/85">Password</span>
-          <Link href="/forgot-password" className="text-xs font-medium text-navy/65 hover:text-navy">
+          <span className="font-medium text-ink-soft">Password</span>
+          <Link href="/forgot-password" className="text-xs font-medium text-ink-muted hover:text-ink">
             Forgot password?
           </Link>
         </div>
@@ -36,7 +36,7 @@ export function LoginForm() {
           type="password"
           autoComplete="current-password"
           required
-          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35"
+          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
         />
       </label>
 
@@ -45,14 +45,14 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-cobalt py-2.5 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
+        className="rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
       >
         {pending ? "Logging in..." : "Log in"}
       </button>
 
-      <p className="text-center text-sm text-navy/65">
+      <p className="text-center text-sm text-ink-muted">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-navy">
+        <Link href="/register" className="font-medium text-ink">
           Register
         </Link>
       </p>

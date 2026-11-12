@@ -13,11 +13,11 @@ export function ForgotPasswordForm() {
   if (state?.sent) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-sm text-navy/75">
+        <p className="text-sm text-ink-soft">
           If an account exists for <span className="font-medium">{email}</span>, we&apos;ve sent
           a link to reset your password. Check your inbox.
         </p>
-        <Link href="/login" className="text-sm font-medium text-navy">
+        <Link href="/login" className="text-sm font-medium text-ink">
           Back to log in
         </Link>
       </div>
@@ -27,7 +27,7 @@ export function ForgotPasswordForm() {
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-navy/85">Email</span>
+        <span className="font-medium text-ink-soft">Email</span>
         <input
           name="email"
           type="email"
@@ -35,7 +35,7 @@ export function ForgotPasswordForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded-lg border border-line bg-white px-3 py-2 text-navy outline-none focus:border-navy/35"
+          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
         />
       </label>
 
@@ -44,13 +44,13 @@ export function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-cobalt py-2.5 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
+        className="rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
       >
         {pending ? "Sending..." : "Send reset link"}
       </button>
 
-      <p className="text-center text-sm text-navy/65">
-        <Link href="/login" className="font-medium text-navy">
+      <p className="text-center text-sm text-ink-muted">
+        <Link href="/login" className="font-medium text-ink">
           Back to log in
         </Link>
       </p>
