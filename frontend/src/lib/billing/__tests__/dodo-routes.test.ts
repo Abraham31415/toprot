@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const rpcCalls: { fn: string; args: Record<string, unknown> }[] = [];
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
-    rpc: async (fn: string, args: Record<string, unknown> = {}) => { rpcCalls.push({ fn, args }); return { data: { ok: true, status: "succeeded", kind: "pack" }, error: null }; },
+    rpc: async (fn: string, args: Record<string, unknown> = {}) => { rpcCalls.push({ fn, args }); return { data: { ok: true, status: args.p_provider_status === "failed" ? "failed" : "succeeded", kind: "pack" }, error: null }; },
     from: (table: string) => {
       const q: Record<string, unknown> = {};
       q.select = () => q; q.eq = () => q;
@@ -14,6 +14,10 @@ vi.mock("@/lib/supabase/admin", () => ({
       return q;
     },
   }),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: "user-1", email: "a@b.org" } } }) }, from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }) }),
 }));
 
 const SECRET = "whsec_" + Buffer.from("a-test-webhook-secret-value-0123456789").toString("base64");
@@ -97,5 +101,27 @@ describe("POST /api/billing/dodo-webhook", () => {
   it("refuses oversized bodies", async () => {
     const { POST } = await import("@/app/api/billing/dodo-webhook/route");
     expect((await POST(signed("x".repeat(250_000)))).status).toBe(413);
+  });
+});
+
+describe("GET /billing/return (Dodo)", () => {
+  const get = (qs: string) => new (require("next/server").NextRequest)(`https://toprot.test/billing/return${qs}`);
+  it("confirms a purchase from Dodo's payment id alone, when Dodo does not pass our reference back", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    const res = await GET(get("?payment_id=pay_1&status=succeeded"));
+    expect(res.headers.get("location")).toMatch(/\/billing\?checkout=success$/);
+    expect((fetch as unknown as { mock: { calls: string[][] } }).mock.calls[0][0]).toBe("https://test.dodopayments.com/payments/pay_1");
+    expect(rpcCalls.find((c) => c.fn === "billing_fulfill_payment")?.args).toMatchObject({ p_tx_ref: REF, p_amount: 4.99 });
+  });
+  it("does not trust the status in the URL: a failed payment at Dodo is not shown as success", async () => {
+    fetchImpl = () => new Response(JSON.stringify(payment({ status: "failed" })), { status: 200 });
+    const { GET } = await import("@/app/billing/return/route");
+    const res = await GET(get("?payment_id=pay_1&status=succeeded"));
+    expect(res.headers.get("location")).not.toMatch(/success/);
+  });
+  it("shows unknown for a request with neither our reference nor a usable payment id", async () => {
+    const { GET } = await import("@/app/billing/return/route");
+    expect((await GET(get("?payment_id=../x"))).headers.get("location")).toMatch(/checkout=unknown$/);
+    expect((await GET(get(""))).headers.get("location")).toMatch(/checkout=unknown$/);
   });
 });

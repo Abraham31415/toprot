@@ -19,6 +19,24 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(`${SITE_URL}/login`);
+
+  // Dodo sends the customer back with its own payment id and may not keep our reference in the query string. The payment id
+  // is still only a hint: fulfilDodoPayment re-fetches the payment from Dodo and finds our order from Dodo's own metadata.
+  const dodoPaymentId = req.nextUrl.searchParams.get("payment_id");
+  if (!txRef.startsWith("toprot-") && dodoPaymentId && /^[A-Za-z0-9_-]{3,100}$/.test(dodoPaymentId)) {
+    const cfg = loadDodoConfig();
+    if (cfg) {
+      try {
+        const r = await fulfilDodoPayment(createAdminClient(), cfg, { paymentId: dodoPaymentId });
+        if (r.outcome === "fulfilled" || r.outcome === "duplicate") return to("success");
+        if (r.outcome === "failed" || r.outcome === "rejected") return to("failed");
+        if (r.outcome === "pending") return to("pending");
+        return to("unknown");
+      } catch {
+        return to("pending");
+      }
+    }
+  }
   if (!txRef.startsWith("toprot-")) return to("unknown");
 
   // Row-level security: the user can only see their own payments, so this also proves the payment is theirs.
