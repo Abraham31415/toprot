@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { loadCatalog, formatMoney } from "@/lib/billing/catalog";
 import { credits, loadBillingOverview } from "@/lib/billing/data";
-import { providerInfo, providerReady } from "@/lib/billing/provider";
+import { paymentsMode, providerInfo, providerReady } from "@/lib/billing/provider";
 import { PurchasePanel } from "./purchase-panel";
 
 export const metadata = { title: "Billing and AI credits" };
@@ -39,6 +39,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     admin.from("billing_settings").select("value_num").eq("key", "renewal_window_days").maybeSingle(),
   ]);
   const ready = providerReady();
+  const mode = paymentsMode();
   const provider = providerInfo();
   const windowDays = Number(windowRow.data?.value_num ?? 3);
   const h = overview.headroom;
@@ -59,6 +60,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         <Link href={home} className="text-sm text-navy/65 hover:underline">Back</Link>
         <h1 className="mt-2 text-2xl font-semibold text-navy">Billing and AI credits</h1>
         <p className="mt-1 text-sm text-navy/65">Your plan, your AI credit balance, and your payment history in one place.</p>
+        {mode === "test" && <p role="status" className="mt-3 rounded-md border border-gold/50 bg-gold/10 px-3 py-2 text-sm text-[#6f4a14]">Payments are in test mode. Checkout works only with the payment provider&apos;s test cards, and no real money is taken.</p>}
         {note && <p role="status" className={`mt-3 rounded-md px-3 py-2 text-sm ${note.tone === "good" ? "bg-teal/10 text-teal-ink" : "bg-amber-50 text-amber-900"}`}>{note.text}</p>}
 
         {!h ? (

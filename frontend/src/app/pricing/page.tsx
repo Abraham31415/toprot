@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ButtonLink, Container, PageHeading, PageShell } from "@/components/marketing/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatMoney, loadCatalog, type Catalog } from "@/lib/billing/catalog";
-import { providerInfo, providerReady } from "@/lib/billing/provider";
+import { acceptingRealPayments, providerInfo } from "@/lib/billing/provider";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -18,7 +18,8 @@ async function load(): Promise<Catalog | null> {
 
 export default async function PricingPage() {
   const catalog = await load();
-  const onSale = providerReady().ok;
+  // Offer a purchase only when real payments are on. With test keys the checkout works only for test cards, so the page says payments are not open yet.
+  const onSale = acceptingRealPayments();
   const provider = providerInfo();
   const free = catalog?.plans.find((p) => !p.isPaid);
   const pro = catalog?.plans.find((p) => p.isPaid);
