@@ -43,7 +43,7 @@ export function AppShell({
 
   const nav = (
     <>
-      <Link href="/" className="px-3 text-lg font-semibold tracking-tight text-navy" onClick={() => setOpen(false)}>
+      <Link href="/" className="rounded-control px-3 text-lg font-semibold tracking-tight text-ink" onClick={() => setOpen(false)}>
         ToProt
       </Link>
       <nav aria-label="App" className="mt-6 flex flex-col gap-1">
@@ -53,8 +53,8 @@ export function AppShell({
             href={item.href}
             onClick={() => setOpen(false)}
             aria-current={isActive(item.href) ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              isActive(item.href) ? "bg-soft text-cobalt-dark" : "text-navy/75 hover:bg-navy/5 hover:text-navy"
+            className={`type-nav flex items-center gap-3 rounded-control px-3 py-2 transition-colors ${
+              isActive(item.href) ? "bg-surface-soft text-primary-hover" : "text-ink-soft hover:bg-hover hover:text-ink"
             }`}
           >
             <item.icon className="h-4 w-4" aria-hidden="true" />
@@ -63,12 +63,12 @@ export function AppShell({
         ))}
       </nav>
       <div className="mt-auto border-t border-line pt-4">
-        <p className="truncate px-3 text-sm font-medium text-navy">{fullName}</p>
-        <p className="px-3 text-xs capitalize text-navy/60">{role}</p>
+        <p className="truncate px-3 text-sm font-medium text-ink">{fullName}</p>
+        <p className="type-caption px-3 capitalize">{role}</p>
         <form action="/logout" method="post" className="mt-3">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-navy/75 hover:bg-navy/5 hover:text-navy"
+            className="type-nav flex w-full items-center gap-3 rounded-control px-3 py-2 text-ink-soft hover:bg-hover hover:text-ink"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
             Log out
@@ -79,13 +79,13 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-paper text-navy lg:flex">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-white p-4 lg:flex">
+    <div className="min-h-screen bg-canvas text-ink lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line bg-surface p-4 lg:flex">
         {nav}
       </aside>
 
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-white px-4 py-3 lg:hidden">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-surface px-4 py-3 lg:hidden">
+        <Link href="/" className="rounded-control text-lg font-semibold tracking-tight text-ink">
           ToProt
         </Link>
         <button
@@ -94,14 +94,14 @@ export function AppShell({
           aria-expanded={open}
           aria-controls="app-drawer"
           onClick={() => setOpen((v) => !v)}
-          className="rounded-md border border-line p-2"
+          className="rounded-control border border-line-strong bg-surface p-2 text-ink"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
       {open && (
-        <div id="app-drawer" className="fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col bg-white p-4 lg:hidden">
+        <div id="app-drawer" className="fixed inset-x-0 top-[57px] bottom-0 z-20 flex flex-col overflow-y-auto bg-surface p-4 lg:hidden">
           {nav}
         </div>
       )}

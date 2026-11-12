@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Container } from "@/components/ds/layout";
 
+// Every public page is reachable from here, including the secondary ones the header keeps under "More".
 const COLUMNS = [
   {
     title: "Product",
@@ -7,8 +9,6 @@ const COLUMNS = [
       { href: "/features", label: "Features" },
       { href: "/tools", label: "Research tools" },
       { href: "/literature", label: "Literature" },
-      { href: "/how-it-works", label: "How it works" },
-      { href: "/examples", label: "Examples" },
       { href: "/pricing", label: "Pricing" },
       { href: "/calculator", label: "Sample size calculator" },
     ],
@@ -16,8 +16,10 @@ const COLUMNS = [
   {
     title: "Learn",
     links: [
-      { href: "/docs", label: "Documentation" },
       { href: "/resources", label: "Resources" },
+      { href: "/docs", label: "Documentation" },
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/examples", label: "Examples" },
     ],
   },
   {
@@ -33,32 +35,25 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="print:hidden border-t border-line bg-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
+    <footer className="print:hidden border-t border-line bg-surface">
+      <Container className="grid gap-8 py-12 md:grid-cols-4">
         <div>
-          <p className="text-lg font-semibold text-navy">ToProt</p>
-          <p className="mt-2 max-w-xs text-sm text-navy/70">
-            Enter your study once. Generate the documents that follow from it.
-          </p>
+          <p className="text-lg font-semibold text-ink">ToProt</p>
+          <p className="type-support mt-2 max-w-xs">Enter your study once. Generate the documents that follow from it.</p>
         </div>
         {COLUMNS.map((c) => (
           <nav key={c.title} aria-label={c.title}>
-            <p className="text-sm font-semibold text-navy">{c.title}</p>
+            <p className="type-label">{c.title}</p>
             <ul className="mt-3 flex flex-col gap-2">
               {c.links.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-sm text-navy/70 hover:text-cobalt">
-                    {l.label}
-                  </Link>
-                </li>
+                <li key={l.href}><Link href={l.href} className="type-support rounded-sm hover:text-primary hover:underline">{l.label}</Link></li>
               ))}
             </ul>
           </nav>
         ))}
-      </div>
-      <div className="border-t border-line px-4 py-4 text-center text-xs text-navy/60 sm:px-6">
-        &copy; {new Date().getFullYear()} ToProt. ToProt does not provide medical or legal advice, and has no
-        regulatory certification or institutional endorsement.
+      </Container>
+      <div className="type-caption border-t border-line px-4 py-4 text-center sm:px-6">
+        &copy; {new Date().getFullYear()} ToProt. ToProt does not provide medical or legal advice, and has no regulatory certification or institutional endorsement.
       </div>
     </footer>
   );

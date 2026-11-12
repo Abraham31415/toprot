@@ -61,7 +61,7 @@ describe("directory contents", () => {
 
 describe("categories", () => {
   it("covers all seven categories, and every existing category maps to one", () => {
-    expect(DIR_CATEGORIES.map((c) => c.name)).toEqual(["Sample Size & Power", "Statistical Analysis", "Epidemiology", "Research Design", "Literature & References", "Data Collection", "Writing & Reporting"]);
+    expect(DIR_CATEGORIES.map((c) => c.name)).toEqual(["Sample Size & Power", "Statistical Analysis", "Epidemiology", "Study Design", "Literature & References", "Data Collection", "Writing & Reporting"]);
     for (const c of CATEGORIES) expect(DIR_CATEGORIES.some((d) => d.from.includes(c.id)), c.id).toBe(true);
     for (const c of DIR_CATEGORIES) expect(DIRECTORY.some((d) => d.category === c.id), c.id).toBe(true);
     expect(categoryOf("reporting")).toBe("writing");

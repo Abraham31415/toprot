@@ -12,17 +12,17 @@ export type IconKey =
   | "boxes" | "lightbulb" | "filter" | "microscope" | "heart-pulse" | "ruler" | "sliders" | "variable" | "chart-column" | "chart-line" | "chart-scatter"
   | "file-question" | "message-text" | "circle-dot" | "split" | "file-spreadsheet" | "form-input" | "file-search" | "bot";
 
-/** Restrained accent per category: a tinted tile behind the icon and an ink colour that keeps text contrast at AA on white. */
-export type Accent = { tile: string; ink: string; ring: string };
+export type DirTone = "cobalt" | "teal" | "navy" | "gold" | "violet" | "terracotta" | "ocean";
 
-export const DIR_CATEGORIES: { id: DirCategoryId; name: string; blurb: string; icon: IconKey; accent: Accent; from: ToolCategory[] }[] = [
-  { id: "sample-size", name: "Sample Size & Power", blurb: "Work out how many participants you need.", icon: "users", accent: { tile: "bg-cobalt/10", ink: "text-cobalt", ring: "hover:border-cobalt/60" }, from: ["sample-size"] },
-  { id: "statistics", name: "Statistical Analysis", blurb: "Tests, intervals, correlation and regression.", icon: "sigma", accent: { tile: "bg-teal/10", ink: "text-teal-ink", ring: "hover:border-teal/60" }, from: ["statistical"] },
-  { id: "epidemiology", name: "Epidemiology", blurb: "Risk, odds, rates and diagnostic accuracy.", icon: "activity", accent: { tile: "bg-[#8a5d1c]/10", ink: "text-[#8a5d1c]", ring: "hover:border-[#8a5d1c]/50" }, from: ["epidemiology"] },
-  { id: "design", name: "Research Design", blurb: "Frame the question, population and protocol.", icon: "layers", accent: { tile: "bg-navy/10", ink: "text-navy", ring: "hover:border-navy/40" }, from: ["study-design"] },
-  { id: "literature", name: "Literature & References", blurb: "Find, organise and read the evidence.", icon: "library", accent: { tile: "bg-[#5b4bb8]/10", ink: "text-[#5b4bb8]", ring: "hover:border-[#5b4bb8]/50" }, from: ["literature"] },
-  { id: "data", name: "Data Collection", blurb: "Instruments, forms and data dictionaries.", icon: "clipboard-list", accent: { tile: "bg-[#a8432c]/10", ink: "text-[#a8432c]", ring: "hover:border-[#a8432c]/50" }, from: ["data-collection"] },
-  { id: "writing", name: "Writing & Reporting", blurb: "Draft, cite and track your study.", icon: "pen-line", accent: { tile: "bg-[#0b6e8a]/10", ink: "text-[#0b6e8a]", ring: "hover:border-[#0b6e8a]/50" }, from: ["writing", "reporting"] },
+/** Each category has one restrained accent tone. The tones are design tokens (see globals.css and components/ds/icons). */
+export const DIR_CATEGORIES: { id: DirCategoryId; name: string; blurb: string; icon: IconKey; tone: DirTone; from: ToolCategory[] }[] = [
+  { id: "sample-size", name: "Sample Size & Power", blurb: "Work out how many participants you need.", icon: "users", tone: "cobalt", from: ["sample-size"] },
+  { id: "statistics", name: "Statistical Analysis", blurb: "Tests, intervals, correlation and regression.", icon: "sigma", tone: "teal", from: ["statistical"] },
+  { id: "epidemiology", name: "Epidemiology", blurb: "Risk, odds, rates and diagnostic accuracy.", icon: "activity", tone: "gold", from: ["epidemiology"] },
+  { id: "design", name: "Study Design", blurb: "Frame the question, population and protocol.", icon: "layers", tone: "navy", from: ["study-design"] },
+  { id: "literature", name: "Literature & References", blurb: "Find, organise and read the evidence.", icon: "library", tone: "violet", from: ["literature"] },
+  { id: "data", name: "Data Collection", blurb: "Instruments, forms and data dictionaries.", icon: "clipboard-list", tone: "terracotta", from: ["data-collection"] },
+  { id: "writing", name: "Writing & Reporting", blurb: "Draft, cite and track your study.", icon: "pen-line", tone: "ocean", from: ["writing", "reporting"] },
 ];
 
 export const categoryOf = (c: ToolCategory): DirCategoryId => DIR_CATEGORIES.find((d) => d.from.includes(c))!.id;

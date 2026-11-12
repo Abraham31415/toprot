@@ -1,75 +1,52 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { ButtonLink as DsButtonLink } from "@/components/ds/button";
+import { Container as DsContainer, PageHeader } from "@/components/ds/layout";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+
+// The public pages' building blocks. These are thin wrappers over the shared design system (src/components/ds), kept so the
+// existing pages keep working: there is one implementation of each part, in the design system, and none here.
 
 /** Page chrome for every public page: skip link, header, main landmark, footer. */
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-paper text-navy [color-scheme:light]">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2"
-      >
+    <div className="flex min-h-screen flex-col bg-canvas text-ink [color-scheme:light]">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-surface focus:px-3 focus:py-2 focus:shadow-raised">
         Skip to content
       </a>
       <SiteHeader />
-      <main id="main" className="flex-1">
-        {children}
-      </main>
+      <main id="main" className="flex-1">{children}</main>
       <SiteFooter />
     </div>
   );
 }
 
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`mx-auto max-w-6xl px-4 sm:px-6 ${className}`}>{children}</div>;
+  return <DsContainer className={className}>{children}</DsContainer>;
 }
 
+/** The heading block at the top of a page. */
 export function PageHeading({ title, lead, eyebrow }: { title: string; lead?: string; eyebrow?: string }) {
-  return (
-    <Container className="pb-8 pt-12 sm:pt-16">
-      {eyebrow && <p className="text-sm font-semibold uppercase tracking-wide text-teal-ink">{eyebrow}</p>}
-      <h1 className="mt-1 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-      {lead && <p className="mt-4 max-w-2xl text-lg text-navy/75">{lead}</p>}
-    </Container>
-  );
+  return <PageHeader title={title} lead={lead} eyebrow={eyebrow} />;
 }
 
-export function ButtonLink({
-  href,
-  children,
-  variant = "primary",
-}: {
-  href: string;
-  children: ReactNode;
-  variant?: "primary" | "secondary";
-}) {
-  const base =
-    "inline-flex items-center justify-center rounded-md px-5 py-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt";
-  const style =
-    variant === "primary"
-      ? "bg-cobalt text-white hover:bg-cobalt-dark"
-      : "border border-navy/25 bg-white text-navy hover:border-cobalt hover:text-cobalt";
-  return (
-    <Link href={href} className={`${base} ${style}`}>
-      {children}
-    </Link>
-  );
+export function ButtonLink({ href, children, variant = "primary" }: { href: string; children: ReactNode; variant?: "primary" | "secondary" }) {
+  return <DsButtonLink href={href} variant={variant}>{children}</DsButtonLink>;
 }
 
+/** Marks something that is not built yet. Finished features carry no badge. */
 export function StatusBadge({ status }: { status: "available" | "planned" }) {
   return status === "available" ? (
-    <span className="rounded-full bg-teal/10 px-2.5 py-0.5 text-xs font-medium text-teal-ink">Available</span>
+    <span className="rounded-full bg-success-bg px-2.5 py-0.5 text-xs font-medium text-success-ink">Available</span>
   ) : (
-    <span className="rounded-full bg-gold/15 px-2.5 py-0.5 text-xs font-medium text-[#8a5d1c]">Planned</span>
+    <span className="rounded-full bg-warning-bg px-2.5 py-0.5 text-xs font-medium text-warning-ink">Planned</span>
   );
 }
 
 export function Prose({ children }: { children: ReactNode }) {
   return (
     <Container className="pb-16">
-      <div className="max-w-3xl space-y-4 text-base leading-7 text-navy/85 [&_a]:text-cobalt [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-navy [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1">
+      <div className="type-body max-w-3xl space-y-4 !text-base !leading-7 [&_a]:text-primary [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-ink [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1">
         {children}
       </div>
     </Container>
