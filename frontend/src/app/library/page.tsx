@@ -14,7 +14,9 @@ export default async function LibraryPage() {
   const { data } = await supabase
     .from("pdf_documents")
     .select("id, title, status, page_count, file_size, folder, tags, doi, study_id, reference_id, created_at")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    // A library holds at most 100 PDFs; this is a second line of defence so the page can never load an unbounded list.
+    .limit(200);
   return (
     <div className="min-h-screen bg-paper">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">

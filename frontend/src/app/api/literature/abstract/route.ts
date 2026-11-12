@@ -1,3 +1,4 @@
+import { limitRequest } from "@/lib/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
 import { LiteratureError } from "@/lib/literature/types";
 import { fetchPubmedAbstract } from "@/lib/literature/search";
@@ -6,6 +7,8 @@ export const runtime = "nodejs";
 
 /** The abstract of one PubMed record, fetched only when the user opens it. */
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "lit-abstract", { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
   const pmid = req.nextUrl.searchParams.get("pmid") ?? "";
   try {
     const abstract = await fetchPubmedAbstract(pmid);

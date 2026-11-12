@@ -1,3 +1,4 @@
+import { limitRequest } from "@/lib/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
 import { CslFetchError, fetchOfficialStyle } from "@/lib/csl/server";
 
@@ -5,6 +6,8 @@ export const runtime = "nodejs";
 
 /** One style from the official CSL repository. Dependent styles are returned with their parent's formatting. Cached for a day. */
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "csl-style", { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
   const id = req.nextUrl.searchParams.get("id") ?? "";
   try {
     const style = await fetchOfficialStyle(id);

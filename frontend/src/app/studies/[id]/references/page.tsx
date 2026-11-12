@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { ReferenceManager, type StudyRefRow } from "./reference-manager";
 
+/** Most references loaded into the manager at once. */
+const REFERENCE_PAGE_LIMIT = 1000;
+
 export default async function ReferencesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
   const profile = await getCurrentProfile();
@@ -19,8 +22,10 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
 
   if (!study) notFound();
 
-  const [{ data: references }, { data: collections }] = await Promise.all([
-    supabase.from("study_references").select("*").eq("study_id", studyId).order("display_order", { ascending: true }),
+  // The manager searches, groups and de-duplicates in the browser, so it needs the list loaded. Bound the load so one very large
+  // study cannot make the page slow or heavy; a notice below says when the list is cut off.
+  const [{ data: references, count: totalReferences }, { data: collections }] = await Promise.all([
+    supabase.from("study_references").select("*", { count: "exact" }).eq("study_id", studyId).order("display_order", { ascending: true }).range(0, REFERENCE_PAGE_LIMIT - 1),
     supabase.from("reference_collections").select("id, name").eq("study_id", studyId).order("name", { ascending: true }),
   ]);
 
@@ -35,6 +40,12 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
         <p className="mt-3 text-sm text-navy/65">
           References come from Crossref, PubMed or OpenAlex, from a file you import, from your Zotero library, or from your own typing. Each shows where it came from. ToProt never generates or guesses a citation.
         </p>
+
+        {(totalReferences ?? 0) > REFERENCE_PAGE_LIMIT && (
+          <p role="status" className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            This study has {totalReferences} references. The first {REFERENCE_PAGE_LIMIT} are shown here. Move some into another study or export the library to work with all of them.
+          </p>
+        )}
 
         <div className="mt-6">
           <ReferenceManager studyId={study.id} references={(references ?? []) as StudyRefRow[]} collections={(collections ?? []) as { id: string; name: string }[]} readOnly={!isOwner} />

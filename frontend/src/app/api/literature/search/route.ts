@@ -1,3 +1,4 @@
+import { limitRequest } from "@/lib/rate-limit";
 import { NextResponse, type NextRequest } from "next/server";
 import { LiteratureError, SOURCE_INFO, type LitSource, type SearchParams, type SortKey } from "@/lib/literature/types";
 import { searchLiterature } from "@/lib/literature/search";
@@ -9,6 +10,8 @@ const num = (v: string | null) => { const n = v ? parseInt(v, 10) : NaN; return 
 
 /** Public metadata search. Successful responses are cached at the edge so repeat searches do not use up the sources' request limits. */
 export async function GET(req: NextRequest) {
+  const limited = limitRequest(req, "lit-search", { limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
   const s = req.nextUrl.searchParams;
   const source = (s.get("source") ?? "openalex") as LitSource;
   if (!(source in SOURCE_INFO)) return NextResponse.json({ error: "Unknown source." }, { status: 400 });
