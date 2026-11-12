@@ -98,7 +98,7 @@ export const SEO_PAGES: SeoPage[] = [
       { q: "What if my expected counts are below 5?", a: "Use Fisher's exact test, which gives an exact p-value for a 2 x 2 table and does not rely on the chi-square approximation." },
       { q: "Does a significant result mean the exposure causes the outcome?", a: "No. The test shows an association in your data. Causation depends on the study design and on ruling out bias and confounding." },
     ],
-    guides: ["choosing-a-statistical-test", "interpreting-p-values-and-confidence-intervals"],
+    guides: ["choosing-a-statistical-test", "understanding-p-values-and-confidence-intervals"],
   },
   {
     slug: "odds-ratio-calculator",
@@ -132,7 +132,7 @@ export const SEO_PAGES: SeoPage[] = [
       { q: "Is an odds ratio the same as a risk ratio?", a: "No. They are similar only when the outcome is rare. When the outcome is common, the odds ratio is further from 1 than the risk ratio." },
       { q: "Can I use an odds ratio from a case-control study?", a: "Yes. In a case-control study the odds ratio is the standard measure of association, because risk cannot be estimated directly when cases and controls are sampled separately." },
     ],
-    guides: ["choosing-a-study-design", "interpreting-p-values-and-confidence-intervals"],
+    guides: ["how-to-choose-a-study-design", "understanding-p-values-and-confidence-intervals"],
   },
   {
     slug: "diagnostic-accuracy-calculator",
@@ -166,7 +166,7 @@ export const SEO_PAGES: SeoPage[] = [
       { q: "Do I need a reference standard?", a: "Yes. Accuracy is measured against the best available way of knowing who truly has the disease. Without a reference standard the figures cannot be interpreted." },
       { q: "How many participants do I need for a diagnostic accuracy study?", a: "Use the diagnostic accuracy sample size calculator, which sizes the study for a target sensitivity or specificity with a chosen precision." },
     ],
-    guides: ["reporting-guidelines-explained", "choosing-a-study-design"],
+    guides: ["reporting-guidelines-explained", "how-to-choose-a-study-design"],
   },
   {
     slug: "statistical-power-calculator",
@@ -199,7 +199,7 @@ export const SEO_PAGES: SeoPage[] = [
       { q: "Is this the same as a sample size calculation?", a: "They use the same quantities. A sample size calculation solves for the number of participants at a chosen power. A power calculation solves for the power at a fixed number of participants." },
       { q: "Can I use this after my study to show it was powered?", a: "Power calculated from the observed result is not informative. Report the effect estimate with its confidence interval instead." },
     ],
-    guides: ["how-to-calculate-sample-size", "interpreting-p-values-and-confidence-intervals"],
+    guides: ["how-to-calculate-sample-size", "understanding-p-values-and-confidence-intervals"],
   },
 ];
 

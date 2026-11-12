@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { SLUG_ALIASES } from "./src/lib/tools/aliases";
+import { RENAMED_GUIDES } from "./src/lib/resources/renamed";
 
 // Headers that are safe for every page. They do not change how any page works: they stop other sites from framing ToProt,
 // stop browsers guessing content types, limit what is sent in the Referer header and switch off device features the
@@ -22,7 +23,16 @@ const nextConfig: NextConfig = {
   },
   // Calculators whose public address changed for search: the old address keeps working with a permanent redirect.
   async redirects() {
-    return Object.entries(SLUG_ALIASES).map(([from, to]) => ({ source: `/tools/${from}`, destination: `/tools/${to}`, permanent: true }));
+    return [
+      ...Object.entries(SLUG_ALIASES).map(([from, to]) => ({ source: `/tools/${from}`, destination: `/tools/${to}`, permanent: true })),
+      // Guides whose address changed: the old address redirects to the new one.
+      ...Object.entries(RENAMED_GUIDES).map(([from, to]) => ({ source: `/resources/${from}`, destination: `/resources/${to}`, permanent: true })),
+    ];
+  },
+  // The guide pages that are rendered on request (admin list and draft preview) read Markdown from content/guides at run time, so include it.
+  outputFileTracingIncludes: {
+    "/admin/guides": ["./content/guides/**/*"],
+    "/resources/preview/[slug]": ["./content/guides/**/*"],
   },
 };
 
