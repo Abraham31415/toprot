@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { BookOpen, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
+import { Bell, BookOpen, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
+type NavItem = { href: string; label: string; icon: LucideIcon; badge?: number; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
 type NavGroup = { label: string; items: NavItem[] };
 
 // Only routes that exist. Settings and a separate projects page are not listed because there is no page behind them; projects are on the dashboard.
-function navFor(): NavGroup[] {
+function navFor(unread: number): NavGroup[] {
   const dashboard: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, also: ["/studies"] };
   const supervision: NavItem = { href: "/supervisor", label: "Supervision", icon: Users };
   return [
-    { label: "Workspace", items: [dashboard, supervision, { href: "/shared", label: "Shared with me", icon: FolderOpen }, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
+    { label: "Workspace", items: [dashboard, supervision, { href: "/shared", label: "Shared with me", icon: FolderOpen }, { href: "/notifications", label: "Notifications", icon: Bell, badge: unread }, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
     {
       label: "Research",
       items: [
@@ -30,11 +30,11 @@ function navFor(): NavGroup[] {
 const ROLE_NAME: Record<string, string> = { student: "Researcher", supervisor: "Supervisor" };
 
 /** Signed-in chrome: grouped sidebar on desktop, top bar with a drawer on mobile. */
-export function AppShell({ fullName, role, children }: { fullName: string; role: string | null; children: ReactNode }) {
+export function AppShell({ fullName, role, unread = 0, children }: { fullName: string; role: string | null; unread?: number; children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
-  const groups = navFor();
+  const groups = navFor(unread);
   const isActive = (item: NavItem) => [item.href, ...(item.also ?? [])].some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   const [seenPath, setSeenPath] = useState(pathname);
@@ -68,6 +68,7 @@ export function AppShell({ fullName, role, children }: { fullName: string; role:
                     >
                       <item.icon className="h-4 w-4 flex-none" aria-hidden="true" />
                       {item.label}
+                      {!!item.badge && <span className="ml-auto rounded-full bg-primary px-1.5 text-xs font-semibold text-white" aria-label={`${item.badge} unread`}>{item.badge > 99 ? "99+" : item.badge}</span>}
                     </Link>
                   </li>
                 );
