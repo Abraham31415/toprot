@@ -17,7 +17,7 @@ const STEPS = [
   {
     title: "Organise your references",
     text: "Add references by DOI, PubMed ID or title. Details come from CrossRef and PubMed, and you can add any source manually.",
-    note: "Searching literature inside ToProt and inserting citations in a writing editor are planned, not yet available.",
+    note: "You can also search OpenAlex, PubMed and Crossref in the Literature Explorer, keep PDFs in a private library, and insert citations from your references in the writing editor.",
   },
   {
     title: "Structure your protocol",

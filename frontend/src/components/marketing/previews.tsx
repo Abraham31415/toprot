@@ -3,7 +3,7 @@ import { BookOpen, Calculator, FlaskConical, FilePen, Library, Search, ShieldChe
 
 /**
  * Product previews for the marketing pages. They mirror the real screens using sample data
- * (fictional) and are always labelled. Screens for planned tools are labelled as concepts.
+ * (fictional) and are always labelled. A screen for a tool that is not built yet would be labelled as a concept.
  */
 
 export function BrowserFrame({
@@ -150,9 +150,9 @@ export function ReferencesPreview() {
   );
 }
 
-export function LiteratureConceptPreview() {
+export function LiteraturePreview() {
   return (
-    <BrowserFrame url="Literature Explorer" label="" concept>
+    <BrowserFrame url="toprot.vercel.app/literature" label="Literature Explorer, shown with a sample layout.">
       <div className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm text-navy/55">
         <Search className="h-4 w-4" aria-hidden="true" />
         Search PubMed, OpenAlex and Crossref
@@ -169,9 +169,9 @@ export function LiteratureConceptPreview() {
   );
 }
 
-export function EditorConceptPreview() {
+export function EditorPreview() {
   return (
-    <BrowserFrame url="Academic writing editor" label="" concept>
+    <BrowserFrame url="toprot.vercel.app/studies/…/writing" label="Academic writing editor, shown with a sample layout.">
       <div className="flex items-center gap-2 text-navy/70">
         <FilePen className="h-4 w-4" aria-hidden="true" />
         <BookOpen className="h-4 w-4" aria-hidden="true" />

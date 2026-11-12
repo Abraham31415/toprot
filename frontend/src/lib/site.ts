@@ -73,9 +73,9 @@ export const FEATURES: Feature[] = [
     slug: "sample-size",
     name: "Sample Size Calculator",
     status: "available",
-    summary: "Six study designs with a stress test showing how required N moves with dropout and effect size.",
+    summary: "Nine study designs with a stress test showing how required N moves with dropout and effect size.",
     details: [
-      "Single proportion, single mean, two proportions, two means, paired means and correlation.",
+      "Single proportion, single mean, two proportions, two means, paired means, correlation, sensitivity and specificity, an odds ratio and a cohort relative risk.",
       "Free to use without an account at /calculator.",
       "Results can be saved straight into a study protocol.",
     ],
@@ -89,7 +89,7 @@ export const FEATURES: Feature[] = [
       "Add references by DOI or PubMed ID (details come from Crossref and PubMed), by typing them in, from the Literature Explorer, or by importing RIS, BibTeX or EndNote XML files.",
       "Import from your own Zotero library using a read-only key that stays in your browser. Mendeley and EndNote are supported through their file exports. Live Mendeley sync is not available.",
       "Edit details, add tags and notes, group references into collections, search and filter, find and merge duplicates, and export to RIS, BibTeX, EndNote XML or CSV.",
-      "Format a bibliography in any style from the official Citation Style Language repository, or use the Citation Formatter to turn [@key] markers in your text into formatted citations. A full word processor with built-in citations is planned, not yet available.",
+      "Format a bibliography in any style from the official Citation Style Language repository, or use the Citation Formatter to turn [@key] markers in your text into formatted citations. To cite your references inside a manuscript, use the Academic Writing Editor.",
     ],
   },
   {

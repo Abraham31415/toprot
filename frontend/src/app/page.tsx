@@ -13,14 +13,15 @@ import {
   Library,
   Search,
   ShieldCheck,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { ButtonLink, Container, JsonLd, PageShell, StatusBadge } from "@/components/marketing/ui";
 import {
   CalculatorPreview,
   DashboardPreview,
-  EditorConceptPreview,
-  LiteratureConceptPreview,
+  EditorPreview,
+  LiteraturePreview,
   ProtocolPreview,
   ReferencesPreview,
   ReviewPreview,
@@ -44,19 +45,21 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
   "academic-editor": FilePen,
   "literature-explorer": Search,
   "pdf-library": BookOpen,
+  "ai-assistant": Sparkles,
 };
 
 // Short card headings and one-line descriptions; the full wording lives on /features.
 const FEATURE_COPY: Record<string, { title: string; line: string }> = {
   "protocol-builder": { title: "Guided protocol builder", line: "Fill structured sections once." },
   "methodology-validation": { title: "Methodology checks", line: "Rule-based checks and optional AI questions." },
-  "sample-size": { title: "Sample size calculator", line: "Six designs with a stress test." },
+  "sample-size": { title: "Sample size calculator", line: "Nine designs with a stress test." },
   "reference-manager": { title: "Reference manager", line: "Add sources by DOI, PubMed ID or title." },
   "document-generation": { title: "Document generation", line: "Forms and templates from your protocol." },
   "study-tracking": { title: "Milestones and deviations", line: "Track progress and log changes." },
   "academic-editor": { title: "Academic writing editor", line: "Write with citations built in." },
   "literature-explorer": { title: "Literature explorer", line: "Search scholarly sources in one place." },
   "pdf-library": { title: "PDF research library", line: "Read and annotate papers." },
+  "ai-assistant": { title: "AI research assistant", line: "Grounded help with your own project." },
 };
 
 type Stage = { name: string; icon: LucideIcon; status: "available" | "planned"; note: string };
@@ -64,9 +67,9 @@ const LIFECYCLE: Stage[] = [
   { name: "Idea", icon: Lightbulb, status: "available", note: "Start a study" },
   { name: "Evidence", icon: Library, status: "available", note: "Manage references" },
   { name: "Protocol", icon: FlaskConical, status: "available", note: "Build and check" },
-  { name: "Analysis", icon: Calculator, status: "available", note: "Sample size and templates" },
-  { name: "Writing", icon: FilePen, status: "planned", note: "Editor planned" },
-  { name: "Publication", icon: BookOpen, status: "planned", note: "Planned" },
+  { name: "Analysis", icon: Calculator, status: "available", note: "Calculators and statistics" },
+  { name: "Writing", icon: FilePen, status: "available", note: "Write with citations" },
+  { name: "Publication", icon: BookOpen, status: "available", note: "Export to Word or PDF" },
 ];
 
 export default async function Home() {
@@ -103,8 +106,8 @@ export default async function Home() {
               From research idea to publication.
             </h1>
             <p className="mt-5 max-w-xl text-lg text-navy/75">
-              Design protocols, manage references and generate study documents in one workspace. More tools are on
-              the way.
+              Design protocols, search the literature, manage references and PDFs, write your paper and generate study
+              documents in one workspace.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <ButtonLink href="/register">Start researching free</ButtonLink>
@@ -147,14 +150,14 @@ export default async function Home() {
       <section className="border-y border-line bg-white">
         <Container className="py-14">
           <h2 className="text-2xl font-semibold tracking-tight text-navy">See it in action</h2>
-          <p className="mt-2 text-navy/70">Previews use sample data. Planned tools are marked as concepts.</p>
+          <p className="mt-2 text-navy/70">Previews use sample data.</p>
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             <ProtocolPreview />
             <CalculatorPreview />
             <ReferencesPreview />
             <ReviewPreview />
-            <LiteratureConceptPreview />
-            <EditorConceptPreview />
+            <LiteraturePreview />
+            <EditorPreview />
           </div>
         </Container>
       </section>
@@ -236,12 +239,12 @@ export default async function Home() {
             <p className="text-sm font-semibold text-cobalt">Available now</p>
             <h3 className="mt-1 text-xl font-semibold text-navy">Free</h3>
             <p className="mt-1 text-3xl font-semibold text-navy">$0</p>
-            <p className="mt-2 text-sm text-navy/70">All available tools plus a small AI review allowance.</p>
+            <p className="mt-2 text-sm text-navy/70">All the research tools, with a small one-time allowance of AI credits.</p>
           </div>
-          <div className="rounded-lg border border-dashed border-navy/30 bg-white p-6">
-            <p className="text-sm font-semibold text-[#8a5d1c]">Planned, not on sale</p>
-            <h3 className="mt-1 text-xl font-semibold text-navy">Researcher Pro</h3>
-            <p className="mt-2 text-sm text-navy/70">More AI credits. Cannot be purchased yet.</p>
+          <div className="rounded-lg border border-navy/20 bg-white p-6">
+            <p className="text-sm font-semibold text-teal-ink">Paid plan</p>
+            <h3 className="mt-1 text-xl font-semibold text-navy">Toprot Pro</h3>
+            <p className="mt-2 text-sm text-navy/70">More projects, the full AI research assistant and monthly AI credits. See pricing for current availability.</p>
           </div>
         </div>
         <Link href="/pricing" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-cobalt">

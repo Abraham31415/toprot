@@ -5,7 +5,7 @@ import { FEATURES } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Features",
   description:
-    "Protocol builder, methodology checks, sample size calculator, reference manager and document generation in ToProt, with a clear list of what is planned but not yet built.",
+    "Protocol builder, methodology checks, sample size and statistics calculators, literature explorer, reference manager, PDF library, writing editor, AI research assistant and document generation in ToProt.",
   alternates: { canonical: "/features" },
 };
 
@@ -17,8 +17,8 @@ export default function FeaturesPage() {
     <PageShell>
       <PageHeading
         eyebrow="Features"
-        title="What ToProt does today, and what is coming"
-        lead="Everything marked Available works now. Planned features are on the roadmap and are not yet built."
+        title={planned.length > 0 ? "What ToProt does today, and what is coming" : "What ToProt does today"}
+        lead={planned.length > 0 ? "Everything marked Available works now. Planned features are on the roadmap and are not yet built." : "Everything listed here works now. Anything we have not built yet would be marked Planned, and nothing is currently."}
       />
       <Container className="pb-16">
         <h2 className="text-xl font-semibold">Available now</h2>
@@ -39,18 +39,23 @@ export default function FeaturesPage() {
           ))}
         </div>
 
-        <h2 className="mt-12 text-xl font-semibold">Planned</h2>
-        <div className="mt-4 grid gap-5 md:grid-cols-3">
-          {planned.map((f) => (
-            <section key={f.slug} id={f.slug} className="scroll-mt-24 rounded-lg border border-dashed border-gold/60 bg-white p-5">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-base font-semibold">{f.name}</h3>
-                <StatusBadge status={f.status} />
-              </div>
-              <p className="mt-2 text-sm text-navy/70">{f.summary}</p>
-            </section>
-          ))}
-        </div>
+        {planned.length > 0 && (
+          <>
+          <h2 className="mt-12 text-xl font-semibold">Planned</h2>
+          <div className="mt-4 grid gap-5 md:grid-cols-3">
+            {planned.map((f) => (
+              <section key={f.slug} id={f.slug} className="scroll-mt-24 rounded-lg border border-dashed border-gold/60 bg-white p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-base font-semibold">{f.name}</h3>
+                  <StatusBadge status={f.status} />
+                </div>
+                <p className="mt-2 text-sm text-navy/70">{f.summary}</p>
+              </section>
+            ))}
+          </div>
+
+          </>
+        )}
 
         <div className="mt-10 flex flex-wrap gap-3">
           <ButtonLink href="/register">Start for free</ButtonLink>

@@ -19,15 +19,16 @@ export default function AboutPage() {
         </p>
         <h2>What ToProt is</h2>
         <p>
-          A research workspace for planning a study: a structured protocol builder, consistency checks, a sample size
-          calculator, a reference manager and document generation, with supervisor review and study tracking.
+          A research workspace for planning and writing up a study: a structured protocol builder, consistency checks, sample size
+          and statistics calculators, a literature explorer, a reference manager, a PDF library, an academic writing editor and document
+          generation, with an AI research assistant, supervisor review and study tracking.
         </p>
         <h2>What ToProt is not</h2>
         <ul>
           <li>It does not approve or grade your protocol. AI features only raise questions for you to consider.</li>
           <li>It has no regulatory certification, clinical validation or institutional endorsement.</li>
           <li>It does not replace your supervisor, statistician or ethics committee.</li>
-          <li>Planned features such as the writing editor, literature search and PDF library are not built yet.</li>
+          <li>AI features, such as the AI research assistant and questions about your PDFs, use limited AI credits and work only while the AI service is switched on.</li>
         </ul>
         <h2>Where it stands</h2>
         <p>
