@@ -40,4 +40,17 @@ describe("GET /api/health", () => {
     expect(codes.slice(0, 30).every((c) => c === 200)).toBe(true);
     expect(codes.slice(30)).toEqual([429, 429]);
   });
+
+  it("says a service that timed out may be waking up, rather than calling it unreachable", async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.test";
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "k";
+    process.env.NEXT_PUBLIC_DOC_SERVICE_URL = "https://docs.test";
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (String(url).startsWith("https://docs.test")) throw Object.assign(new Error("The operation was aborted due to timeout"), { name: "TimeoutError" });
+      return new Response("{}", { status: 200 });
+    }));
+    const body = await (await call()).json();
+    expect(body.docService).toEqual({ ok: false, detail: "Not responding yet (it may be waking up)" });
+    expect(body.supabase.ok).toBe(true);
+  });
 });

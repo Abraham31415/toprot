@@ -6,6 +6,7 @@ import { limitRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 const NO_STORE = { "Cache-Control": "no-store" };
+const isTimeout = (err: unknown) => err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
 
 async function checkSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,7 +21,7 @@ async function checkSupabase() {
     return { ok: true, detail: "Reachable" };
   } catch (err) {
     console.error(JSON.stringify({ evt: "health_unreachable", service: "supabase", err: err instanceof Error ? err.name : "unknown" }));
-    return { ok: false, detail: "Unreachable" };
+    return { ok: false, detail: isTimeout(err) ? "Not responding yet" : "Unreachable" };
   }
 }
 
@@ -36,7 +37,8 @@ async function checkDocService() {
     return { ok: true, detail: "Reachable" };
   } catch (err) {
     console.error(JSON.stringify({ evt: "health_unreachable", service: "doc_service", err: err instanceof Error ? err.name : "unknown" }));
-    return { ok: false, detail: "Unreachable" };
+    // A free-tier service that has been idle sleeps and takes a while to wake, so a timeout is not the same as being down.
+    return { ok: false, detail: isTimeout(err) ? "Not responding yet (it may be waking up)" : "Unreachable" };
   }
 }
 
