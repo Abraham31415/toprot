@@ -1,3 +1,4 @@
+import { publicSlugFor } from "../aliases";
 import { describe, expect, it } from "vitest";
 import { ALL_TOOLS, CALCULATORS, CATEGORIES, getCalculator, toolHref } from "../registry";
 import { parseList, parseNumbers } from "../helpers";
@@ -33,7 +34,7 @@ describe("tool registry", () => {
   it("covers every category and links non-calculator entries honestly", () => {
     for (const cat of CATEGORIES) expect(ALL_TOOLS.some((t) => t.category === cat.id), cat.id).toBe(true);
     for (const t of ALL_TOOLS.filter((x) => x.kind === "planned")) expect(toolHref(t)).toBeNull();
-    for (const t of ALL_TOOLS.filter((x) => x.kind === "calculator")) expect(toolHref(t)).toBe(`/tools/${t.slug}`);
+    for (const t of ALL_TOOLS.filter((x) => x.kind === "calculator")) expect(toolHref(t)).toBe(`/tools/${publicSlugFor(t.slug)}`);
   });
 
   it("every calculator runs on its default inputs without error and explains itself", () => {
