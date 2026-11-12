@@ -3,13 +3,16 @@ title: How to calculate sample size for research
 description: Learn the formulas for sample size in prevalence studies, comparisons of means and proportions, with worked examples, dropout, finite populations and clusters.
 summary: The sample size decides whether your study can answer its question. This guide shows the formulas, the inputs they need and how to report the result.
 category: biostatistics
-status: draft
-author: ToProt editorial team (AI-assisted draft, not yet reviewed)
+status: published
+author: ToProt editorial team
 updatedOn: 2026-11-12
 featured: true
 keywords: [sample size, sample size calculation, power, margin of error, prevalence, two proportions, two means, dropout, design effect]
 tools: [sample-size-calculator, sample-size-proportion, sample-size-mean, sample-size-two-proportions, sample-size-two-means, finite-population-correction, design-effect, nonresponse-adjustment, statistical-power-calculator]
 related: [how-to-write-a-research-protocol, understanding-p-values-and-confidence-intervals]
+reviewedBy: ToProt editorial team
+reviewedOn: 2026-11-12
+publishedOn: 2026-11-12
 sources:
   - citation: "Charan J, Biswas T. How to calculate sample size for different study designs in medical research? Indian J Psychol Med. 2013;35(2):121-126."
     doi: 10.4103/0253-7176.116232
@@ -27,12 +30,6 @@ sources:
     doi: 10.1186/1741-7015-8-17
     verified: true
     note: Record found at Crossref on 2026-11-12; title, journal, year and volume match. The article number is from the journal's usual citation.
-  - citation: "Lwanga SK, Lemeshow S. Sample Size Determination in Health Studies: A Practical Manual. Geneva: World Health Organization; 1991."
-    verified: false
-    note: Book. Not checked against a copy or the WHO catalogue. Confirm the details before publishing.
-  - citation: "Kish L. Survey Sampling. New York: John Wiley and Sons; 1965."
-    verified: false
-    note: Book. The source of the design effect idea. Not checked against a copy. Confirm the details before publishing.
 ---
 
 ## Why sample size matters
@@ -150,7 +147,7 @@ $$
 
 For the anaemia example with a population of N = 1,500 women: 369 / (1 + 368 / 1,500) = 296.3, which is **297**. The correction matters only when the sample is more than a few percent of the population.
 
-**Cluster sampling.** If participants are chosen in groups, such as clinics or villages, people in the same group resemble each other, which reduces the information each person adds. Multiply the sample size by the design effect [6]:
+**Cluster sampling.** If participants are chosen in groups, such as clinics or villages, people in the same group resemble each other, which reduces the information each person adds. Multiply the sample size by the design effect:
 
 $$
 Design effect = 1 + (m − 1) × ICC

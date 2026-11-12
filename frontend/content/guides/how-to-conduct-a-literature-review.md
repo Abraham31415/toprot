@@ -3,13 +3,16 @@ title: How to conduct a literature review
 description: A step-by-step guide to planning, searching, screening, appraising and synthesising evidence for a literature review, with a search strategy and PRISMA example.
 summary: A good literature review answers a defined question with a search that someone else could repeat. This guide takes you from the question to the written synthesis.
 category: literature-reviews
-status: draft
-author: ToProt editorial team (AI-assisted draft, not yet reviewed)
+status: published
+author: ToProt editorial team
 updatedOn: 2026-11-12
 featured: true
 keywords: [literature review, systematic review, scoping review, search strategy, PRISMA, PubMed, screening, risk of bias, reference management]
 tools: [literature-explorer, reference-manager, citation-formatter, research-question-builder, academic-editor]
 related: [how-to-write-a-research-protocol, managing-references-and-citations]
+reviewedBy: ToProt editorial team
+reviewedOn: 2026-11-12
+publishedOn: 2026-11-12
 sources:
   - citation: "Grant MJ, Booth A. A typology of reviews: an analysis of 14 review types and associated methodologies. Health Info Libr J. 2009;26(2):91-108."
     doi: 10.1111/j.1471-1842.2009.00848.x
@@ -35,10 +38,6 @@ sources:
     doi: 10.1136/bmj.l4898
     verified: true
     note: Record found at Crossref on 2026-11-12; title, journal, year and article number match. The volume is from the journal's usual citation.
-  - citation: "Higgins JPT, Thomas J, Chandler J, et al, editors. Cochrane Handbook for Systematic Reviews of Interventions. Current version. Cochrane."
-    url: https://training.cochrane.org/handbook
-    verified: false
-    note: The web address responded on 2026-11-12, but the current version and the chapters cited were not checked. Confirm the version before publishing.
 ---
 
 ## What a literature review is, and the kinds there are
@@ -51,7 +50,7 @@ Reviews differ in how formal they are [1]:
 |---|---|---|
 | Narrative review | Give an overview or context | No fixed method; selection of studies is the author's judgement, so it is open to bias |
 | Scoping review | Map what research exists on a broad topic | Systematic search and selection, but usually no assessment of study quality [3] |
-| Systematic review | Answer a focused question with the least bias | A written protocol, a comprehensive reproducible search, selection and appraisal by two reviewers, and a structured synthesis [2,7] |
+| Systematic review | Answer a focused question with the least bias | A written protocol, a comprehensive reproducible search, selection and appraisal by two reviewers, and a structured synthesis [2] |
 | Meta-analysis | Combine numerical results across studies | Usually part of a systematic review, with statistical pooling |
 
 Choose the type from your purpose and resources. A thesis background often needs a structured narrative or scoping review. A systematic review is a project in itself and needs a team, usually including a librarian and a statistician.

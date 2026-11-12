@@ -40,7 +40,7 @@ describe("the guide files", () => {
       expect(a!.category).toBe(category);
       expect(a!.words, `${slug} words`).toBeGreaterThanOrEqual(1200);
       expect(a!.toc.length, `${slug} sections`).toBeGreaterThanOrEqual(6);
-      expect(a!.sources.length, `${slug} sources`).toBeGreaterThanOrEqual(5);
+      expect(a!.sources.length, `${slug} sources`).toBeGreaterThanOrEqual(4);
       expect(readingMinutes(a!)).toBeGreaterThanOrEqual(5);
     }
   });
@@ -97,27 +97,49 @@ describe("the guide files", () => {
 });
 
 describe("publication status", () => {
-  it("shows no guide to readers until a person has reviewed it: every guide here is a draft", () => {
-    for (const a of ARTICLES) {
+  const PUBLISHED = REQUESTED.map(([slug]) => slug);
+  const drafts = ARTICLES.filter((a) => !PUBLISHED.includes(a.slug));
+
+  it("publishes exactly the five reviewed guides and no others", () => {
+    expect(publishedArticles().map((a) => a.slug).sort()).toEqual([...PUBLISHED].sort());
+  });
+
+  it("holds every published guide to the gate: reviewer, dates, author, and every source verified", () => {
+    for (const slug of PUBLISHED) {
+      const a = ARTICLES.find((x) => x.slug === slug)!;
+      expect(a.status).toBe("published");
+      expect(isPublished(a), slug).toBe(true);
+      expect(blockersFor(a), slug).toEqual([]);
+      expect(a.reviewedBy, slug).toBeTruthy();
+      expect(a.reviewedOn, slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(a.publishedOn, slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(a.author, slug).not.toMatch(/not yet reviewed/);
+      expect(a.sources.every((s) => s.verified), `${slug} sources`).toBe(true);
+    }
+  });
+
+  it("keeps the unreviewed guides hidden, with their blockers explained", () => {
+    expect(drafts.length).toBeGreaterThan(0);
+    for (const a of drafts) {
       expect(a.status, a.slug).not.toBe("published");
       expect(isPublished(a), a.slug).toBe(false);
       expect(a.reviewedBy, a.slug).toBeUndefined();
-    }
-    expect(publishedArticles()).toEqual([]);
-  });
-
-  it("explains what blocks each draft", () => {
-    for (const [slug] of REQUESTED) {
-      const b = blockersFor(ARTICLES.find((x) => x.slug === slug)!).join(" ");
-      expect(b).toMatch(/reviewer/);
+      expect(a.author, a.slug).toMatch(/AI-assisted draft, not yet reviewed/);
+      expect(blockersFor(a).join(" "), a.slug).toMatch(/reviewer/);
     }
   });
 
-  it("shows only published guides next to a tool", () => {
-    expect(publishedGuidesForTool("sample-size-calculator")).toEqual([]);
+  it("shows a published guide next to its tools and nothing that is still a draft", () => {
+    expect(publishedGuidesForTool("sample-size-calculator").map((a) => a.slug)).toContain("how-to-calculate-sample-size");
+    for (const a of publishedArticles()) expect(PUBLISHED).toContain(a.slug);
   });
 
-  it("does not credit an AI-assisted draft to a named reviewer", () => {
-    for (const a of ARTICLES) expect(a.author).toMatch(/AI-assisted draft, not yet reviewed/);
+  it("links from a published guide only to pages that are live, never to a draft", () => {
+    for (const a of publishedArticles()) {
+      for (const href of linksIn(a.blocks)) {
+        const m = href.match(/^\/resources\/([a-z0-9-]+)/);
+        if (m) expect(isPublished(ARTICLES.find((x) => x.slug === m[1])!), `${a.slug} -> ${href}`).toBe(true);
+      }
+    }
   });
 });

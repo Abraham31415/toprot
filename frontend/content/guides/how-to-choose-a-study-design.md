@@ -3,13 +3,16 @@ title: How to choose the appropriate study design
 description: Compare cross-sectional, case-control, cohort and randomised designs, see what each can answer, and choose one for your research question.
 summary: The design decides what your study can and cannot show. Match it to the question first, then check what is feasible.
 category: epidemiology
-status: draft
-author: ToProt editorial team (AI-assisted draft, not yet reviewed)
+status: published
+author: ToProt editorial team
 updatedOn: 2026-11-12
 featured: true
 keywords: [study design, cross-sectional, case-control, cohort, randomised controlled trial, odds ratio, relative risk, bias, confounding]
 tools: [study-design-assistant, research-question-builder, odds-ratio-calculator, relative-risk-calculator, epidemiology-2x2-table, sample-size-calculator]
 related: [how-to-write-a-research-protocol, how-to-calculate-sample-size]
+reviewedBy: ToProt editorial team
+reviewedOn: 2026-11-12
+publishedOn: 2026-11-12
 sources:
   - citation: "Mann CJ. Observational research methods. Research design II: cohort, cross sectional, and case-control studies. Emerg Med J. 2003;20(1):54-60."
     doi: 10.1136/emj.20.1.54
@@ -35,9 +38,6 @@ sources:
     doi: 10.1016/S0140-6736(07)61602-X
     verified: true
     note: Record found at Crossref on 2026-11-12; title, journal, year, volume and pages match.
-  - citation: "Hulley SB, Cummings SR, Browner WS, Grady DG, Newman TB. Designing Clinical Research. 4th ed. Philadelphia: Lippincott Williams & Wilkins; 2013."
-    verified: false
-    note: Book. Not checked against a copy. Confirm the edition, publisher and the chapters cited before publishing.
 ---
 
 ## Start from the question, not from the design

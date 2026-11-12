@@ -3,13 +3,16 @@ title: Understanding p-values and confidence intervals
 description: What a p-value and a 95% confidence interval mean, how to calculate and report them with worked examples, and the common mistakes to avoid.
 summary: A p-value tells you how surprising your data would be if there were no effect. A confidence interval shows which effect sizes are compatible with the data. You need both.
 category: biostatistics
-status: draft
-author: ToProt editorial team (AI-assisted draft, not yet reviewed)
+status: published
+author: ToProt editorial team
 updatedOn: 2026-11-12
 featured: true
 keywords: [p-value, confidence interval, statistical significance, hypothesis test, standard error, t-test, multiple testing, effect size]
 tools: [confidence-interval-mean, confidence-interval-proportion, one-sample-t-test, two-sample-t-test, chi-square-calculator, effect-size]
 related: [how-to-calculate-sample-size, choosing-a-statistical-test]
+reviewedBy: ToProt editorial team
+reviewedOn: 2026-11-12
+publishedOn: 2026-11-12
 sources:
   - citation: "Wasserstein RL, Lazar NA. The ASA statement on p-values: context, process, and purpose. Am Stat. 2016;70(2):129-133."
     doi: 10.1080/00031305.2016.1154108

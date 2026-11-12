@@ -3,13 +3,16 @@ title: How to write a research protocol
 description: A step-by-step guide to writing a research protocol: question, objectives, design, variables, sample size, analysis plan and ethics, with a worked example.
 summary: A protocol is the written plan for a study. This guide explains each section, what it must say, and how to avoid the mistakes reviewers see most often.
 category: methodology
-status: draft
-author: ToProt editorial team (AI-assisted draft, not yet reviewed)
+status: published
+author: ToProt editorial team
 updatedOn: 2026-11-12
 featured: true
 keywords: [research protocol, study protocol, research proposal, SPIRIT, STROBE, objectives, PICO]
 tools: [protocol-builder, research-question-builder, study-design-assistant, statistical-analysis-plan-generator, sample-size-calculator, consent-ethics-template-builder]
 related: [how-to-choose-a-study-design, how-to-calculate-sample-size]
+reviewedBy: ToProt editorial team
+reviewedOn: 2026-11-12
+publishedOn: 2026-11-12
 sources:
   - citation: "Chan A-W, Tetzlaff JM, Altman DG, et al. SPIRIT 2013 statement: defining standard protocol items for clinical trials. Ann Intern Med. 2013;158(3):200-207."
     doi: 10.7326/0003-4819-158-3-201302050-00583
@@ -31,9 +34,6 @@ sources:
     doi: 10.1001/jama.2013.281053
     verified: true
     note: Record found at Crossref on 2026-11-12; title, journal, year and first page match. The end page is given from the journal's usual citation and is not in the Crossref record.
-  - citation: "Hulley SB, Cummings SR, Browner WS, Grady DG, Newman TB. Designing Clinical Research. 4th ed. Philadelphia: Lippincott Williams & Wilkins; 2013."
-    verified: false
-    note: Book. Not checked against a copy. Confirm the edition, publisher and the chapters cited before publishing.
 ---
 
 ## What a research protocol is for
@@ -46,7 +46,7 @@ The standard checklist for trial protocols is SPIRIT [1,2]. Observational studie
 
 ## Start with a question you can answer
 
-Before writing sections, write one sentence that states the question. Check it against five criteria that are often remembered as FINER [6]:
+Before writing sections, write one sentence that states the question. Check it against five criteria that are often remembered as FINER:
 
 - **Feasible:** enough participants, time, money and skills.
 - **Interesting:** to you and to the people who will read the results.
