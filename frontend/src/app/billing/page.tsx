@@ -55,19 +55,21 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="min-h-screen bg-paper">
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <Link href={home} className="text-sm text-navy/65 hover:underline">Back</Link>
-        <h1 className="mt-2 text-xl font-semibold text-navy">Billing and AI credits</h1>
+        <h1 className="mt-2 text-2xl font-semibold text-navy">Billing and AI credits</h1>
+        <p className="mt-1 text-sm text-navy/65">Your plan, your AI credit balance, and your payment history in one place.</p>
         {note && <p role="status" className={`mt-3 rounded-md px-3 py-2 text-sm ${note.tone === "good" ? "bg-teal/10 text-teal-ink" : "bg-amber-50 text-amber-900"}`}>{note.text}</p>}
 
         {!h ? (
           <p className="mt-4 rounded-lg border border-line bg-white p-4 text-sm text-navy/75">Credit information is temporarily unavailable. Everything else in ToProt still works.{overview.headroomError ? <span className="mt-1 block text-xs text-navy/50">Technical detail: {overview.headroomError}</span> : null}</p>
         ) : (
           <>
-            <section aria-labelledby="plan-h" className="mt-4 rounded-lg border border-line bg-white p-5">
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <section aria-labelledby="plan-h" className="rounded-xl border border-line bg-white p-5">
               <h2 id="plan-h" className="text-sm font-medium text-navy/65">Your plan</h2>
-              <p className="mt-1 text-2xl font-semibold text-navy">{h.planKey === "free" ? (freePlan?.name ?? "Free") : (catalog?.plans.find((p) => p.key === h.planKey)?.name ?? "Toprot Pro")}</p>
-              <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-semibold text-navy">{h.planKey === "free" ? (freePlan?.name ?? "Free") : (catalog?.plans.find((p) => p.key === h.planKey)?.name ?? "Toprot Pro")}{h.planKey !== "free" && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${activePaid?.cancelAtPeriodEnd ? "bg-gold/15 text-[#8a5d1c]" : "bg-teal/10 text-teal-ink"}`}>{activePaid?.cancelAtPeriodEnd ? "Ends " + (h.periodEnd ? date(h.periodEnd) : "soon") : "Active"}</span>}</p>
+              <dl className="mt-3 grid gap-y-2 text-sm">
                 <div><dt className="text-navy/60">Subscription status</dt><dd className="font-medium text-navy">{h.planKey === "free" ? (sub && sub.status !== "active" ? `Ended (${sub.status})` : "Free plan") : "Active"}</dd></div>
                 <div><dt className="text-navy/60">Monthly credit allocation</dt><dd className="font-medium text-navy">{h.planKey === "free" ? `${credits(h.allowanceMcr)} one-time introductory credits` : `${credits(h.allowanceMcr)} credits per billing period`}</dd></div>
                 <div><dt className="text-navy/60">Next credit reset</dt><dd className="font-medium text-navy">{h.planKey !== "free" && h.periodEnd ? date(h.periodEnd) : "Not applicable (introductory credits do not reset)"}</dd></div>
@@ -78,10 +80,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 : <p className="mt-3 text-xs text-navy/60">This plan does not renew automatically. You can renew during the last {windowDays} days of the period; unused plan credits do not carry over.</p>)}
             </section>
 
-            <section aria-labelledby="credits-h" className="mt-4 rounded-lg border border-line bg-white p-5">
+            <section aria-labelledby="credits-h" className="rounded-xl border border-line bg-white p-5">
               <h2 id="credits-h" className="text-sm font-medium text-navy/65">AI credits</h2>
               <p className="mt-1 text-3xl font-semibold text-navy">{credits(h.availableMcr)}<span className="ml-2 text-base font-normal text-navy/65">available in total</span></p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="mt-4 grid gap-4">
                 <div>
                   <p className="text-sm font-medium text-navy">{h.planKey === "free" ? "Introductory credits" : "Plan credits"}</p>
                   <p className="text-sm text-navy/75">{credits(h.subscriptionAvailableMcr)} left of {credits(h.allowanceMcr)}</p>
@@ -98,8 +100,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               </div>
               {h.availableMcr <= 0 && <p className="mt-3 text-sm text-amber-800">You are out of AI credits. Calculators, protocol editing, references and exports keep working.</p>}
             </section>
+            </div>
 
-            {catalog && <PurchasePanel catalog={{ ...catalog, currencies: catalog.currencies.filter((c) => provider.currencies.includes(c)) }} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canBuyPlan={canBuyPlan} renewLabel={activePaid ? "Renew" : "Upgrade"} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} providerName={provider.name} autoRenews={provider.autoRenews} processorNote={provider.processorNote} canCancel={managed} />}
+            {catalog && <PurchasePanel catalog={{ ...catalog, currencies: catalog.currencies.filter((c) => provider.currencies.includes(c)) }} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canBuyPlan={canBuyPlan} renewLabel={activePaid ? "Renew" : "Upgrade"} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} providerName={provider.name} autoRenews={provider.autoRenews} processorNote={provider.processorNote} canCancel={managed} isSubscriber={!!activePaid} />}
 
             <section aria-labelledby="ops-h" className="mt-8">
               <h2 id="ops-h" className="text-sm font-medium text-navy/85">Recent AI operations</h2>

@@ -88,3 +88,9 @@ At the default `credit_value_micro_usd = 1000`, 2,000 credits is about $2.00 of 
 Verified by automated tests on a scratch Postgres and with mocked Flutterwave responses: credit pools, reservation, charging order, expiry, concurrency, idempotent fulfilment, amount and currency checks, plan gating, project limits, privileges, webhook authentication, route behaviour, and that the existing 55-test ledger suite still passes unchanged.
 
 **Not verified:** a real Flutterwave test-mode transaction (needs your keys), the redirect-return flow end to end, Mobile Money, and the response shape of `verify_by_reference` on your account (the primary path verifies by transaction id, which is documented).
+
+## Credit pack rules
+
+- Credit packs can only be bought while the customer has an active paid subscription (a subscription set not to renew still counts until the end of the paid period). Controlled by the billing setting `packs_require_subscription` (1 = subscribers only, 0 = anyone). Subscribing itself is always allowed.
+- The hourly checkout attempt limit (`max_pending_payments_per_hour`, 30 while testing, 10 by default) counts only pending and succeeded payments, so failed checkouts never lock a customer out.
+- Migration: `supabase/migrations/20261117090000_billing_pack_rules.sql`.

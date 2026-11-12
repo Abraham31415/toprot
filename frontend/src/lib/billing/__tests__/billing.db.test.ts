@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PoolClient } from "pg";
 import { TestDb } from "@/lib/ai/__tests__/helpers";
 
@@ -19,6 +19,10 @@ beforeAll(async () => {
   await db.pool.query("alter table auth.users add column if not exists created_at timestamptz not null default now()");
   await db.pool.query(readFileSync(MIG, "utf8"));
   await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261116090000_billing_provider_dodo.sql"), "utf8"));
+  await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261117090000_billing_pack_rules.sql"), "utf8"));
+  // Most of these tests exercise the credit mechanics with free users, so the subscriber-only pack rule is off here and
+  // proven on in its own describe block below.
+  await db.pool.query("update public.billing_settings set value_num = 0 where key = 'packs_require_subscription'");
   await db.pool.query(`insert into public.ai_features (feature_key, description, model_chain, max_output_tokens, max_input_chars, max_iterations, max_tool_calls, max_op_cost_micro_usd) values
     ('pdf_qa', 'x', array['claude-sonnet-5-5'], 3000, 60000, 1, 0, 1000000),
     ('assistant_deep', 'x', array['claude-sonnet-5-5'], 3000, 60000, 1, 0, 1000000),
@@ -590,5 +594,56 @@ describe("Dodo Payments: automatic renewals and cancellation", () => {
     const { r, tx } = await pay(u, "pack", "credits_2000");
     expect(r.ok).toBe(true);
     expect((await db.pool.query("select provider from payments where tx_ref = $1", [tx])).rows[0].provider).toBe("flutterwave");
+  });
+});
+
+describe("pack and attempt-limit rules", () => {
+  const rule = (on: boolean) => db.pool.query("update billing_settings set value_num = $1 where key = 'packs_require_subscription'", [on ? 1 : 0]);
+  beforeEach(() => rule(true));
+  afterEach(() => rule(false));
+
+  it("refuses a credit pack to a customer without a paid subscription, and creates nothing", async () => {
+    const u = await db.newUser();
+    expect((await pay(u, "pack", "credits_2000")).r).toMatchObject({ ok: false, code: "subscription_required" });
+    expect((await db.pool.query("select count(*)::int n from payments")).rows[0].n).toBe(0);
+  });
+  it("allows a pack while the subscription is active, and still after renewal is cancelled until the period ends", async () => {
+    const u = await db.newUser();
+    await paid(u, "subscription", "pro");
+    expect((await pay(u, "pack", "credits_5000")).r).toMatchObject({ ok: true });
+    await db.pool.query("update ai_subscriptions set cancel_at_period_end = true");
+    expect((await pay(u, "pack", "credits_5000")).r).toMatchObject({ ok: true });
+  });
+  it("refuses a pack once the paid period has ended or the subscription is no longer active", async () => {
+    const u = await db.newUser();
+    await paid(u, "subscription", "pro");
+    await db.pool.query("update ai_subscriptions set current_period_start = now() - interval '40 days', current_period_end = now() - interval '1 minute'");
+    expect((await pay(u, "pack", "credits_2000")).r).toMatchObject({ code: "subscription_required" });
+    await db.pool.query("update ai_subscriptions set current_period_end = now() + interval '10 days', status = 'canceled'");
+    expect((await pay(u, "pack", "credits_2000")).r).toMatchObject({ code: "subscription_required" });
+  });
+  it("does not let one customer's subscription open packs for another", async () => {
+    const a = await db.newUser(), b = await db.newUser();
+    await paid(a, "subscription", "pro");
+    expect((await pay(b, "pack", "credits_2000")).r).toMatchObject({ code: "subscription_required" });
+  });
+  it("can be switched off with the setting, with no code change", async () => {
+    await rule(false);
+    expect((await pay(await db.newUser(), "pack", "credits_2000")).r).toMatchObject({ ok: true });
+  });
+  it("subscribing is always allowed without a subscription (it is how one starts)", async () => {
+    expect((await pay(await db.newUser(), "subscription", "pro")).r).toMatchObject({ ok: true });
+  });
+
+  it("counts only pending and succeeded attempts toward the hourly limit, so failed checkouts do not lock a customer out", async () => {
+    await rule(false);
+    const u = await db.newUser();
+    for (let i = 0; i < 10; i++) {
+      const { tx } = await pay(u, "pack", "credits_2000");
+      await db.pool.query("update payments set status = 'failed' where tx_ref = $1", [tx]);
+    }
+    expect((await pay(u, "pack", "credits_2000")).r).toMatchObject({ ok: true });
+    for (let i = 0; i < 9; i++) await pay(u, "pack", "credits_2000");
+    expect((await pay(u, "pack", "credits_2000")).r).toMatchObject({ ok: false, code: "too_many_attempts" });
   });
 });

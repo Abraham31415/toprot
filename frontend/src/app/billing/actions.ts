@@ -17,6 +17,7 @@ const MESSAGES: Record<string, string> = {
   unknown_product: "That item is not available.",
   currency_unavailable: "That item is not available in the chosen currency.",
   too_many_attempts: "You have started several payments in the last hour. Please wait a little and try again.",
+  subscription_required: "Credit packs are for Pro subscribers. Subscribe to Pro first, then you can add extra credits.",
 };
 
 function mapCreateError(created: { code?: string; renew_from?: string; renews_on?: string }): string {

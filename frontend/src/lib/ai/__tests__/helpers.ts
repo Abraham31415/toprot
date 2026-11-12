@@ -42,6 +42,7 @@ export class TestDb implements RpcClient {
       await db.pool.query("alter table auth.users add column if not exists created_at timestamptz not null default now()");
       await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261115090000_billing_plans_payments.sql"), "utf8"));
       await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261116090000_billing_provider_dodo.sql"), "utf8"));
+      await db.pool.query(readFileSync(path.resolve(__dirname, "../../../../../supabase/migrations/20261117090000_billing_pack_rules.sql"), "utf8"));
     }
     return db;
   }

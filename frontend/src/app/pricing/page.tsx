@@ -6,7 +6,7 @@ import { providerInfo, providerReady } from "@/lib/billing/provider";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "ToProt is free to start. Toprot Pro adds larger project limits, the full AI research assistant and monthly AI credits. Optional prepaid credit packs are available.",
+  description: "ToProt is free to start. Toprot Pro adds larger project limits, the full AI research assistant and monthly AI credits. Pro subscribers can also add optional prepaid credit packs.",
   alternates: { canonical: "/pricing" },
 };
 // Prices, plans and packs are read from the database, so a change there shows up here within minutes.
@@ -64,7 +64,7 @@ export default async function PricingPage() {
             {catalog.packs.length > 0 && (
               <>
                 <h2 className="mt-12 text-xl font-semibold">Extra AI credits</h2>
-                <p className="mt-2 max-w-3xl text-sm text-navy/80">Optional prepaid packs for when you need more than your plan includes. Plan credits are used first. Purchased credits are tracked separately and expire after the period shown. Prices are initial proposals.</p>
+                <p className="mt-2 max-w-3xl text-sm text-navy/80">Optional prepaid packs for Pro subscribers who need more than their plan includes. Plan credits are used first. Purchased credits are tracked separately and expire after the period shown. Prices are initial proposals.</p>
                 <ul className="mt-3 grid max-w-3xl gap-3 sm:grid-cols-3">
                   {catalog.packs.map((k) => {
                     const p = k.prices.find((x) => x.currency === "USD") ?? k.prices[0];
