@@ -37,3 +37,12 @@
 - A full CSP with nonces.
 - True pagination of the reference list (see above).
 - Image optimisation work: the site has no content images beyond a generated social card.
+
+## Research Toolkit directory (`/tools`)
+
+- The directory is a presentation layer. It changes no calculator, formula, result or address. Each tool's own page keeps its full technical name.
+- `src/lib/tools/directory.ts` (server) holds one entry per tool: a short label, a one-line description, a Lucide icon, an optional group and search aliases. `src/lib/tools/directory-core.ts` (shared with the browser) holds the categories, accent colours, search scoring, filtering and address state. The browser never downloads the calculator code.
+- To add a calculator: register it as before, then add an entry for its slug in `ENTRIES`. A test fails if a tool has no entry, a label is longer than 28 characters, a description is longer than 70, two tools share a label, or an icon is missing.
+- Search matches the short label, the full name, keywords, aliases, description and category. One- and two-letter abbreviations (OR, RR, CI) match only an explicit alias or a tool's initials, so they do not match the English word "or". Filler words are ignored in longer searches.
+- The selected category and search are kept in the address (`/tools?category=epidemiology&q=odds`), so links can be shared and browser Back and Forward work. The page first renders every tool, so search engines and keyboard users reach all of them.
+- Main navigation: Features, Research Tools, Literature, Pricing, Resources, with How it works, Examples and Documentation under More. Everything stays reachable from the footer.

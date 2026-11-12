@@ -11,16 +11,29 @@ export const SITE_DESCRIPTION =
 // Optional public contact address. Left unset until the owner chooses one; pages degrade gracefully.
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 
-export const NAV_LINKS = [
+/** The few links that matter most, always visible. */
+export const PRIMARY_NAV = [
   { href: "/features", label: "Features" },
   { href: "/tools", label: "Research Tools" },
   { href: "/literature", label: "Literature" },
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/examples", label: "Examples" },
   { href: "/pricing", label: "Pricing" },
   { href: "/resources", label: "Resources" },
-  { href: "/docs", label: "Documentation" },
 ] as const;
+
+/** Secondary pages, kept one click away in the "More" menu (and in the footer). */
+export const MORE_NAV = [
+  { href: "/how-it-works", label: "How it works", hint: "From idea to protocol" },
+  { href: "/examples", label: "Examples", hint: "A sample study" },
+  { href: "/docs", label: "Documentation", hint: "Guides to using ToProt" },
+] as const;
+
+/** Pages that belong to a primary link without sharing its address, so the right link shows as current. */
+const NAV_ALSO: Record<string, readonly string[]> = { "/tools": ["/tools", "/calculator"], "/literature": ["/literature", "/citations"] };
+export const isNavActive = (href: string, pathname: string | null): boolean =>
+  !!pathname && (NAV_ALSO[href] ?? [href]).some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+/** Every top-level link, for places that list them all (the footer keeps these reachable). */
+export const NAV_LINKS = [...PRIMARY_NAV, ...MORE_NAV] as const;
 
 export type FeatureStatus = "available" | "planned";
 
