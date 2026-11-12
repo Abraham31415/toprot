@@ -17,4 +17,9 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
       message: String(e.message ?? "").slice(0, 300),
     }),
   );
+  // Also keep a count per route and error type for the admin console. It never receives request contents, and a failure here is ignored.
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    await createAdminClient().rpc("app_error_record", { p_route: context.routePath, p_name: e.name ?? "Error", p_message: String(e.message ?? "").slice(0, 300) });
+  } catch { /* recording an error must never cause another */ }
 };

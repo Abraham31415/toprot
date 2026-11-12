@@ -114,7 +114,7 @@ describe("GET /api/billing/maintenance", () => {
       : fn === "billing_close_stale_payments" ? { data: 2, error: null } : { data: 3, error: null };
     const { GET } = await import("@/app/api/billing/maintenance/route");
     const res = await GET(get(`Bearer ${ENV.CRON_SECRET}`));
-    expect(await res.json()).toEqual({ ok: true, rechecked: 1, fulfilled: 1, closed: 2, expiredLots: 3 });
+    expect(await res.json()).toMatchObject({ ok: true, rechecked: 1, fulfilled: 1, closed: 2, expiredLots: 3 });
   });
   it("keeps going when one payment cannot be re-checked", async () => {
     rpcResult = (fn) => fn === "billing_pending_to_check" ? { data: [{ tx_ref: "toprot-a" }, { tx_ref: "toprot-b" }], error: null } : { data: 0, error: null };

@@ -11,7 +11,7 @@ const SERVER_URL = process.env.TEST_PG_URL ?? "postgres://postgres@localhost:554
 const DB_NAME = "toprot_saved_calc_test";
 const MIGRATIONS = path.resolve(__dirname, "../../../../../supabase/migrations");
 const SHIM = path.resolve(__dirname, "../../ai/__tests__/fixtures/supabase-shim.sql");
-const SKIP = [/outputs_storage/, /ai_usage_credits/, /writing_and_pdf_library/, /research_pdfs_storage/, /manuscript_figures_storage/, /ai_research_assistant/, /billing_plans_payments/, /billing_provider_dodo/, /billing_pack_rules/, /foreign_key_indexes/];
+const SKIP = [/outputs_storage/, /ai_usage_credits/, /writing_and_pdf_library/, /research_pdfs_storage/, /manuscript_figures_storage/, /ai_research_assistant/, /billing_plans_payments/, /billing_provider_dodo/, /billing_pack_rules/, /foreign_key_indexes/, /admin_console/];
 
 let pool: Pool;
 

@@ -55,6 +55,7 @@ export type AiErrorCode =
   | "input_too_large"
   | "insufficient_credits"
   | "platform_budget_exceeded"
+  | "platform_monthly_budget_exceeded"
   | "op_cost_too_high"
   | "too_many_concurrent"
   | "rate_limited"
@@ -93,6 +94,7 @@ export const USER_MESSAGES: Record<AiErrorCode, string> = {
   insufficient_credits:
     "You don't have enough AI credits for this. Free research tools are unaffected. Credits reset with your next billing period.",
   platform_budget_exceeded: "AI features have reached today's capacity. Please try again tomorrow. Nothing was charged.",
+  platform_monthly_budget_exceeded: "AI features have reached this month's capacity. Please try again next month. Nothing was charged.",
   op_cost_too_high: "This request is too large for a single AI operation.",
   too_many_concurrent: "You already have AI requests running. Wait for them to finish and try again.",
   rate_limited: "You're sending AI requests too quickly. Wait a minute and try again.",

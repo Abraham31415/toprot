@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, Download, FilePlus2, FolderPlus, Printer } from "lucide-react";
 import { applyToolAction, insertMethodsIntoProtocol, listMyStudiesForTools, saveCalculationToStudy } from "@/app/tools/actions";
 import { RowsEditor } from "./rows-editor";
+import { trackCalculator } from "@/components/analytics/tracker";
 import { getCalculator } from "@/lib/tools/registry";
 import { parseNumbers } from "@/lib/tools/helpers";
 import type { Calculator, Field, ToolResult } from "@/lib/tools/types";
@@ -67,6 +68,7 @@ export function ToolRunner({ slug }: { slug: string }) {
     }
     try {
       setResult(tool.run(parsed.n, values));
+      trackCalculator(tool.slug);
     } catch (e) {
       setResult({ error: (e as Error).message || "The calculation failed." });
     }

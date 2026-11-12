@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { friendlyAuthError } from "@/lib/auth-errors";
+import { recordSignupAttribution } from "@/lib/analytics/attribution";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
@@ -47,6 +48,7 @@ export async function registerUser(
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
       return { error: friendlyAuthError("User already registered") };
     }
+    if (data.user?.id) await recordSignupAttribution(data.user.id);
   } catch {
     return { error: "We could not reach the server. Check your connection and try again." };
   }

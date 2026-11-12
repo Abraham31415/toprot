@@ -1,5 +1,6 @@
 import { dispatchPendingAlerts, type AlertSender } from "./alerts";
 import { costMicroUsd } from "./cost";
+import { monthlyBudgetExceeded } from "./monthly";
 import * as ledger from "./ledger";
 import { BudgetGuard } from "./limits";
 import { routeCandidates } from "./route";
@@ -101,6 +102,9 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
     const hits = detectInjectionAttempt(opts.untrustedText);
     if (hits.length) log("ai_injection_suspected", { userId, feature, patterns: hits.length });
   }
+
+  // The platform's monthly ceiling (see monthly.ts). Nothing has been reserved or charged at this point.
+  if (await monthlyBudgetExceeded(db)) return fail("platform_monthly_budget_exceeded");
 
   // Reserve: try the preferred model first, fall back to cheaper ones if the user's remaining
   // credits or the platform's remaining budget cannot cover the worst case.

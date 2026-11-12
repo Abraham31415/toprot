@@ -26,9 +26,8 @@ export default async function AdminGuidesPage() {
   const published = ARTICLES.filter(isPublished).length;
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <Link href="/dashboard" className="type-support hover:underline">Back</Link>
+    <div>
+      <main>
         <h1 className="type-page mt-2">Guide administration</h1>
         <p className="type-support mt-1.5 max-w-3xl !text-ink-soft">
           {ARTICLES.length} guides, {published} published. A guide is visible to readers only when its status is published and every check below passes. Guides are Markdown files

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpenCheck, ChevronLeft, ChevronRight, Download, ExternalLink, FolderPlus, LockOpen, Search, Table2, X } from "lucide-react";
 import { listMyStudiesForTools } from "@/app/tools/actions";
+import { send as sendEvent } from "@/components/analytics/tracker";
 import { saveWorksToStudy } from "@/app/literature/actions";
 import { ARTICLE_TYPES, PUBMED_STUDY_TYPES, SOURCE_INFO, type LitSource, type SearchResult, type Work } from "@/lib/literature/types";
 import { EVIDENCE_COLUMNS, evidenceCsv, evidenceDoc, evidenceRowFor, workToRef, worksToCsv, type EvidenceRow } from "@/lib/literature/convert";
@@ -72,7 +73,7 @@ export function LiteratureExplorer() {
       const res = await fetch(`/api/literature/search?${q}`, { signal: ctl.signal });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "The search failed."); setResult(null); }
-      else setResult(data as SearchResult);
+      else { setResult(data as SearchResult); sendEvent({ e: "literature_search", p: window.location.pathname }); }
     } catch (e) {
       if ((e as Error).name !== "AbortError") { setError("Could not reach the search service. Check your connection and try again."); setResult(null); }
     } finally {

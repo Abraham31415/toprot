@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { trackCalculator } from "@/components/analytics/tracker";
 import type { DesignType, SampleSizeInput, SampleSizeResult } from "@/lib/protocol/sample-size";
 import { DESIGN_TYPE_LABELS } from "@/lib/protocol/sample-size";
 import { StressTestTable } from "./stress-test-table";
@@ -108,7 +109,7 @@ export function SampleSizeForm({
     startTransition(async () => {
       const res = await runCalculation(input);
       if (res.error) setError(res.error);
-      else if (res.result) setResult(res.result);
+      else if (res.result) { setResult(res.result); trackCalculator("sample-size-calculator"); }
     });
   }
 
