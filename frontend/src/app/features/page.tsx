@@ -5,8 +5,10 @@ import { ButtonLink } from "@/components/ds/button";
 import { CTASection, FeatureCard, ResearchModuleCard } from "@/components/ds/card";
 import { Container, PageHeader, Section, SectionHeader } from "@/components/ds/layout";
 import { FeatureShowcase, ProductScreenshot, WorkflowSteps } from "@/components/ds/showcase";
-import { CalculatorPreview, EditorPreview, LiteraturePreview, ReferencesPreview, ReviewPreview } from "@/components/marketing/previews";
 import { FEATURES } from "@/lib/site";
+import { SHOTS, type Shot } from "@/lib/screenshots";
+
+const shot = (s: Shot) => <ProductScreenshot {...s} sizes="(min-width: 1024px) 560px, 100vw" />;
 
 export const metadata: Metadata = {
   title: "Features",
@@ -19,12 +21,12 @@ const feature = (slug: string) => FEATURES.find((f) => f.slug === slug)!;
 
 // The ten features in FEATURES keep their anchors (/features#slug), which other pages link to. Six get a full showcase, four are listed below them.
 const SHOWCASES = [
-  { slug: "protocol-builder", icon: FlaskConical, tone: "cobalt", eyebrow: "Protocol", media: <ProductScreenshot src="/screenshots/protocol-main.webp" width={616} height={500} address="toprot.vercel.app/studies/.../protocol" alt="The protocol builder: eight protocol sections with completion counts, a study identity form and a protocol quality panel listing which sections still need work." caption="A demo account with a fictional study." /> },
-  { slug: "literature-explorer", icon: BookOpen, tone: "violet", eyebrow: "Literature", media: <LiteraturePreview /> },
-  { slug: "sample-size", icon: Calculator, tone: "teal", eyebrow: "Sample size and statistics", media: <CalculatorPreview /> },
-  { slug: "reference-manager", icon: Library, tone: "ocean", eyebrow: "References", media: <ReferencesPreview /> },
-  { slug: "academic-editor", icon: FilePenLine, tone: "terracotta", eyebrow: "Writing", media: <EditorPreview /> },
-  { slug: "methodology-validation", icon: ShieldCheck, tone: "navy", eyebrow: "Methodology checks", media: <ReviewPreview /> },
+  { slug: "protocol-builder", icon: FlaskConical, tone: "cobalt", eyebrow: "Protocol", media: shot(SHOTS.protocol) },
+  { slug: "literature-explorer", icon: BookOpen, tone: "violet", eyebrow: "Literature", media: shot(SHOTS.literature) },
+  { slug: "sample-size", icon: Calculator, tone: "teal", eyebrow: "Sample size and statistics", media: shot(SHOTS.calculator) },
+  { slug: "reference-manager", icon: Library, tone: "ocean", eyebrow: "References", media: shot(SHOTS.references) },
+  { slug: "academic-editor", icon: FilePenLine, tone: "terracotta", eyebrow: "Writing", media: shot(SHOTS.editor) },
+  { slug: "methodology-validation", icon: ShieldCheck, tone: "navy", eyebrow: "Methodology checks", media: shot(SHOTS.checks) },
 ] as const;
 
 const ALSO = [

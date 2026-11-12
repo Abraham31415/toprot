@@ -7,7 +7,7 @@ import { CTASection, FeatureCard, FeaturedToolCard } from "@/components/ds/card"
 import { Container, Section, SectionHeader } from "@/components/ds/layout";
 import { FeatureShowcase, ProductScreenshot, WorkflowSteps } from "@/components/ds/showcase";
 import { TOOL_ICONS } from "@/components/tools/tool-icons";
-import { EditorPreview, LiteraturePreview } from "@/components/marketing/previews";
+import { SHOTS } from "@/lib/screenshots";
 import { DIR_CATEGORIES, FEATURED } from "@/lib/tools/directory-core";
 import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 import { getCurrentProfile } from "@/lib/supabase/profile";
@@ -63,7 +63,7 @@ export default async function Home() {
               <ButtonLink href="/tools" variant="secondary" size="lg">Explore research tools</ButtonLink>
             </div>
           </div>
-          <ProductScreenshot src="/screenshots/dashboard-main.webp" width={616} height={432} priority address="toprot.vercel.app/dashboard" alt="The ToProt dashboard: summary counts for projects, protocol completion, references and documents, and a recent project card showing protocol progress." caption="A demo account with a fictional study." />
+          <ProductScreenshot {...SHOTS.dashboard} priority />
         </Container>
       </section>
 
@@ -88,22 +88,21 @@ export default async function Home() {
               icon={FlaskConical} tone="cobalt" eyebrow="Protocol" title="Build a protocol that checks itself"
               description="Fill structured sections once. A completion tracker and rule-based checks show what still needs attention."
               benefits={["Autosave and a lockable final version", "Consistency checks across the whole protocol", "Optional AI reviewer questions"]}
-              cta={{ label: "See the protocol builder", href: "/features#protocol-builder" }} media={<ProductScreenshot src="/screenshots/protocol-main.webp" width={616} height={500} address="toprot.vercel.app/studies/.../protocol" alt="The protocol builder: eight protocol sections with completion counts, a study identity form and a protocol quality panel listing which sections still need work." caption="A demo account with a fictional study." />}
+              cta={{ label: "See the protocol builder", href: "/features#protocol-builder" }} media={<ProductScreenshot {...SHOTS.protocol} />}
             />
             <FeatureShowcase
               icon={BookOpen} tone="violet" eyebrow="Literature" title="Find the evidence, then keep it"
               description="Search scholarly databases, open the original paper and save records straight into your study."
               benefits={["Filters for year, type and open access", "Export to RIS, BibTeX or CSV", "Records link back to their source"]}
-              cta={{ label: "Open the literature explorer", href: "/literature" }} reverse media={<LiteraturePreview />}
+              cta={{ label: "Open the literature explorer", href: "/literature" }} reverse media={<ProductScreenshot {...SHOTS.literature} />}
             />
             <FeatureShowcase
               icon={FilePenLine} tone="terracotta" eyebrow="Writing" title="Write with your references at hand"
               description="A manuscript editor that cites from your own reference library and builds the bibliography for you."
               benefits={["Templates for common study types", "Version history and autosave", "Export to Word or PDF"]}
-              cta={{ label: "See the writing editor", href: "/features#academic-editor" }} media={<EditorPreview />}
+              cta={{ label: "See the writing editor", href: "/features#academic-editor" }} media={<ProductScreenshot {...SHOTS.editor} />}
             />
           </div>
-          <p className="type-caption mt-10 text-center">Previews are drawn with sample data, not screenshots of a real account.</p>
         </Container>
       </Section>
 
