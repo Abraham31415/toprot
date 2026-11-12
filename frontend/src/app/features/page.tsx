@@ -4,8 +4,8 @@ import { PageShell } from "@/components/marketing/ui";
 import { ButtonLink } from "@/components/ds/button";
 import { CTASection, FeatureCard, ResearchModuleCard } from "@/components/ds/card";
 import { Container, PageHeader, Section, SectionHeader } from "@/components/ds/layout";
-import { FeatureShowcase, WorkflowSteps } from "@/components/ds/showcase";
-import { CalculatorPreview, EditorPreview, LiteraturePreview, ProtocolPreview, ReferencesPreview, ReviewPreview } from "@/components/marketing/previews";
+import { FeatureShowcase, ProductScreenshot, WorkflowSteps } from "@/components/ds/showcase";
+import { CalculatorPreview, EditorPreview, LiteraturePreview, ReferencesPreview, ReviewPreview } from "@/components/marketing/previews";
 import { FEATURES } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ const feature = (slug: string) => FEATURES.find((f) => f.slug === slug)!;
 
 // The ten features in FEATURES keep their anchors (/features#slug), which other pages link to. Six get a full showcase, four are listed below them.
 const SHOWCASES = [
-  { slug: "protocol-builder", icon: FlaskConical, tone: "cobalt", eyebrow: "Protocol", media: <ProtocolPreview /> },
+  { slug: "protocol-builder", icon: FlaskConical, tone: "cobalt", eyebrow: "Protocol", media: <ProductScreenshot src="/screenshots/protocol-main.webp" width={616} height={500} address="toprot.vercel.app/studies/.../protocol" alt="The protocol builder: eight protocol sections with completion counts, a study identity form and a protocol quality panel listing which sections still need work." caption="A demo account with a fictional study." /> },
   { slug: "literature-explorer", icon: BookOpen, tone: "violet", eyebrow: "Literature", media: <LiteraturePreview /> },
   { slug: "sample-size", icon: Calculator, tone: "teal", eyebrow: "Sample size and statistics", media: <CalculatorPreview /> },
   { slug: "reference-manager", icon: Library, tone: "ocean", eyebrow: "References", media: <ReferencesPreview /> },
