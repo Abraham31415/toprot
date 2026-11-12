@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { login, type LoginState } from "./actions";
+import { FormError, PasswordField, SubmitButton, TextField } from "@/components/auth/fields";
 
 const initialState: LoginState = undefined;
 
@@ -11,51 +12,14 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-ink-soft">Email</span>
-        <input
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
-        />
-      </label>
-      <label className="flex flex-col gap-1.5 text-sm">
-        <div className="flex items-center justify-between">
-          <span className="font-medium text-ink-soft">Password</span>
-          <Link href="/forgot-password" className="text-xs font-medium text-ink-muted hover:text-ink">
-            Forgot password?
-          </Link>
-        </div>
-        <input
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
-        />
-      </label>
-
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
-      >
-        {pending ? "Logging in..." : "Log in"}
-      </button>
-
-      <p className="text-center text-sm text-ink-muted">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-ink">
-          Register
-        </Link>
-      </p>
+    <form action={formAction} className="flex flex-col gap-4">
+      <TextField label="Email" name="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <PasswordField
+        label="Password" name="password" autoComplete="current-password" required
+        labelAside={<Link href="/forgot-password" className="text-xs font-medium text-ink-soft hover:text-primary hover:underline">Forgot password?</Link>}
+      />
+      <FormError>{state?.error}</FormError>
+      <SubmitButton pending={pending} pendingLabel="Logging in...">Log in</SubmitButton>
     </form>
   );
 }

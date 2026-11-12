@@ -13,7 +13,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => setOpen(false), [pathname]);
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) { setSeenPath(pathname); setOpen(false); }
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };

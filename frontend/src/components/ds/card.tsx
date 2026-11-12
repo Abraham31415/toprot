@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Lock, type LucideIcon } from "lucide-react";
 import type { ElementType, ReactNode } from "react";
 import { ICONS, IconWrapper, TONES, type Tone } from "./icons";
 import { Container, Section } from "./layout";
-import { ButtonLink } from "./button";
+import { ButtonLink, buttonClass } from "./button";
 
 // Surfaces and the cards built on them. A card is a white surface with a hairline border; "interactive" cards lift on hover and
 // carry ONE link that stretches over the whole card, so the title is the accessible name and there is one tab stop.
@@ -121,24 +121,31 @@ export function ProgressIndicator({ value, label, size = "md" }: { value: number
 }
 
 /** A research project: title, status, progress, where it stands and links to its parts. */
-export function ProjectCard({ title, href, status, progress, stage, links }: {
+export function ProjectCard({ title, href, status, progress, stage, updated, nextStep, links }: {
   title: string; href: string; status?: { label: string; tone: "draft" | "locked" };
-  progress?: { value: number; label: string; detail: string }; stage: string; links: { label: string; href: string }[];
+  progress?: { value: number; label: string; detail: string; note?: string }; stage: string; updated?: string; nextStep?: string;
+  links: { label: string; href: string }[];
 }) {
   return (
     <Card as="article" padding="sm" className="flex flex-col !p-4">
       <div className="flex items-start justify-between gap-3">
-        <Link href={href} className="font-medium text-ink hover:text-primary">{title}</Link>
+        <h3 className="min-w-0 break-words font-medium leading-snug text-ink">{title}</h3>
         {status && <StatusIndicator status={status.tone === "locked" ? "success" : "info"} compact>{status.label}</StatusIndicator>}
       </div>
       {progress && (
         <div className="mt-3">
-          <div className="type-caption flex justify-between"><span>{progress.label}</span><span>{progress.detail}</span></div>
+          <div className="type-caption flex justify-between gap-3"><span>{progress.label}</span><span>{progress.detail}</span></div>
           <div className="mt-1"><ProgressIndicator value={progress.value} label={`${progress.label} completion for ${title}`} /></div>
+          {progress.note && <p className="type-caption mt-1">{progress.note}</p>}
         </div>
       )}
-      <p className="type-support mt-3">{stage}</p>
-      <div className="mt-4 flex flex-wrap gap-1 border-t border-line pt-3 text-sm">
+      <dl className="type-support mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+        <div><dt className="inline text-ink-muted">Stage: </dt><dd className="inline text-ink">{stage}</dd></div>
+        {updated && <div><dt className="inline text-ink-muted">Updated: </dt><dd className="inline text-ink">{updated}</dd></div>}
+      </dl>
+      {nextStep && <p className="type-support mt-2"><span className="font-medium text-ink">Next: </span>{nextStep}</p>}
+      <div className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-2 border-t border-line pt-3 text-sm">
+        <Link href={href} className={buttonClass("primary", "sm", "mr-2")}>Continue research<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
         {links.map((l) => <Link key={l.href} href={l.href} className="rounded-control px-2 py-1 font-medium text-ink-soft hover:bg-surface-soft hover:text-primary-hover">{l.label}</Link>)}
       </div>
     </Card>

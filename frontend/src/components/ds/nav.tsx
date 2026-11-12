@@ -34,7 +34,9 @@ export function NavigationDropdown({ label, items, align = "right" }: { label: s
   const id = `menu-${label.toLowerCase().replace(/\W+/g, "-")}`;
   const active = items.some((l) => isNavActive(l.href, pathname));
 
-  useEffect(() => setOpen(false), [pathname]);
+  // Close when the page changes. Done while rendering (the documented way to reset state on a prop change), not in an effect.
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) { setSeenPath(pathname); setOpen(false); }
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };

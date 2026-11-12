@@ -2,14 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
+  BookOpen,
   BrainCircuit,
-  Calculator,
   CalendarClock,
+  ClipboardCheck,
   FileText,
   FlaskConical,
   History,
   Library,
-  type LucideIcon,
+  PenLine,
+  Sparkles,
+  Wrench,
 } from "lucide-react";
 import { getHeadroom } from "@/lib/ai";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -17,10 +20,11 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { currentStage, MILESTONE_LABELS } from "@/lib/protocol/milestones";
 import { computeCompletion } from "@/lib/protocol/completion";
-import { buildInitialSnapshot } from "@/lib/protocol/quality";
+import { buildInitialSnapshot, SECTION_LABELS } from "@/lib/protocol/quality";
 import type { MilestoneRow } from "@/lib/protocol/milestones";
 import type { ObjectiveRow, ProtocolVersionRow, VariableRow } from "@/lib/protocol/types";
-import { NewStudyForm } from "./new-study-form";
+import { Card, MetricCard, Panel, ProjectCard, ResearchModuleCard } from "@/components/ds/card";
+import { NewProjectPanel } from "./new-study-form";
 
 export const dynamic = "force-dynamic";
 
@@ -31,30 +35,6 @@ type VariableWithVersion = VariableRow & { protocol_version_id: string };
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const credits = (mcr: number) => (mcr / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 });
-
-function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-line bg-surface p-4">
-      <div className="flex items-center gap-2 text-xs text-ink-muted">
-        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-        {label}
-      </div>
-      <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
-    </div>
-  );
-}
-
-function Panel({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
-  return (
-    <section className="rounded-lg border border-line bg-surface p-5">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-        {title}
-      </h2>
-      <div className="mt-3">{children}</div>
-    </section>
-  );
-}
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile();
@@ -136,6 +116,7 @@ export default async function DashboardPage() {
     };
   });
 
+  // The same rule as each project's own progress bar: the share of required protocol items that are filled in. The average is across projects.
   const withProgress = cards.filter((c) => c.completion);
   const avg = withProgress.length
     ? Math.round(withProgress.reduce((n, c) => n + (c.completion?.percent ?? 0), 0) / withProgress.length)
@@ -152,188 +133,183 @@ export default async function DashboardPage() {
     .slice(0, 4);
 
   const firstName = profile.full_name.split(" ")[0];
+  const isFree = headroom?.planKey === "free";
+  const latestStudy = cards[0]?.study;
+  const hasProjects = cards.length > 0;
+
+  const quick = [
+    { href: "/tools", title: "Research Toolkit", note: "Calculators and statistical tests", icon: Wrench },
+    { href: "/literature", title: "Literature Explorer", note: "Search scholarly sources", icon: BookOpen },
+    ...(latestStudy ? [{ href: `/studies/${latestStudy.id}/references`, title: "Reference Manager", note: "References for your latest project", icon: Library }] : []),
+    { href: "/writing", title: "Academic Writing", note: "Manuscripts and citations", icon: PenLine },
+    { href: "/assistant", title: "AI Research Assistant", note: "Uses AI credits", icon: Sparkles },
+  ];
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Welcome back, {firstName}</h1>
-      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <p className="text-sm text-ink-muted">Pick up a project or start a new one.</p>
-        {headroom && (
-          <Link
-            href="/billing"
-            aria-label={headroom.planKey === "free" ? "You are on the Free plan. Open billing to upgrade." : "You are on Toprot Pro. Open billing."}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${headroom.planKey === "free" ? "bg-navy/10 text-ink-soft hover:bg-navy/10" : "bg-teal/10 text-teal-ink hover:bg-teal/20"}`}
-          >
-            {headroom.planKey === "free" ? "Free plan" : "Toprot Pro"}
-            {headroom.planKey === "free" && <span className="text-primary">Upgrade</span>}
-          </Link>
-        )}
-      </div>
-
-      <div className="mt-5">
-        <NewStudyForm />
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat icon={FlaskConical} label="Projects" value={String(cards.length)} />
-        <Stat icon={FlaskConical} label="Avg. protocol complete" value={`${avg}%`} />
-        <Stat icon={Library} label="Saved references" value={String(refs?.length ?? 0)} />
-        <Stat icon={FileText} label="Generated documents" value={String(outputs?.length ?? 0)} />
-      </div>
-
-      <section className="mt-8" aria-labelledby="projects-heading">
-        <h2 id="projects-heading" className="text-lg font-semibold text-ink">
-          Recent projects
-        </h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          {!cards.length && (
-            <div className="rounded-lg border border-dashed border-line-strong bg-surface p-8 text-center sm:col-span-2">
-              <FlaskConical className="mx-auto h-8 w-8 text-primary" aria-hidden="true" />
-              <p className="mt-2 font-medium text-ink">No projects yet</p>
-              <p className="mt-1 text-sm text-ink-muted">Name your first study above to start its protocol.</p>
-            </div>
+    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div className="min-w-0">
+          <h1 className="type-page">Your research workspace</h1>
+          <p className="type-support mt-1.5 !text-ink-soft">
+            <span className="inline-block max-w-[16rem] truncate align-bottom" title={firstName}>Welcome back, {firstName}.</span>{" "}
+            {hasProjects ? "Continue your projects or start something new." : "Let us set up your first project."}
+          </p>
+          {headroom && (
+            <Link
+              href="/billing"
+              aria-label={isFree ? "You are on the Free plan. Open billing to upgrade." : "You are on Toprot Pro. Open billing."}
+              className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${isFree ? "border-line bg-surface text-ink-soft hover:border-line-strong" : "border-success-line bg-success-bg text-success-ink hover:border-teal"}`}
+            >
+              {isFree ? "Free plan" : "Toprot Pro"}
+              {isFree && <span className="text-primary">Upgrade</span>}
+            </Link>
           )}
-          {cards.map(({ study, version, completion, stage }) => (
-            <article key={study.id} className="flex flex-col rounded-lg border border-line bg-surface p-4">
-              <div className="flex items-start justify-between gap-3">
-                <Link href={`/studies/${study.id}/protocol`} className="font-medium text-ink hover:text-primary">
-                  {study.title}
-                </Link>
-                {version && (
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      version.status === "registered" ? "bg-teal/10 text-teal-ink" : "bg-surface-soft text-primary-hover"
-                    }`}
-                  >
-                    {version.status === "registered" ? "Locked" : "Draft"} v{version.version_number}
-                  </span>
-                )}
-              </div>
-
-              {completion && (
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-ink-muted">
-                    <span>Protocol</span>
-                    <span>
-                      {completion.percent}% ({completion.completeSections}/{completion.sections.length} sections)
-                    </span>
-                  </div>
-                  <div
-                    className="mt-1 h-1.5 overflow-hidden rounded-full bg-navy/10"
-                    role="progressbar"
-                    aria-label={`Protocol completion for ${study.title}`}
-                    aria-valuenow={completion.percent}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <div className="h-full bg-teal" style={{ width: `${completion.percent}%` }} />
-                  </div>
-                </div>
-              )}
-
-              <p className="mt-3 text-sm text-ink-muted">
-                Stage: {stage} · enrollment {study.current_enrollment ?? 0}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-sm">
-                {[
-                  ["protocol", "Protocol"],
-                  ["references", "References"],
-                  ["outputs", "Documents"],
-                  ["milestones", "Milestones"],
-                ].map(([slug, label]) => (
-                  <Link
-                    key={slug}
-                    href={`/studies/${study.id}/${slug}`}
-                    className="rounded-md px-2 py-1 font-medium text-ink-soft hover:bg-surface-soft hover:text-primary-hover"
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </article>
-          ))}
         </div>
-      </section>
+        {hasProjects && <NewProjectPanel />}
+      </header>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <Panel title="Quick access" icon={Calculator}>
-          <Link
-            href="/calculator"
-            className="flex items-center justify-between rounded-md border border-line px-3 py-2.5 text-sm font-medium text-ink hover:border-primary"
-          >
-            <span className="flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-primary" aria-hidden="true" />
-              Sample size calculator
-            </span>
-            <ArrowRight className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-          </Link>
-          <p className="mt-3 text-xs text-ink-muted">More research tools will appear here as they are released.</p>
-        </Panel>
+      {!hasProjects ? (
+        <section aria-labelledby="start-heading" className="mt-8">
+          <Card padding="lg" className="text-center sm:!p-10">
+            <FlaskConical className="mx-auto h-9 w-9 text-primary" aria-hidden="true" />
+            <h2 id="start-heading" className="type-section mt-3">Start your first research project</h2>
+            <p className="type-body mx-auto mt-2 max-w-xl !text-base">Create a study, define your objectives, and build your research protocol step by step.</p>
+            <div className="mt-6 flex justify-center"><NewProjectPanel first /></div>
+            <p className="type-support mt-6">
+              Or explore first: <Link href="/tools" className="font-medium text-primary hover:underline">Research Toolkit</Link> and{" "}
+              <Link href="/literature" className="font-medium text-primary hover:underline">Literature Explorer</Link>.
+            </p>
+          </Card>
+        </section>
+      ) : (
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <MetricCard icon={FlaskConical} label="Projects" value={String(cards.length)} />
+          <MetricCard icon={ClipboardCheck} tone="teal" label="Average protocol completion" value={`${avg}%`} />
+          <MetricCard icon={Library} tone="violet" label="Saved references" value={String(refs?.length ?? 0)} />
+          <MetricCard icon={FileText} tone="terracotta" label="Generated documents" value={String(outputs?.length ?? 0)} />
+        </div>
+      )}
 
-        <Panel title="AI credits" icon={BrainCircuit}>
-          {headroom ? (
-            <>
-              <p className="mb-2 text-xs font-medium text-ink-muted">
-                Plan: <span className="text-ink">{headroom.planKey === "free" ? "Free" : "Toprot Pro"}</span>
-                {headroom.planKey !== "free" && headroom.periodEnd ? ` (current period ends ${fmtDate(headroom.periodEnd)})` : ""}
-              </p>
-              <p className="text-2xl font-semibold text-ink">
-                {credits(headroom.availableMcr)}
-                <span className="ml-2 text-sm font-normal text-ink-muted">credits available</span>
-              </p>
-              <p className="mt-1 text-xs text-ink-muted">
-                {credits(headroom.subscriptionAvailableMcr)} of {credits(headroom.allowanceMcr)} from your plan
-                {headroom.purchasedAvailableMcr > 0 ? `, plus ${credits(headroom.purchasedAvailableMcr)} purchased` : ""}
-              </p>
-              <Link href="/billing" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                Billing and usage <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </>
-          ) : (
-            <p className="text-sm text-ink-muted">Credit balance is temporarily unavailable.</p>
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-8">
+          {hasProjects && (
+            <section aria-labelledby="projects-heading">
+              <h2 id="projects-heading" className="type-section !text-xl">Recent projects</h2>
+              <div className="mt-3 grid gap-4">
+                {cards.map(({ study, version, completion, stage }) => {
+                  const open = completion?.sections.find((s) => !s.complete);
+                  const nextStep = version?.status === "registered"
+                    ? "This protocol version is locked."
+                    : open
+                      ? `${SECTION_LABELS[open.key]}: add ${open.missing[0]}.`
+                      : completion
+                        ? "All required protocol items are filled in."
+                        : undefined;
+                  return (
+                    <ProjectCard
+                      key={study.id}
+                      title={study.title}
+                      href={`/studies/${study.id}/protocol`}
+                      status={version ? { label: `${version.status === "registered" ? "Locked" : "Draft"} v${version.version_number}`, tone: version.status === "registered" ? "locked" : "draft" } : undefined}
+                      progress={completion ? {
+                        value: completion.percent,
+                        label: "Protocol",
+                        detail: `${completion.percent}% complete`,
+                        note: `${completion.filled} of ${completion.total} required items filled, ${completion.completeSections} of ${completion.sections.length} sections complete.`,
+                      } : undefined}
+                      stage={`${stage}${study.current_enrollment ? ` · enrollment ${study.current_enrollment}` : ""}`}
+                      updated={study.last_activity_at ? fmtDate(study.last_activity_at) : undefined}
+                      nextStep={nextStep}
+                      links={[
+                        { label: "Protocol", href: `/studies/${study.id}/protocol` },
+                        { label: "References", href: `/studies/${study.id}/references` },
+                        { label: "Documents", href: `/studies/${study.id}/outputs` },
+                        { label: "Milestones", href: `/studies/${study.id}/milestones` },
+                      ]}
+                    />
+                  );
+                })}
+              </div>
+            </section>
           )}
-        </Panel>
 
-        <Panel title="Upcoming milestones" icon={CalendarClock}>
-          {upcoming.length ? (
-            <ul className="space-y-2 text-sm">
-              {upcoming.map((m) => (
-                <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
-                  <span>
-                    <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>
-                    <span className="block text-xs text-ink-muted">{titleById.get(m.study_id)}</span>
-                  </span>
-                  <span className={`shrink-0 text-xs ${m.target_date! < now ? "text-red-700" : "text-ink-muted"}`}>
-                    {m.target_date! < now ? "Overdue " : ""}
-                    {fmtDate(m.target_date!)}
-                  </span>
-                </li>
+          {hasProjects && (
+            <Panel title="Recent activity" icon={History}>
+              {recentMilestones.length ? (
+                <ul className="space-y-3 text-sm">
+                  {recentMilestones.map((m) => (
+                    <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>{" "}
+                        <span className="text-ink-soft">{m.status === "complete" ? "completed" : "in progress"}</span>
+                        <span className="type-caption block break-words">{titleById.get(m.study_id)}</span>
+                      </span>
+                      <span className="type-caption shrink-0">{fmtDate(m.updated_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="type-support">Nothing yet. Milestone updates will show up here.</p>
+              )}
+            </Panel>
+          )}
+        </div>
+
+        <aside aria-label="Tools and account" className="min-w-0 space-y-6">
+          <Panel title="AI credits" icon={BrainCircuit}>
+            {headroom ? (
+              <>
+                <p className="type-caption mb-2">Plan: <span className="font-medium text-ink">{isFree ? "Free" : "Toprot Pro"}</span></p>
+                <p className="type-stat">
+                  {credits(headroom.availableMcr)}
+                  <span className="ml-2 text-sm font-normal text-ink-muted">credits available</span>
+                </p>
+                <dl className="type-support mt-3 space-y-1">
+                  <div className="flex justify-between gap-3"><dt>{isFree ? "Introductory credits left" : "Monthly credits left"}</dt><dd className="text-ink">{credits(headroom.subscriptionAvailableMcr)} of {credits(headroom.allowanceMcr)}</dd></div>
+                  {headroom.purchasedAvailableMcr > 0 && <div className="flex justify-between gap-3"><dt>Purchased credits left</dt><dd className="text-ink">{credits(headroom.purchasedAvailableMcr)}</dd></div>}
+                  <div className="flex justify-between gap-3"><dt>Used this period</dt><dd className="text-ink">{credits(headroom.usedMcr)}</dd></div>
+                  {!isFree && headroom.periodEnd && <div className="flex justify-between gap-3"><dt>Resets</dt><dd className="text-ink">{fmtDate(headroom.periodEnd)}</dd></div>}
+                </dl>
+                <Link href="/billing" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  Billing and usage <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </>
+            ) : (
+              <p className="type-support">Credit balance is temporarily unavailable.</p>
+            )}
+          </Panel>
+
+          <Panel title="Quick access" icon={Wrench}>
+            <ul className="space-y-2">
+              {quick.map((q) => (
+                <li key={q.href}><ResearchModuleCard icon={q.icon} title={q.title} description={q.note} href={q.href} /></li>
               ))}
             </ul>
-          ) : (
-            <p className="text-sm text-ink-muted">No dated milestones. Set target dates on a study&apos;s milestones page.</p>
-          )}
-        </Panel>
+          </Panel>
 
-        <Panel title="Recent activity" icon={History}>
-          {recentMilestones.length ? (
-            <ul className="space-y-2 text-sm">
-              {recentMilestones.map((m) => (
-                <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
-                  <span>
-                    <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>{" "}
-                    <span className="text-ink-muted">{m.status === "complete" ? "completed" : "in progress"}</span>
-                    <span className="block text-xs text-ink-muted">{titleById.get(m.study_id)}</span>
-                  </span>
-                  <span className="shrink-0 text-xs text-ink-muted">{fmtDate(m.updated_at)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-ink-muted">Milestone updates will show up here.</p>
-          )}
-        </Panel>
+          <Panel title="Upcoming milestones" icon={CalendarClock}>
+            {upcoming.length ? (
+              <ul className="space-y-3 text-sm">
+                {upcoming.map((m) => (
+                  <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>
+                      <span className="type-caption block break-words">{titleById.get(m.study_id)}</span>
+                    </span>
+                    <span className={`shrink-0 text-xs ${m.target_date! < now ? "font-medium text-danger-ink" : "text-ink-muted"}`}>
+                      {m.target_date! < now ? "Overdue " : ""}
+                      {fmtDate(m.target_date!)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="type-support">
+                {hasProjects ? "No dated milestones. Set target dates on a project's milestones page." : "Milestones appear here once you create a project."}
+              </p>
+            )}
+          </Panel>
+        </aside>
       </div>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { FormError } from "@/components/auth/fields";
 
 export function GoogleSignInButton() {
   const [pending, setPending] = useState(false);
@@ -10,30 +11,36 @@ export function GoogleSignInButton() {
   async function handleClick() {
     setError(null);
     setPending(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) {
-      setError(error.message);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) {
+        setError(error.message);
+        setPending(false);
+      }
+      // On success the browser is redirected to Google, so nothing else to do here.
+    } catch {
+      setError("We could not reach Google sign-in. Check your connection and try again.");
       setPending(false);
     }
-    // On success the browser is redirected to Google, so nothing else to do here.
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <button
         type="button"
         onClick={handleClick}
         disabled={pending}
-        className="flex items-center justify-center gap-2 rounded-lg border border-line bg-surface py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-canvas disabled:opacity-50"
+        aria-busy={pending || undefined}
+        className="flex h-11 items-center justify-center gap-2.5 rounded-control border border-line-strong bg-surface text-sm font-semibold text-ink transition-colors hover:bg-hover disabled:opacity-60"
       >
         <GoogleIcon />
         {pending ? "Redirecting..." : "Continue with Google"}
       </button>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <FormError>{error}</FormError>
     </div>
   );
 }

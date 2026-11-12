@@ -2,7 +2,9 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import { CircleCheck } from "lucide-react";
 import { requestPasswordReset, type ForgotPasswordState } from "./actions";
+import { FormError, SubmitButton, TextField } from "@/components/auth/fields";
 
 const initialState: ForgotPasswordState = undefined;
 
@@ -12,48 +14,21 @@ export function ForgotPasswordForm() {
 
   if (state?.sent) {
     return (
-      <div className="flex flex-col gap-4">
-        <p className="text-sm text-ink-soft">
-          If an account exists for <span className="font-medium">{email}</span>, we&apos;ve sent
-          a link to reset your password. Check your inbox.
+      <div role="status" className="flex flex-col gap-4">
+        <p className="flex items-start gap-2 rounded-control border border-success-line bg-success-bg px-3 py-2 text-sm text-success-ink">
+          <CircleCheck className="mt-0.5 h-4 w-4 flex-none" aria-hidden="true" />
+          <span>If an account exists for <span className="font-medium">{email}</span>, we have sent a link to reset your password. Check your inbox.</span>
         </p>
-        <Link href="/login" className="text-sm font-medium text-ink">
-          Back to log in
-        </Link>
+        <Link href="/login" className="text-sm font-medium text-primary hover:underline">Back to log in</Link>
       </div>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-ink-soft">Email</span>
-        <input
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded-control border border-line-strong bg-surface px-3 py-2 text-ink outline-none focus:border-line-strong"
-        />
-      </label>
-
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-lg bg-primary py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
-      >
-        {pending ? "Sending..." : "Send reset link"}
-      </button>
-
-      <p className="text-center text-sm text-ink-muted">
-        <Link href="/login" className="font-medium text-ink">
-          Back to log in
-        </Link>
-      </p>
+    <form action={formAction} className="flex flex-col gap-4">
+      <TextField label="Email" name="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <FormError>{state?.error}</FormError>
+      <SubmitButton pending={pending} pendingLabel="Sending...">Send reset link</SubmitButton>
     </form>
   );
 }

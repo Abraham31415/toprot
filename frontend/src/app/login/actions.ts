@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
+import { friendlyAuthError } from "@/lib/auth-errors";
 import { redirect } from "next/navigation";
 
 export type LoginState = { error?: string } | undefined;
@@ -17,11 +18,12 @@ export async function login(
     return { error: "Email and password are required." };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    return { error: error.message };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: friendlyAuthError(error.message) };
+  } catch {
+    return { error: "We could not reach the server. Check your connection and try again." };
   }
 
   const profile = await getCurrentProfile();

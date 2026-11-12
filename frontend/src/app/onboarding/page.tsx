@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { OnboardingForm } from "./onboarding-form";
-import { PageShell } from "@/components/marketing/ui";
+import { AuthLayout } from "@/components/auth/auth-layout";
+
+export const metadata: Metadata = { title: "Choose your account type", robots: { index: false } };
 
 export default async function OnboardingPage() {
   const profile = await getCurrentProfile();
@@ -10,18 +13,8 @@ export default async function OnboardingPage() {
   if (profile.role) redirect(profile.role === "supervisor" ? "/supervisor" : "/dashboard");
 
   return (
-    <PageShell>
-    <div className="flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-navy">
-          Which are you?
-        </h1>
-        <p className="mt-1 mb-8 text-sm text-navy/65">
-          One more step before you start. This can&apos;t be changed later.
-        </p>
-        <OnboardingForm />
-      </div>
-    </div>
-    </PageShell>
+    <AuthLayout title="One more step" subtitle="Choose how you will use ToProt. This cannot be changed later.">
+      <OnboardingForm />
+    </AuthLayout>
   );
 }

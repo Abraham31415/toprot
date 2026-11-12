@@ -35,7 +35,8 @@ export type ComparisonRow = { label: string; values: (boolean | string)[]; group
 
 /** Plans side by side. A tick or dash always comes with words for screen readers, so the table reads without colour or symbols. */
 export function FeatureComparison({ columns, rows, caption, highlightColumn }: { columns: string[]; rows: ComparisonRow[]; caption: string; highlightColumn?: number }) {
-  let lastGroup: string | undefined;
+  // A group heading goes before the first row of each group. Worked out up front so rendering does not reassign anything.
+  const startsGroup = rows.map((r, i) => !!r.group && r.group !== rows[i - 1]?.group);
   return (
     <div className="overflow-x-auto rounded-card border border-line bg-surface shadow-card">
       <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
@@ -47,10 +48,9 @@ export function FeatureComparison({ columns, rows, caption, highlightColumn }: {
           </tr>
         </thead>
         <tbody>
-          {rows.flatMap((r) => {
+          {rows.flatMap((r, ri) => {
             const out: ReactNode[] = [];
-            if (r.group && r.group !== lastGroup) {
-              lastGroup = r.group;
+            if (startsGroup[ri]) {
               out.push(<tr key={`g-${r.group}`} className="bg-canvas"><th scope="colgroup" colSpan={columns.length + 1} className="px-4 py-2 type-eyebrow !text-ink-muted">{r.group}</th></tr>);
             }
             out.push(
