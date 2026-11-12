@@ -46,17 +46,12 @@ const WORKFLOW = [
 export default function FeaturesPage() {
   return (
     <PageShell>
-      <Container className="pb-6 pt-10 sm:pt-14">
-        <PageHeader
-          eyebrow="Features"
-          title="Everything you need to move research forward."
-          lead="Enter your study once. Search, plan, calculate, write and track in one workspace, with the documents following from what you entered."
-        />
-        <div className="mt-6 flex flex-wrap gap-3">
-          <ButtonLink href="/register">Start for free</ButtonLink>
-          <ButtonLink href="/examples" variant="secondary">Explore the sample study</ButtonLink>
-        </div>
-      </Container>
+      <PageHeader
+        eyebrow="Features"
+        title="Everything you need to move research forward."
+        lead="Enter your study once. Search, plan, calculate, write and track in one workspace, with the documents following from what you entered."
+        actions={<><ButtonLink href="/register">Start for free</ButtonLink><ButtonLink href="/examples" variant="secondary">Explore the sample study</ButtonLink></>}
+      />
 
       <Section spacing="sm">
         <Container>
