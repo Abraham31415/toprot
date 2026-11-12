@@ -1,5 +1,7 @@
 "use server";
 
+import { requireProject } from "@/lib/collab/access";
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
@@ -7,7 +9,7 @@ import { countWords, validateDoc, DocError, type Doc } from "@/lib/writing/doc";
 import { buildTemplateDoc, isTemplateId } from "@/lib/writing/templates";
 import { isUuid } from "@/lib/refs/validate";
 
-// Every write goes through row-level security (only the study's owner can write) and the Postgres functions
+// Every write goes through row-level security (owners and editors can write) and the Postgres functions
 // save_manuscript / restore_manuscript_version, which refuse a stale revision. Content is validated here first,
 // and the word count is recomputed on the server rather than trusted from the browser.
 
@@ -15,10 +17,14 @@ export type SaveResult = { ok: true; revision: number; wordCount: number } | { o
 
 type Student = { supabase: Awaited<ReturnType<typeof createClient>>; userId: string };
 
-async function student(): Promise<Student | { error: string }> {
+async function student(studyId?: string): Promise<Student | { error: string }> {
+  // Permission comes from the project role (owner or editor), never from the profile label.
+  if (studyId) {
+    const a = await requireProject(studyId, "write");
+    return a.ok ? { supabase: a.supabase, userId: a.userId } : { error: a.error };
+  }
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to edit manuscripts." };
-  if (profile.role !== "student") return { error: "Only the student who owns a study can edit its manuscripts." };
   return { supabase: await createClient(), userId: profile.id };
 }
 
@@ -38,7 +44,7 @@ function mapDbError(message: string): { error: string; conflict?: boolean } {
 }
 
 export async function createManuscript(studyId: string, template: string, title: string, styleId: string): Promise<{ id?: string; error?: string }> {
-  const s = await student();
+  const s = await student(studyId);
   if ("error" in s) return s;
   if (!isUuid(studyId)) return { error: "Unknown study." };
   if (!isTemplateId(template)) return { error: "Unknown template." };
@@ -60,7 +66,7 @@ export async function saveManuscript(
   studyId: string, id: string, baseRevision: number, title: string, content: unknown,
   opts: { snapshot?: boolean; label?: string } = {},
 ): Promise<SaveResult> {
-  const s = await student();
+  const s = await student(studyId);
   if ("error" in s) return { ok: false, error: s.error };
   if (!isUuid(id) || !Number.isInteger(baseRevision) || baseRevision < 1) return { ok: false, error: "Invalid request." };
   let doc: Doc;
@@ -82,7 +88,7 @@ export async function saveManuscript(
  * so nothing is lost, then this text is saved on top of it.
  */
 export async function overwriteManuscript(studyId: string, id: string, title: string, content: unknown): Promise<SaveResult> {
-  const s = await student();
+  const s = await student(studyId);
   if ("error" in s) return { ok: false, error: s.error };
   if (!isUuid(id)) return { ok: false, error: "Invalid request." };
   const { data: current, error: readError } = await s.supabase.from("manuscripts").select("revision, title, content, word_count").eq("id", id).single();
@@ -121,7 +127,7 @@ export async function getVersion(versionId: string): Promise<{ content: Doc; tit
 }
 
 export async function restoreVersion(studyId: string, versionId: string, baseRevision: number): Promise<{ ok: true; revision: number; title: string; content: Doc } | { ok: false; error: string; conflict?: boolean }> {
-  const s = await student();
+  const s = await student(studyId);
   if ("error" in s) return { ok: false, error: s.error };
   if (!isUuid(versionId) || !Number.isInteger(baseRevision)) return { ok: false, error: "Invalid request." };
   const { data, error } = await s.supabase.rpc("restore_manuscript_version", { p_version_id: versionId, p_base_revision: baseRevision });
@@ -140,7 +146,7 @@ export async function setManuscriptStyle(id: string, styleId: string): Promise<{
 }
 
 export async function deleteManuscript(studyId: string, id: string): Promise<{ error?: string }> {
-  const s = await student();
+  const s = await student(studyId);
   if ("error" in s) return s;
   if (!isUuid(id)) return { error: "Invalid request." };
   // Remove the manuscript's figures from storage first (best effort), then the manuscript and its history.

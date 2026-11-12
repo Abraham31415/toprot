@@ -15,9 +15,7 @@ export async function createStudy(
   if (!title) return { error: "Study title is required." };
 
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "student") {
-    return { error: "Only students can create studies." };
-  }
+  if (!profile) return { error: "Sign in to create a study." };
 
   const supabase = await createClient();
 

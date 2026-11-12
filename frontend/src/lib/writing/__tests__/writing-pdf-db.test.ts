@@ -91,7 +91,7 @@ describe("manuscripts", () => {
     const m = await newManuscript(owner, study);
     const sup = await newUser("supervisor");
     const ws = (await pool.query("select id from workspaces where supervisor_id = $1", [sup])).rows[0]?.id ?? (await pool.query("insert into workspaces (supervisor_id, name) values ($1, 'W') returning id", [sup])).rows[0].id;
-    await pool.query("insert into study_supervisors (study_id, supervisor_id, workspace_id) values ($1, $2, $3)", [study, sup, ws]);
+    await pool.query("insert into project_memberships (study_id, user_id, role, title_label) values ($1, $2, 'reviewer', 'supervisor')", [study, sup]);
     expect((await asUser(sup, (c) => c.query("select id from manuscripts where id = $1", [m.id]))).rowCount).toBe(1);
     await expect(asUser(sup, (c) => save(c, m.id, 1, "hacked"))).rejects.toThrow(/manuscript_forbidden/);
     expect((await pool.query("select revision from manuscripts where id = $1", [m.id])).rows[0].revision).toBe(1);
@@ -416,7 +416,7 @@ describe("manuscript figure storage", () => {
     const sup = await newUser("supervisor");
     const stranger = await newUser();
     const ws = (await pool.query("select id from workspaces where supervisor_id = $1", [sup])).rows[0]?.id ?? (await pool.query("insert into workspaces (supervisor_id, name) values ($1, 'W') returning id", [sup])).rows[0].id;
-    await pool.query("insert into study_supervisors (study_id, supervisor_id, workspace_id) values ($1, $2, $3)", [a.study, sup, ws]);
+    await pool.query("insert into project_memberships (study_id, user_id, role, title_label) values ($1, $2, 'reviewer', 'supervisor')", [a.study, sup]);
     const names = (u: string) => asUser(u, (c) => c.query("select name from storage.objects where bucket_id = 'manuscript-figures'"));
     expect((await names(sup)).rowCount).toBe(1);
     expect((await names(stranger)).rowCount).toBe(0);

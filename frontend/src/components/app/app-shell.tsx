@@ -3,19 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { BookOpen, CreditCard, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
+import { BookOpen, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
 type NavGroup = { label: string; items: NavItem[] };
 
 // Only routes that exist. Settings and a separate projects page are not listed because there is no page behind them; projects are on the dashboard.
-function navFor(role: string | null): NavGroup[] {
-  const home: NavItem =
-    role === "supervisor"
-      ? { href: "/supervisor", label: "Supervision", icon: Users }
-      : { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, also: ["/studies"] };
+function navFor(): NavGroup[] {
+  const dashboard: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, also: ["/studies"] };
+  const supervision: NavItem = { href: "/supervisor", label: "Supervision", icon: Users };
   return [
-    { label: "Workspace", items: [home, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
+    { label: "Workspace", items: [dashboard, supervision, { href: "/shared", label: "Shared with me", icon: FolderOpen }, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
     {
       label: "Research",
       items: [
@@ -36,7 +34,7 @@ export function AppShell({ fullName, role, children }: { fullName: string; role:
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
-  const groups = navFor(role);
+  const groups = navFor();
   const isActive = (item: NavItem) => [item.href, ...(item.also ?? [])].some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   const [seenPath, setSeenPath] = useState(pathname);

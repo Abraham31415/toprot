@@ -7,6 +7,8 @@ import { computeCompletion } from "@/lib/protocol/completion";
 import { buildInitialSnapshot } from "@/lib/protocol/quality";
 import type { ObjectiveRow, ProtocolVersionRow, VariableRow } from "@/lib/protocol/types";
 import { OutputRow } from "./output-row";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 export default async function OutputsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
@@ -59,7 +61,7 @@ export default async function OutputsPage({ params }: { params: Promise<{ id: st
     if (!latestByType.has(o.output_type)) latestByType.set(o.output_type, o);
   }
 
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">

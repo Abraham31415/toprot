@@ -1,5 +1,7 @@
 "use server";
 
+import { requireProject } from "@/lib/collab/access";
+
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { formatInitials, type ReferenceMetadata } from "@/lib/protocol/references";
@@ -195,14 +197,18 @@ export async function deleteReference(studyId: string, referenceId: string): Pro
 
 
 // ---- Reference manager v2 -------------------------------------------------------------------------------------------
-// Every write below goes through row-level security (only the study owner can write) and validates its input first.
+// Every write below goes through row-level security (owners and editors can write) and validates its input first.
 
 type Writer = { supabase: Awaited<ReturnType<typeof createClient>>; profileId: string };
 
-async function writer(): Promise<Writer | { error: string }> {
+async function writer(studyId?: string): Promise<Writer | { error: string }> {
+  // Permission comes from the project role (owner or editor), never from the profile label.
+  if (studyId) {
+    const a = await requireProject(studyId, "write");
+    return a.ok ? { supabase: a.supabase, profileId: a.userId } : { error: a.error };
+  }
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to change references." };
-  if (profile.role !== "student") return { error: "Only the student who owns a study can change its references." };
   return { supabase: await createClient(), profileId: profile.id };
 }
 
@@ -218,7 +224,7 @@ export type ImportResult = { error?: string; saved: number; skipped: number; inv
  */
 export async function importReferences(studyId: string, items: ImportItem[], source: "import" | "zotero" | "manual", collectionId?: string | null): Promise<ImportResult> {
   const out: ImportResult = { saved: 0, skipped: 0, invalid: 0 };
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { ...out, error: w.error };
   if (!Array.isArray(items) || !items.length) return { ...out, error: "There is nothing to import." };
   if (items.length > 500) return { ...out, error: "Import at most 500 references at a time." };
@@ -256,7 +262,7 @@ export async function importReferences(studyId: string, items: ImportItem[], sou
 }
 
 export async function updateReference(studyId: string, referenceId: string, patch: unknown): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   if (!isUuid(referenceId)) return { error: "Unknown reference." };
   const c = cleanPatch(patch);
@@ -268,7 +274,7 @@ export async function updateReference(studyId: string, referenceId: string, patc
 }
 
 export async function deleteReferences(studyId: string, ids: string[]): Promise<SaveResult & { deleted?: number }> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   if (!Array.isArray(ids) || !ids.length || ids.length > 200 || !ids.every(isUuid)) return { error: "Choose between 1 and 200 references." };
   const { error, count } = await w.supabase.from("study_references").delete({ count: "exact" }).in("id", ids).eq("study_id", studyId);
@@ -278,7 +284,7 @@ export async function deleteReferences(studyId: string, ids: string[]): Promise<
 }
 
 export async function createCollection(studyId: string, name: string): Promise<SaveResult & { id?: string }> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   const n = cleanCollectionName(name);
   if (!n) return { error: "A collection name must be 1 to 80 characters." };
@@ -289,7 +295,7 @@ export async function createCollection(studyId: string, name: string): Promise<S
 }
 
 export async function renameCollection(studyId: string, collectionId: string, name: string): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   const n = cleanCollectionName(name);
   if (!n || !isUuid(collectionId)) return { error: "A collection name must be 1 to 80 characters." };
@@ -301,7 +307,7 @@ export async function renameCollection(studyId: string, collectionId: string, na
 
 /** Deleting a collection keeps its references; they become unfiled. */
 export async function deleteCollection(studyId: string, collectionId: string): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   if (!isUuid(collectionId)) return { error: "Unknown collection." };
   const { error } = await w.supabase.from("reference_collections").delete().eq("id", collectionId).eq("study_id", studyId);
@@ -311,7 +317,7 @@ export async function deleteCollection(studyId: string, collectionId: string): P
 }
 
 export async function assignCollection(studyId: string, ids: string[], collectionId: string | null): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   if (!Array.isArray(ids) || !ids.length || ids.length > 200 || !ids.every(isUuid)) return { error: "Choose between 1 and 200 references." };
   if (collectionId !== null && !isUuid(collectionId)) return { error: "Unknown collection." };
@@ -323,7 +329,7 @@ export async function assignCollection(studyId: string, ids: string[], collectio
 
 /** Add tags to several references at once, keeping the tags they already have. */
 export async function addTagsToReferences(studyId: string, ids: string[], tags: string[]): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   const add = cleanTags(tags);
   if (!add.length) return { error: "Enter at least one tag." };
@@ -340,7 +346,7 @@ export async function addTagsToReferences(studyId: string, ids: string[], tags: 
 
 /** Merge duplicates into the reference the user chose to keep: blanks are filled, nothing is overwritten, tags are combined. */
 export async function mergeReferences(studyId: string, keepId: string, removeIds: string[]): Promise<SaveResult> {
-  const w = await writer();
+  const w = await writer(studyId);
   if ("error" in w) return { error: w.error };
   if (!isUuid(keepId) || !Array.isArray(removeIds) || !removeIds.length || removeIds.length > 20 || !removeIds.every(isUuid) || removeIds.includes(keepId)) return { error: "Choose one reference to keep and the duplicates to merge into it." };
   const { data, error: readError } = await w.supabase.from("study_references").select("*").in("id", [keepId, ...removeIds]).eq("study_id", studyId);

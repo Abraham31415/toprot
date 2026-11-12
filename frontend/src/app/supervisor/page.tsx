@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { currentStage } from "@/lib/protocol/milestones";
 import { latestOf, isStalled } from "@/lib/protocol/stalled";
 import { InvitationCard } from "./invitation-card";
@@ -12,22 +13,19 @@ export default async function SupervisorPage() {
 
   if (!profile) redirect("/login");
   if (!profile.role) redirect("/onboarding");
-  if (profile.role !== "supervisor") redirect("/dashboard");
+  // Anyone can open Supervision: what it shows depends only on the projects they hold a reviewer role on, not on their profile label.
 
   const supabase = await createClient();
 
   const [{ data: invitations }, { data: attached }, { data: workspace }, { data: amendments }] =
     await Promise.all([
+      createAdminClient().rpc("collab_my_invitations", { p_actor: profile.id }),
       supabase
-        .from("supervisor_invitations")
-        .select("id, studies(title)")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("study_supervisors")
+        .from("project_memberships")
         .select("study_id, studies(id, title, status, current_enrollment, created_at)")
-        .eq("supervisor_id", profile.id),
-      supabase.from("workspaces").select("stalled_threshold_days").eq("supervisor_id", profile.id).single(),
+        .eq("user_id", profile.id)
+        .eq("role", "reviewer"),
+      supabase.from("workspaces").select("stalled_threshold_days").eq("supervisor_id", profile.id).maybeSingle(),
       supabase
         .from("amendments")
         .select("id, study_id, reason, studies(title)")
@@ -69,12 +67,9 @@ export default async function SupervisorPage() {
               Pending invitations
             </h2>
             <div className="mt-3 flex flex-col gap-3">
-              {invitations.map((inv) => {
-                const study = inv.studies as unknown as { title: string } | null;
-                return (
-                  <InvitationCard key={inv.id} invitationId={inv.id} studyTitle={study?.title ?? "Untitled study"} />
-                );
-              })}
+              {(invitations as { invitation_id: string; study_title: string }[]).map((inv) => (
+                <InvitationCard key={inv.invitation_id} invitationId={inv.invitation_id} studyTitle={inv.study_title ?? "Untitled study"} />
+              ))}
             </div>
           </div>
         )}

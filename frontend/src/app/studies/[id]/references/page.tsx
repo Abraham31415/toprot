@@ -3,6 +3,8 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { ReferenceManager, type StudyRefRow } from "./reference-manager";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 /** Most references loaded into the manager at once. */
 const REFERENCE_PAGE_LIMIT = 1000;
@@ -29,7 +31,7 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
     supabase.from("reference_collections").select("id, name").eq("study_id", studyId).order("name", { ascending: true }),
   ]);
 
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">
