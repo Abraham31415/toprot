@@ -1,3 +1,4 @@
+import { publicSlugFor } from "@/lib/tools/aliases";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Calculator } from "lucide-react";
@@ -63,7 +64,7 @@ export default async function CalculationsPage({ params }: { params: Promise<{ i
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       {known ? (
-                        <Link href={`/tools/${c.tool_slug}`} className="font-medium text-navy hover:text-cobalt">
+                        <Link href={`/tools/${publicSlugFor(c.tool_slug)}`} className="font-medium text-navy hover:text-cobalt">
                           {c.tool_name}
                         </Link>
                       ) : (

@@ -4,6 +4,7 @@ import { DESIGN_BUILDERS } from "./builders-design";
 import { METHOD_BUILDERS } from "./builders-method";
 import { INSTRUMENT_BUILDERS } from "./builders-instruments";
 import { CATEGORIES, type Calculator, type ToolMeta } from "./types";
+import { publicSlugFor } from "./aliases";
 
 export { CATEGORIES };
 
@@ -29,4 +30,4 @@ const meta = (c: Calculator): ToolMeta => ({ slug: c.slug, name: c.name, categor
 export const ALL_TOOLS: ToolMeta[] = [...CALCULATORS.map(meta), ...OTHER];
 
 export const getCalculator = (slug: string): Calculator | undefined => CALCULATORS.find((c) => c.slug === slug);
-export const toolHref = (t: ToolMeta): string | null => (t.kind === "calculator" ? `/tools/${t.slug}` : (t.href ?? null));
+export const toolHref = (t: ToolMeta): string | null => (t.kind === "calculator" ? `/tools/${publicSlugFor(t.slug)}` : (t.href ?? null));
