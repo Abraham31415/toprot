@@ -34,21 +34,21 @@ const credits = (mcr: number) => (mcr / 1000).toLocaleString("en-GB", { maximumF
 
 function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-line bg-white p-4">
-      <div className="flex items-center gap-2 text-xs text-navy/65">
-        <Icon className="h-4 w-4 text-cobalt" aria-hidden="true" />
+    <div className="rounded-lg border border-line bg-surface p-4">
+      <div className="flex items-center gap-2 text-xs text-ink-muted">
+        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-1 text-2xl font-semibold text-navy">{value}</p>
+      <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
     </div>
   );
 }
 
 function Panel({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-line bg-white p-5">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-navy">
-        <Icon className="h-4 w-4 text-cobalt" aria-hidden="true" />
+    <section className="rounded-lg border border-line bg-surface p-5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
         {title}
       </h2>
       <div className="mt-3">{children}</div>
@@ -155,17 +155,17 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight text-navy">Welcome back, {firstName}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">Welcome back, {firstName}</h1>
       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <p className="text-sm text-navy/65">Pick up a project or start a new one.</p>
+        <p className="text-sm text-ink-muted">Pick up a project or start a new one.</p>
         {headroom && (
           <Link
             href="/billing"
             aria-label={headroom.planKey === "free" ? "You are on the Free plan. Open billing to upgrade." : "You are on Toprot Pro. Open billing."}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${headroom.planKey === "free" ? "bg-navy/5 text-navy/75 hover:bg-navy/10" : "bg-teal/10 text-teal-ink hover:bg-teal/20"}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${headroom.planKey === "free" ? "bg-navy/10 text-ink-soft hover:bg-navy/10" : "bg-teal/10 text-teal-ink hover:bg-teal/20"}`}
           >
             {headroom.planKey === "free" ? "Free plan" : "Toprot Pro"}
-            {headroom.planKey === "free" && <span className="text-cobalt">Upgrade</span>}
+            {headroom.planKey === "free" && <span className="text-primary">Upgrade</span>}
           </Link>
         )}
       </div>
@@ -182,27 +182,27 @@ export default async function DashboardPage() {
       </div>
 
       <section className="mt-8" aria-labelledby="projects-heading">
-        <h2 id="projects-heading" className="text-lg font-semibold text-navy">
+        <h2 id="projects-heading" className="text-lg font-semibold text-ink">
           Recent projects
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           {!cards.length && (
-            <div className="rounded-lg border border-dashed border-navy/25 bg-white p-8 text-center sm:col-span-2">
-              <FlaskConical className="mx-auto h-8 w-8 text-cobalt" aria-hidden="true" />
-              <p className="mt-2 font-medium text-navy">No projects yet</p>
-              <p className="mt-1 text-sm text-navy/65">Name your first study above to start its protocol.</p>
+            <div className="rounded-lg border border-dashed border-line-strong bg-surface p-8 text-center sm:col-span-2">
+              <FlaskConical className="mx-auto h-8 w-8 text-primary" aria-hidden="true" />
+              <p className="mt-2 font-medium text-ink">No projects yet</p>
+              <p className="mt-1 text-sm text-ink-muted">Name your first study above to start its protocol.</p>
             </div>
           )}
           {cards.map(({ study, version, completion, stage }) => (
-            <article key={study.id} className="flex flex-col rounded-lg border border-line bg-white p-4">
+            <article key={study.id} className="flex flex-col rounded-lg border border-line bg-surface p-4">
               <div className="flex items-start justify-between gap-3">
-                <Link href={`/studies/${study.id}/protocol`} className="font-medium text-navy hover:text-cobalt">
+                <Link href={`/studies/${study.id}/protocol`} className="font-medium text-ink hover:text-primary">
                   {study.title}
                 </Link>
                 {version && (
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      version.status === "registered" ? "bg-teal/10 text-teal-ink" : "bg-soft text-cobalt-dark"
+                      version.status === "registered" ? "bg-teal/10 text-teal-ink" : "bg-surface-soft text-primary-hover"
                     }`}
                   >
                     {version.status === "registered" ? "Locked" : "Draft"} v{version.version_number}
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
 
               {completion && (
                 <div className="mt-3">
-                  <div className="flex justify-between text-xs text-navy/65">
+                  <div className="flex justify-between text-xs text-ink-muted">
                     <span>Protocol</span>
                     <span>
                       {completion.percent}% ({completion.completeSections}/{completion.sections.length} sections)
@@ -231,7 +231,7 @@ export default async function DashboardPage() {
                 </div>
               )}
 
-              <p className="mt-3 text-sm text-navy/65">
+              <p className="mt-3 text-sm text-ink-muted">
                 Stage: {stage} · enrollment {study.current_enrollment ?? 0}
               </p>
 
@@ -245,7 +245,7 @@ export default async function DashboardPage() {
                   <Link
                     key={slug}
                     href={`/studies/${study.id}/${slug}`}
-                    className="rounded-md px-2 py-1 font-medium text-navy/75 hover:bg-soft hover:text-cobalt-dark"
+                    className="rounded-md px-2 py-1 font-medium text-ink-soft hover:bg-surface-soft hover:text-primary-hover"
                   >
                     {label}
                   </Link>
@@ -260,38 +260,38 @@ export default async function DashboardPage() {
         <Panel title="Quick access" icon={Calculator}>
           <Link
             href="/calculator"
-            className="flex items-center justify-between rounded-md border border-line px-3 py-2.5 text-sm font-medium text-navy hover:border-cobalt"
+            className="flex items-center justify-between rounded-md border border-line px-3 py-2.5 text-sm font-medium text-ink hover:border-primary"
           >
             <span className="flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-cobalt" aria-hidden="true" />
+              <Calculator className="h-4 w-4 text-primary" aria-hidden="true" />
               Sample size calculator
             </span>
-            <ArrowRight className="h-4 w-4 text-navy/45" aria-hidden="true" />
+            <ArrowRight className="h-4 w-4 text-ink-muted" aria-hidden="true" />
           </Link>
-          <p className="mt-3 text-xs text-navy/55">More research tools will appear here as they are released.</p>
+          <p className="mt-3 text-xs text-ink-muted">More research tools will appear here as they are released.</p>
         </Panel>
 
         <Panel title="AI credits" icon={BrainCircuit}>
           {headroom ? (
             <>
-              <p className="mb-2 text-xs font-medium text-navy/65">
-                Plan: <span className="text-navy">{headroom.planKey === "free" ? "Free" : "Toprot Pro"}</span>
+              <p className="mb-2 text-xs font-medium text-ink-muted">
+                Plan: <span className="text-ink">{headroom.planKey === "free" ? "Free" : "Toprot Pro"}</span>
                 {headroom.planKey !== "free" && headroom.periodEnd ? ` (current period ends ${fmtDate(headroom.periodEnd)})` : ""}
               </p>
-              <p className="text-2xl font-semibold text-navy">
+              <p className="text-2xl font-semibold text-ink">
                 {credits(headroom.availableMcr)}
-                <span className="ml-2 text-sm font-normal text-navy/65">credits available</span>
+                <span className="ml-2 text-sm font-normal text-ink-muted">credits available</span>
               </p>
-              <p className="mt-1 text-xs text-navy/65">
+              <p className="mt-1 text-xs text-ink-muted">
                 {credits(headroom.subscriptionAvailableMcr)} of {credits(headroom.allowanceMcr)} from your plan
                 {headroom.purchasedAvailableMcr > 0 ? `, plus ${credits(headroom.purchasedAvailableMcr)} purchased` : ""}
               </p>
-              <Link href="/billing" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-cobalt">
+              <Link href="/billing" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary">
                 Billing and usage <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </>
           ) : (
-            <p className="text-sm text-navy/65">Credit balance is temporarily unavailable.</p>
+            <p className="text-sm text-ink-muted">Credit balance is temporarily unavailable.</p>
           )}
         </Panel>
 
@@ -301,10 +301,10 @@ export default async function DashboardPage() {
               {upcoming.map((m) => (
                 <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
                   <span>
-                    <span className="font-medium text-navy">{MILESTONE_LABELS[m.milestone_type]}</span>
-                    <span className="block text-xs text-navy/60">{titleById.get(m.study_id)}</span>
+                    <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>
+                    <span className="block text-xs text-ink-muted">{titleById.get(m.study_id)}</span>
                   </span>
-                  <span className={`shrink-0 text-xs ${m.target_date! < now ? "text-red-700" : "text-navy/65"}`}>
+                  <span className={`shrink-0 text-xs ${m.target_date! < now ? "text-red-700" : "text-ink-muted"}`}>
                     {m.target_date! < now ? "Overdue " : ""}
                     {fmtDate(m.target_date!)}
                   </span>
@@ -312,7 +312,7 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-navy/65">No dated milestones. Set target dates on a study&apos;s milestones page.</p>
+            <p className="text-sm text-ink-muted">No dated milestones. Set target dates on a study&apos;s milestones page.</p>
           )}
         </Panel>
 
@@ -322,16 +322,16 @@ export default async function DashboardPage() {
               {recentMilestones.map((m) => (
                 <li key={`${m.study_id}-${m.milestone_type}`} className="flex items-start justify-between gap-3">
                   <span>
-                    <span className="font-medium text-navy">{MILESTONE_LABELS[m.milestone_type]}</span>{" "}
-                    <span className="text-navy/65">{m.status === "complete" ? "completed" : "in progress"}</span>
-                    <span className="block text-xs text-navy/60">{titleById.get(m.study_id)}</span>
+                    <span className="font-medium text-ink">{MILESTONE_LABELS[m.milestone_type]}</span>{" "}
+                    <span className="text-ink-muted">{m.status === "complete" ? "completed" : "in progress"}</span>
+                    <span className="block text-xs text-ink-muted">{titleById.get(m.study_id)}</span>
                   </span>
-                  <span className="shrink-0 text-xs text-navy/65">{fmtDate(m.updated_at)}</span>
+                  <span className="shrink-0 text-xs text-ink-muted">{fmtDate(m.updated_at)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-navy/65">Milestone updates will show up here.</p>
+            <p className="text-sm text-ink-muted">Milestone updates will show up here.</p>
           )}
         </Panel>
       </div>

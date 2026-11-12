@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-line bg-white p-5">
+    <section className="rounded-lg border border-line bg-surface p-5">
       <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="mt-3 text-sm leading-6 text-navy/80">{children}</div>
+      <div className="mt-3 text-sm leading-6 text-ink-soft">{children}</div>
     </section>
   );
 }
@@ -70,7 +70,7 @@ export default function ExamplesPage() {
             <p className="mt-2 text-base font-semibold">Required sample: {S.sampleSize.result} participants</p>
             <p className="mt-2">
               Try the same inputs in the free{" "}
-              <a href="/calculator" className="text-cobalt underline">
+              <a href="/calculator" className="text-primary underline">
                 sample size calculator
               </a>
               .
@@ -101,12 +101,12 @@ export default function ExamplesPage() {
           </Card>
         </div>
 
-        <section className="mt-5 rounded-lg border border-line bg-white p-5">
+        <section className="mt-5 rounded-lg border border-line bg-surface p-5">
           <h2 className="text-lg font-semibold">Variables and data dictionary</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">
               <caption className="sr-only">Variables in the sample study</caption>
-              <thead className="border-b border-line text-xs uppercase text-navy/60">
+              <thead className="border-b border-line text-xs uppercase text-ink-muted">
                 <tr>
                   <th scope="col" className="py-2 pr-4 font-medium">Variable</th>
                   <th scope="col" className="py-2 pr-4 font-medium">Label</th>
@@ -130,21 +130,21 @@ export default function ExamplesPage() {
             <a
               href="/examples/sample-data-dictionary.csv"
               download
-              className="inline-block rounded-md border border-navy/25 px-4 py-2 text-sm font-medium hover:border-cobalt hover:text-cobalt"
+              className="inline-block rounded-md border border-line-strong px-4 py-2 text-sm font-medium hover:border-primary hover:text-primary"
             >
               Download sample data dictionary (CSV)
             </a>
           </p>
         </section>
 
-        <section className="mt-5 rounded-lg border border-line bg-white p-5">
+        <section className="mt-5 rounded-lg border border-line bg-surface p-5">
           <h2 className="text-lg font-semibold">Statistical table shells</h2>
           <div className="mt-3 grid gap-5 md:grid-cols-2">
             {S.tableShells.map((t) => (
               <div key={t.title} className="overflow-x-auto">
                 <p className="mb-2 text-sm font-medium">{t.title}</p>
                 <table className="w-full text-left text-sm">
-                  <thead className="border-b border-line text-xs uppercase text-navy/60">
+                  <thead className="border-b border-line text-xs uppercase text-ink-muted">
                     <tr>
                       {t.columns.map((c) => (
                         <th key={c} scope="col" className="py-2 pr-4 font-medium">{c}</th>
@@ -156,7 +156,7 @@ export default function ExamplesPage() {
                       <tr key={r} className="border-b border-line last:border-0">
                         <td className="py-2 pr-4">{r}</td>
                         {t.columns.slice(1).map((c) => (
-                          <td key={c} className="py-2 pr-4 text-navy/40">&nbsp;</td>
+                          <td key={c} className="py-2 pr-4 text-ink-muted">&nbsp;</td>
                         ))}
                       </tr>
                     ))}

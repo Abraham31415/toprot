@@ -68,55 +68,55 @@ export function ArticleView({ article, preview = false }: { article: Article; pr
           </p>
         )}
         <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-1 text-sm text-navy/65">
-            <li><Link href="/resources" className="hover:text-cobalt">Resources</Link></li>
+          <ol className="flex flex-wrap items-center gap-1 text-sm text-ink-muted">
+            <li><Link href="/resources" className="hover:text-primary">Resources</Link></li>
             <li aria-hidden="true"><ChevronRight className="h-3.5 w-3.5" /></li>
             <li>{category?.name}</li>
           </ol>
         </nav>
 
         <article className="mt-3 max-w-3xl">
-          <h1 className="text-3xl font-semibold tracking-tight text-navy sm:text-4xl">{article.title}</h1>
-          <p className="mt-3 text-lg text-navy/75">{article.summary}</p>
-          <p className="mt-3 text-xs text-navy/60">
+          <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">{article.title}</h1>
+          <p className="mt-3 text-lg text-ink-soft">{article.summary}</p>
+          <p className="mt-3 text-xs text-ink-muted">
             {readingMinutes(article)} minute read. Updated {longDate(article.updatedOn)}.
             {article.reviewedBy && article.reviewedOn ? ` Reviewed by ${article.reviewedBy} on ${longDate(article.reviewedOn)}.` : ""}
           </p>
 
-          <div className="mt-8 space-y-8 text-base leading-7 text-navy/85">
+          <div className="mt-8 space-y-8 text-base leading-7 text-ink-soft">
             {article.sections.map((s) => (
               <section key={s.heading}>
-                <h2 className="text-xl font-semibold text-navy">{s.heading}</h2>
+                <h2 className="text-xl font-semibold text-ink">{s.heading}</h2>
                 {s.paragraphs?.map((p) => <p key={p} className="mt-3">{p}</p>)}
                 {s.bullets && <ul className="mt-3 list-disc space-y-1.5 pl-5">{s.bullets.map((b) => <li key={b}>{b}</li>)}</ul>}
               </section>
             ))}
 
             <section>
-              <h2 className="text-xl font-semibold text-navy">Sources</h2>
+              <h2 className="text-xl font-semibold text-ink">Sources</h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm">
                 {article.sources.map((s) => (
                   <li key={s.citation}>
                     {s.citation}
-                    {s.url && <> <a href={s.url} rel="noopener noreferrer" target="_blank" className="text-cobalt underline">{s.url.replace(/^https?:\/\//, "")}</a></>}
+                    {s.url && <> <a href={s.url} rel="noopener noreferrer" target="_blank" className="text-primary underline">{s.url.replace(/^https?:\/\//, "")}</a></>}
                   </li>
                 ))}
               </ol>
             </section>
           </div>
 
-          <p className="mt-8 rounded-lg bg-soft p-3 text-xs text-navy/80">
+          <p className="mt-8 rounded-lg bg-surface-soft p-3 text-xs text-ink-soft">
             This guide is general educational information. It is not a substitute for advice from your supervisor, a statistician or your ethics committee.
           </p>
         </article>
 
         {tools.length > 0 && (
           <section className="mt-12 max-w-3xl">
-            <h2 className="text-lg font-semibold text-navy">Tools that go with this guide</h2>
+            <h2 className="text-lg font-semibold text-ink">Tools that go with this guide</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {tools.map((t) => (
                 <li key={t.href}>
-                  <Link href={t.href} className="block h-full rounded-lg border border-line bg-white p-3 text-sm font-medium text-navy hover:border-cobalt">{t.label}</Link>
+                  <Link href={t.href} className="block h-full rounded-lg border border-line bg-surface p-3 text-sm font-medium text-ink hover:border-primary">{t.label}</Link>
                 </li>
               ))}
             </ul>
@@ -125,13 +125,13 @@ export function ArticleView({ article, preview = false }: { article: Article; pr
 
         {related.length > 0 && (
           <section className="mt-10 max-w-3xl">
-            <h2 className="text-lg font-semibold text-navy">Related guides</h2>
+            <h2 className="text-lg font-semibold text-ink">Related guides</h2>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {related.map((r) => (
                 <li key={r.slug}>
-                  <Link href={preview ? `/resources/preview/${r.slug}` : `/resources/${r.slug}`} className="block h-full rounded-lg border border-line bg-white p-3 hover:border-cobalt">
-                    <span className="block text-sm font-medium text-navy">{r.title}</span>
-                    <span className="mt-1 block text-xs text-navy/65">{r.summary}</span>
+                  <Link href={preview ? `/resources/preview/${r.slug}` : `/resources/${r.slug}`} className="block h-full rounded-lg border border-line bg-surface p-3 hover:border-primary">
+                    <span className="block text-sm font-medium text-ink">{r.title}</span>
+                    <span className="mt-1 block text-xs text-ink-muted">{r.summary}</span>
                   </Link>
                 </li>
               ))}

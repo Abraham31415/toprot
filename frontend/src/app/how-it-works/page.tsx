@@ -48,13 +48,13 @@ export default function HowItWorksPage() {
         <ol className="max-w-3xl space-y-8">
           {STEPS.map((s, i) => (
             <li key={s.title} className="flex gap-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cobalt text-sm font-semibold text-white">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
                 {i + 1}
               </span>
               <div>
                 <h2 className="text-lg font-semibold">{s.title}</h2>
-                <p className="mt-1 text-navy/75">{s.text}</p>
-                {s.note && <p className="mt-2 rounded-md bg-gold/10 px-3 py-2 text-sm text-navy/80">{s.note}</p>}
+                <p className="mt-1 text-ink-soft">{s.text}</p>
+                {s.note && <p className="mt-2 rounded-md bg-gold/10 px-3 py-2 text-sm text-ink-soft">{s.note}</p>}
               </div>
             </li>
           ))}

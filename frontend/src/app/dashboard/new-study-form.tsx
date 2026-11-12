@@ -15,14 +15,14 @@ export function NewStudyForm() {
           name="title"
           placeholder="Study title, e.g. Incidence of ROP among preterm infants at Mulago"
           required
-          className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none focus:border-navy/35"
+          className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-line-strong"
         />
         {state?.error && <p className="mt-1.5 text-sm text-red-600">{state.error}</p>}
       </div>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-cobalt px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cobalt-dark disabled:opacity-50"
+        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
       >
         {pending ? "Creating..." : "New study"}
       </button>
