@@ -62,8 +62,10 @@ async function call(cfg: DodoConfig, path: string, init: RequestInit, f: Fetch):
       signal: AbortSignal.timeout(15_000),
       cache: "no-store",
     });
-  } catch {
-    throw new DodoError("The payment provider could not be reached.", true);
+  } catch (err) {
+    // The cause (never the key or the request) is kept in the message so it shows up in server logs.
+    const why = err instanceof Error ? `${err.name}: ${err.message}`.slice(0, 160) : "unknown";
+    throw new DodoError(`The payment provider could not be reached (${why}).`, true);
   }
   let body: unknown = null;
   try { body = await res.json(); } catch { /* not JSON */ }

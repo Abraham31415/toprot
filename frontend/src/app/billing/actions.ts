@@ -53,6 +53,7 @@ export async function startCheckout(kind: "subscription" | "pack", productKey: s
       await admin.from("payments").update({ meta: { checkout_session_id: sessionId } }).eq("tx_ref", txRef);
       return { url: link };
     } catch (e) {
+      console.error(JSON.stringify({ evt: "dodo_checkout_error", mode: cfg.mode, base: cfg.baseUrl, status: e instanceof DodoError ? e.status ?? null : null, retryable: e instanceof DodoError ? e.retryable : null, msg: e instanceof Error ? e.message.slice(0, 240) : "unknown" }));
       await admin.from("payments").update({ status: "failed", failure_reason: "checkout_creation_failed" }).eq("tx_ref", txRef).eq("status", "pending");
       return { error: e instanceof DodoError && e.retryable ? "The payment provider is not responding. Please try again in a moment." : "Could not open the checkout. Please try again later." };
     }
