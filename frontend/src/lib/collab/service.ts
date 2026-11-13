@@ -104,16 +104,20 @@ export async function changeMemberRole(db: DbLike, actorId: string, studyId: str
   return r.error ? { ok: false, error: r.error } : { ok: true };
 }
 
-export async function acceptInvitationByToken(db: DbLike, actorId: string, token: string): Promise<CollabResult<{ studyId: string }>> {
+type Accepted = { study_id?: string; team_id?: string; kind?: "project" | "team" };
+/** Where an accepted invitation leads: a project (protocol page) or a team. */
+export const acceptedPath = (a: Accepted): string => (a.kind === "team" && a.team_id ? `/teams/${a.team_id}` : a.study_id ? `/studies/${a.study_id}/protocol` : "/shared");
+
+export async function acceptInvitationByToken(db: DbLike, actorId: string, token: string): Promise<CollabResult<{ path: string }>> {
   if (typeof token !== "string" || !/^[0-9a-f]{64}$/.test(token)) return { ok: false, error: collabErrorMessage("invitation_invalid") };
-  const r = await call<{ study_id: string }>(db, "collab_accept", { p_actor: actorId, p_token: token });
-  return r.data ? { ok: true, studyId: r.data.study_id } : { ok: false, error: r.error ?? collabErrorMessage("invitation_invalid") };
+  const r = await call<Accepted>(db, "collab_accept", { p_actor: actorId, p_token: token });
+  return r.data ? { ok: true, path: acceptedPath(r.data) } : { ok: false, error: r.error ?? collabErrorMessage("invitation_invalid") };
 }
 
-export async function acceptInvitationById(db: DbLike, actorId: string, invitationId: string): Promise<CollabResult<{ studyId: string }>> {
+export async function acceptInvitationById(db: DbLike, actorId: string, invitationId: string): Promise<CollabResult<{ path: string }>> {
   if (!isUuid(invitationId)) return { ok: false, error: "Unknown invitation." };
-  const r = await call<{ study_id: string }>(db, "collab_accept_by_id", { p_actor: actorId, p_invitation: invitationId });
-  return r.data ? { ok: true, studyId: r.data.study_id } : { ok: false, error: r.error ?? "Could not accept." };
+  const r = await call<Accepted>(db, "collab_accept_by_id", { p_actor: actorId, p_invitation: invitationId });
+  return r.data ? { ok: true, path: acceptedPath(r.data) } : { ok: false, error: r.error ?? "Could not accept." };
 }
 
 export async function declineInvitation(db: DbLike, actorId: string, invitationId: string): Promise<CollabResult> {

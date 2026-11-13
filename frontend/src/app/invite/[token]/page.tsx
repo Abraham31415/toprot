@@ -7,12 +7,13 @@ import { ButtonLink, Container, PageHeader } from "@/components/ds";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLE_LABEL, ROLE_SUMMARY, TITLE_TEXT, type MemberRole, type TitleLabel } from "@/lib/collab/roles";
+import { TEAM_ROLE_LABEL, TEAM_ROLE_SUMMARY, type TeamRole } from "@/lib/collab/teams";
 import { AcceptForm } from "./accept-form";
 
 export const metadata: Metadata = { title: "Project invitation", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-type Preview = { state: "invalid" | "pending" | "accepted" | "declined" | "revoked" | "expired"; invitation_id?: string; study_title?: string; role?: MemberRole; title_label?: TitleLabel | null; invited_by?: string; expires_at?: string };
+type Preview = { kind?: "project" | "team"; state: "invalid" | "pending" | "accepted" | "declined" | "revoked" | "expired"; invitation_id?: string; study_title?: string; role?: MemberRole | "administrator" | "member" | "guest"; title_label?: TitleLabel | null; invited_by?: string; expires_at?: string };
 
 export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -40,17 +41,28 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   return (
     <AppFrame>
       <Container width="narrow">
-        <PageHeader title={p.state === "pending" ? "Join a research project" : "Project invitation"} eyebrow="Invitation" />
+        <PageHeader title={p.state === "pending" ? (p.kind === "team" ? "Join a team" : "Join a research project") : "Invitation"} eyebrow="Invitation" />
         <div className="pb-16">
           {p.state === "pending" && p.invitation_id && p.role ? (
             <div className="rounded-card border border-line bg-surface p-6 shadow-card">
               <MailCheck className="h-6 w-6 text-primary" aria-hidden="true" />
               <h2 className="mt-3 text-lg font-semibold text-ink">{p.study_title}</h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                {p.invited_by ? `${p.invited_by} invited you` : "You are invited"} as <strong className="text-ink">{ROLE_LABEL[p.role]}</strong>
-                {p.title_label ? ` (${TITLE_TEXT[p.title_label]})` : ""}.
-              </p>
-              <p className="mt-2 text-sm text-ink-soft">{ROLE_SUMMARY[p.role]}</p>
+              {p.kind === "team" ? (
+                <>
+                  <p className="mt-1 text-sm text-ink-soft">
+                    {p.invited_by ? `${p.invited_by} invited you` : "You are invited"} to join this team as <strong className="text-ink">{TEAM_ROLE_LABEL[p.role as TeamRole]}</strong>.
+                  </p>
+                  <p className="mt-2 text-sm text-ink-soft">{TEAM_ROLE_SUMMARY[p.role as TeamRole]} Joining a team does not give you access to any project until its owner adds you.</p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm text-ink-soft">
+                    {p.invited_by ? `${p.invited_by} invited you` : "You are invited"} as <strong className="text-ink">{ROLE_LABEL[p.role as MemberRole]}</strong>
+                    {p.title_label ? ` (${TITLE_TEXT[p.title_label]})` : ""}.
+                  </p>
+                  <p className="mt-2 text-sm text-ink-soft">{ROLE_SUMMARY[p.role as MemberRole]}</p>
+                </>
+              )}
               <AcceptForm token={token} invitationId={p.invitation_id} />
             </div>
           ) : (

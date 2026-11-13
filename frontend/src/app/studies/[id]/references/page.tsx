@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { ReferenceManager, type StudyRefRow } from "./reference-manager";
+import { LinkedReferences, type LinkedRef } from "./linked-references";
 import { roleOf } from "@/lib/collab/access";
 import { can } from "@/lib/collab/roles";
 
@@ -32,6 +33,7 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
   ]);
 
   const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
+  const { data: linked } = await supabase.rpc("study_linked_references", { p_study: study.id });
 
   return (
     <div className="min-h-screen bg-paper">
@@ -52,6 +54,7 @@ export default async function ReferencesPage({ params }: { params: Promise<{ id:
         <div className="mt-6">
           <ReferenceManager studyId={study.id} references={(references ?? []) as StudyRefRow[]} collections={(collections ?? []) as { id: string; name: string }[]} readOnly={!isOwner} />
         </div>
+        <LinkedReferences studyId={study.id} refs={(linked ?? []) as LinkedRef[]} canEdit={isOwner} />
       </main>
     </div>
   );

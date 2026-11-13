@@ -132,13 +132,13 @@ as $$ select public.study_role(p_study, auth.uid()) is not null $$;
 
 create or replace function public.can_write_study(p_study uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp
-as $$ select public.study_role(p_study, auth.uid()) in ('owner', 'editor') $$;
+as $$ select coalesce(public.study_role(p_study, auth.uid()) in ('owner', 'editor'), false) $$;
 
 -- Redefined so every existing "supervisor" policy now means "holds an active reviewer role". The name is kept so no policy changes meaning
 -- silently elsewhere; what a supervisor LABEL on a profile says is irrelevant.
 create or replace function public.is_study_supervisor(p_study_id uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp
-as $$ select public.study_role(p_study_id, auth.uid()) = 'reviewer' $$;
+as $$ select coalesce(public.study_role(p_study_id, auth.uid()) = 'reviewer', false) $$;
 
 -- Do two accounts share at least one project (as owner or member)? Used so people can see each other's name, nothing else.
 create or replace function public.shares_study_with(p_profile uuid) returns boolean

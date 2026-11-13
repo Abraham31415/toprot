@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Bell, BookOpen, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
+import { Bell, BookOpen, Users2, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; badge?: number; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
 type NavGroup = { label: string; items: NavItem[] };
@@ -13,7 +13,7 @@ function navFor(unread: number): NavGroup[] {
   const dashboard: NavItem = { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, also: ["/studies"] };
   const supervision: NavItem = { href: "/supervisor", label: "Supervision", icon: Users };
   return [
-    { label: "Workspace", items: [dashboard, supervision, { href: "/shared", label: "Shared with me", icon: FolderOpen }, { href: "/notifications", label: "Notifications", icon: Bell, badge: unread }, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
+    { label: "Workspace", items: [dashboard, supervision, { href: "/shared", label: "Shared with me", icon: FolderOpen }, { href: "/teams", label: "Teams", icon: Users2 }, { href: "/notifications", label: "Notifications", icon: Bell, badge: unread }, { href: "/writing", label: "Writing", icon: PenLine }, { href: "/library", label: "PDF library", icon: Library }] },
     {
       label: "Research",
       items: [

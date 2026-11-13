@@ -12,7 +12,7 @@ async function me() {
 }
 
 /** Accept by secret token (the emailed link) or by invitation id (the list on the Shared with me page). The account's email must match. */
-export async function acceptInvite(input: { token?: string; invitationId?: string }): Promise<{ error?: string; studyId?: string }> {
+export async function acceptInvite(input: { token?: string; invitationId?: string }): Promise<{ error?: string; path?: string }> {
   const user = await me();
   if (!user) return { error: "Sign in with a confirmed email address to accept." };
   const db = createAdminClient();
@@ -21,7 +21,7 @@ export async function acceptInvite(input: { token?: string; invitationId?: strin
     : ({ ok: false, error: "Unknown invitation." } as const);
   if (!r.ok) return { error: r.error };
   revalidatePath("/shared");
-  return { studyId: r.studyId };
+  return { path: r.path };
 }
 
 export async function declineInvite(invitationId: string): Promise<{ error?: string }> {
