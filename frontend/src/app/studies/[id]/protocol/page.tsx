@@ -6,6 +6,7 @@ import { can } from "@/lib/collab/roles";
 import { StudyNav } from "@/components/study-nav";
 import { ProtocolForm } from "./protocol-form";
 import { LockPanel } from "./lock-panel";
+import { HistoryPanel, type SnapshotRow } from "./history-panel";
 
 export default async function ProtocolPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
@@ -75,6 +76,12 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
   const isAttachedSupervisor = role === "reviewer";
   const readOnly = version.status !== "draft" || !can(role, "write");
 
+  const { data: snaps } = await supabase.from("protocol_snapshots").select("id, kind, label, created_at, created_by").eq("version_id", version.id).order("created_at", { ascending: false }).limit(40);
+  const authorIds = [...new Set((snaps ?? []).map((s) => s.created_by).filter(Boolean))] as string[];
+  const { data: authors } = authorIds.length ? await supabase.from("profiles").select("id, full_name").in("id", authorIds) : { data: [] };
+  const nameOf = new Map((authors ?? []).map((a) => [a.id, a.full_name]));
+  const snapshots: SnapshotRow[] = (snaps ?? []).map((s) => ({ id: s.id, kind: s.kind, label: s.label, created_at: s.created_at, author: s.created_by ? nameOf.get(s.created_by) ?? null : null }));
+
   return (
     <div className="min-h-screen bg-paper">
       <div className="mx-auto max-w-6xl px-6 pt-10">
@@ -88,6 +95,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
           pendingInvitation={pendingInvitation ?? null}
           amendmentReview={amendment ?? null}
         />
+        {version.status === "draft" && <HistoryPanel studyId={study.id} versionId={version.id} snapshots={snapshots} canEdit={can(role, "write")} />}
       </div>
       <ProtocolForm
         studyId={study.id}

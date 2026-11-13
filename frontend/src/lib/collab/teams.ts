@@ -148,6 +148,7 @@ async function deliverTeam(db: DbLike, actorName: string, teamName: string, inv:
   const result = await send({ to: inv.email, ...teamInviteText({ inviterName: actorName || "A ToProt user", teamName, role: inv.role, link, expiresAt: inv.expires_at }) });
   const accepted = result.status === "provider_accepted";
   await db.rpc("team_set_delivery", { p_invitation: inv.invitation_id, p_status: result.status, p_error: accepted ? null : result.error, p_message_id: accepted ? result.id : null });
+  if (accepted) await db.rpc("collab_usage_bump", { p_metric: "invitation_emails", p_n: 1 });
   return { ok: true, invitationId: inv.invitation_id, link, delivery: result.status, deliveryError: accepted ? undefined : result.error };
 }
 

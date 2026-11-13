@@ -31,5 +31,17 @@ export function makeHelpers(getDb: () => AdminDb) {
     return db().rpc("collab_accept", { p_actor: member.id, p_token: inv.token });
   }
   const as = <T = any>(user: string, sql: string, params: unknown[] = []) => db().asRole<T>("authenticated", user, sql, params);
-  return { person, subscribe, project, invite, join, as };
+  // Like `as`, but commits, for tests that must see the effect of a write made by a browser session.
+  async function asWrite<T = any>(user: string, sql: string, params: unknown[] = []): Promise<T[]> {
+    const c = await db().pool.connect();
+    try {
+      await c.query("begin");
+      await c.query("set local role authenticated");
+      await c.query("select set_config('request.jwt.claim.sub', $1, true)", [user]);
+      const r = await c.query(sql, params);
+      await c.query("commit");
+      return r.rows;
+    } catch (e) { await c.query("rollback").catch(() => {}); throw e; } finally { c.release(); }
+  }
+  return { person, subscribe, project, invite, join, as, asWrite };
 }

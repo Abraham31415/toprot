@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { NotificationItem } from "@/lib/collab/review";
 import { MarkReadButton } from "./mark-read";
+import { PreferencesForm } from "./preferences-form";
+import { emailConfigured } from "@/lib/email/send";
 
 export const metadata: Metadata = { title: "Notifications", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -17,7 +19,8 @@ export default async function NotificationsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data } = await createAdminClient().rpc("collab_notifications", { p_actor: user.id, p_limit: 100 });
+  const db = createAdminClient();
+  const [{ data }, { data: prefs }] = await Promise.all([db.rpc("collab_notifications", { p_actor: user.id, p_limit: 100 }), db.rpc("collab_prefs_get", { p_actor: user.id })]);
   const items = (data ?? []) as NotificationItem[];
   const unread = items.filter((n) => !n.read_at).length;
 
@@ -42,6 +45,7 @@ export default async function NotificationsPage() {
             ))}
           </ul>
         )}
+        <PreferencesForm prefs={prefs as Record<string, boolean>} emailReady={emailConfigured()} />
       </div>
     </Container>
   );
