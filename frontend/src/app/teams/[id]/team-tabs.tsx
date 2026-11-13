@@ -10,6 +10,7 @@ const TABS = [
   { slug: "documents", label: "Documents", paidOnly: false },
   { slug: "references", label: "References", paidOnly: true },
   { slug: "chat", label: "Chat", paidOnly: true },
+  { slug: "billing", label: "Billing and AI", paidOnly: true },
   { slug: "activity", label: "Activity", paidOnly: true },
 ];
 

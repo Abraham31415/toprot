@@ -43,6 +43,12 @@ export interface RunOptions<T> {
   alertSender?: AlertSender;
   /** Backoff for settling retries; tests set this to 0. */
   settleRetryDelayMs?: number;
+  /**
+   * Who pays. By default the requester's own credits. A team id charges that team's credit pool instead, but only if the person chose
+   * it (see team_ai_user_funding); it never widens what the person may access. A project id is recorded for the audit trail and checked.
+   */
+  fundingTeamId?: string | null;
+  studyId?: string | null;
 }
 
 const DEFAULT_TIMEOUT_MS = 90_000;
@@ -95,6 +101,9 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
   if (!Number.isFinite(opts.inputChars) || opts.inputChars <= 0) return fail("invalid_request");
   if (opts.inputChars > config.feature.max_input_chars) return fail("input_too_large");
 
+  // Funding: the requester's own credits unless they opted in to a team pool. Looked up once, in the database.
+  const teamId = opts.fundingTeamId !== undefined ? opts.fundingTeamId : await ledger.userFundingTeam(db, userId);
+
   const candidates = routeCandidates(config, opts.inputChars);
   if (candidates.length === 0) return fail("op_cost_too_high");
 
@@ -114,13 +123,15 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
   for (const c of candidates) {
     let r: ledger.ReserveOk | ledger.ReserveFail;
     try {
-      r = await ledger.reserve(db, {
-        userId,
-        key: idempotencyKey,
-        feature,
-        model: c.model.model_id,
-        reserveMicroUsd: c.worstCaseMicroUsd,
-      });
+      r = teamId
+        ? await ledger.reserveTeam(db, { userId, teamId, studyId: opts.studyId, key: idempotencyKey, feature, model: c.model.model_id, reserveMicroUsd: c.worstCaseMicroUsd })
+        : await ledger.reserve(db, {
+            userId,
+            key: idempotencyKey,
+            feature,
+            model: c.model.model_id,
+            reserveMicroUsd: c.worstCaseMicroUsd,
+          });
     } catch (e) {
       log("ai_reserve_error", { userId, feature, err: String(e) });
       return fail("unavailable");
@@ -152,6 +163,16 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
     }
   };
 
+  // A pool-funded request is settled against its team pool after the ledger entry is final, on every exit. If that fails the
+  // reconciliation job settles it, so a pool hold can never be left open.
+  const settlePool = async () => { if (teamId) await settle(() => ledger.settleTeam(db, eventId), "team_settle"); };
+  const release = async (o: Parameters<typeof ledger.release>[2], what: string) => { await settle(() => ledger.release(db, eventId, o), what); await settlePool(); };
+  const commit = async (usage: UsageReport, o: Parameters<typeof ledger.commit>[3], what: string) => {
+    const c = await settle(() => ledger.commit(db, eventId, usage, o), what);
+    await settlePool();
+    return c;
+  };
+
   let outcome: CallOutcome<T>;
   let timedOut = false;
   try {
@@ -177,29 +198,23 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
     if (kind === "timeout") {
       // Outcome unknown: the user is not charged, but the platform may have been, so the
       // worst case counts against today's platform budget.
-      await settle(
-        () => ledger.release(db, eventId, { errorCode: "timeout", platformExposureMicroUsd: chosen.worstCaseMicroUsd, usageKnown: false }),
-        "release_timeout",
-      );
+      await release({ errorCode: "timeout", platformExposureMicroUsd: chosen.worstCaseMicroUsd, usageKnown: false }, "release_timeout");
       return fail("timeout", eventId);
     }
     if (kind === "stream_interrupted") {
       // Charge only what is known (input tokens); the unknown output is platform exposure.
       const known = usage ?? { input: 0, output: 0, cacheRead: 0, cacheWrite5m: 0, cacheWrite1h: 0, toolUsage: {}, iterations: 1 };
       const exposure = Math.max(chosen.worstCaseMicroUsd - costMicroUsd(chosen.model, { ...known, output: 0 }), 0);
-      await settle(
-        () => ledger.commit(db, eventId, { ...known, output: 0 }, { errorCode: "stream_interrupted", platformExposureMicroUsd: exposure, usageKnown: false }),
-        "commit_interrupted",
-      );
+      await commit({ ...known, output: 0 }, { errorCode: "stream_interrupted", platformExposureMicroUsd: exposure, usageKnown: false }, "commit_interrupted");
       return fail("stream_interrupted", eventId);
     }
     if (kind === "invalid_output" && usage) {
       // The provider did the work and reported usage, so that real usage is recorded.
-      await settle(() => ledger.commit(db, eventId, usage, { errorCode: "invalid_output" }), "commit_invalid_output");
+      await commit(usage, { errorCode: "invalid_output" }, "commit_invalid_output");
       return fail("invalid_output", eventId);
     }
     // Provider error before any generation: nothing used, nothing charged.
-    await settle(() => ledger.release(db, eventId, { errorCode: "provider_error" }), "release_provider_error");
+    await release({ errorCode: "provider_error" }, "release_provider_error");
     return fail("provider_error", eventId);
   }
   if (timer) clearTimeout(timer);
@@ -207,7 +222,7 @@ export async function runAiOperation<T>(opts: RunOptions<T>): Promise<AiOutcome<
   // Success: charge actual usage. The reservation is only a hold; the charge is computed in
   // Postgres from these token counts and may be lower (refunded difference) or higher
   // (recorded as overrun) than the reservation.
-  const committed = await settle(() => ledger.commit(db, eventId, outcome.usage), "commit");
+  const committed = await commit(outcome.usage, {}, "commit");
 
   void dispatchPendingAlerts(db, opts.alertSender);
 
