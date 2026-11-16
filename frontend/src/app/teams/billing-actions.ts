@@ -88,9 +88,9 @@ async function checkout(teamId: string, kind: "team_subscription" | "team_seats"
   }
 }
 
-export const startTeamSubscription = (teamId: string, seats: number) => checkout(teamId, "team_subscription", { seats });
-export const startAddSeats = (teamId: string, add: number) => checkout(teamId, "team_seats", { add });
-export const startTeamPack = (teamId: string, pack: string) => checkout(teamId, "team_pack", { pack });
+export async function startTeamSubscription(teamId: string, seats: number): Promise<Out> { return checkout(teamId, "team_subscription", { seats }); }
+export async function startAddSeats(teamId: string, add: number): Promise<Out> { return checkout(teamId, "team_seats", { add }); }
+export async function startTeamPack(teamId: string, pack: string): Promise<Out> { return checkout(teamId, "team_pack", { pack }); }
 
 async function codeOf(fn: string, args: Record<string, unknown>): Promise<string | undefined> {
   const { error } = await createAdminClient().rpc(fn, args);
@@ -106,14 +106,21 @@ async function run(teamId: string, fn: string, args: (uid: string) => Record<str
   return { message: ok };
 }
 
-export const lowerSeats = (teamId: string, seats: number) => run(teamId, "team_set_next_seats", (u) => ({ p_actor: u, p_team: teamId, p_seats: Math.floor(seats) }), "Done. Fewer seats take effect at the next renewal.");
-export const setPool = (teamId: string, enabled: boolean, teamLimitCredits: number | null, memberLimitCredits: number | null) =>
-  run(teamId, "team_ai_pool_set", (u) => ({ p_actor: u, p_team: teamId, p_enabled: enabled, p_team_limit: teamLimitCredits === null ? null : Math.round(teamLimitCredits * 1000), p_member_limit: memberLimitCredits === null ? null : Math.round(memberLimitCredits * 1000) }), enabled ? "Shared AI credits are on. Members choose whether to use them." : "Shared AI credits are off.");
-export const setMemberLimit = (teamId: string, userId: string, credits: number | null) =>
-  run(teamId, "team_ai_member_limit_set", (u) => ({ p_actor: u, p_team: teamId, p_user: userId, p_limit: credits === null ? null : Math.round(credits * 1000) }), "Limit saved.");
-export const requestMoreCredits = (teamId: string, credits: number, reason: string) =>
-  run(teamId, "team_ai_request_more", (u) => ({ p_actor: u, p_team: teamId, p_mcr: Math.round(credits * 1000), p_reason: reason }), "Request sent to the team administrators.");
-export const decideRequest = (teamId: string, requestId: string, approve: boolean, grantedCredits: number | null) =>
-  run(teamId, "team_ai_decide", (u) => ({ p_actor: u, p_request: requestId, p_approve: approve, p_granted: grantedCredits === null ? null : Math.round(grantedCredits * 1000) }), approve ? "Approved." : "Declined.");
-export const chooseFunding = (teamId: string | null) =>
-  run(teamId ?? "none", "team_ai_set_funding", (u) => ({ p_actor: u, p_team: teamId }), teamId ? "Your AI requests now use the team's shared credits." : "Your AI requests use your own credits.");
+export async function lowerSeats(teamId: string, seats: number): Promise<Out> {
+  return run(teamId, "team_set_next_seats", (u) => ({ p_actor: u, p_team: teamId, p_seats: Math.floor(seats) }), "Done. Fewer seats take effect at the next renewal.");
+}
+export async function setPool(teamId: string, enabled: boolean, teamLimitCredits: number | null, memberLimitCredits: number | null): Promise<Out> {
+  return run(teamId, "team_ai_pool_set", (u) => ({ p_actor: u, p_team: teamId, p_enabled: enabled, p_team_limit: teamLimitCredits === null ? null : Math.round(teamLimitCredits * 1000), p_member_limit: memberLimitCredits === null ? null : Math.round(memberLimitCredits * 1000) }), enabled ? "Shared AI credits are on. Members choose whether to use them." : "Shared AI credits are off.");
+}
+export async function setMemberLimit(teamId: string, userId: string, credits: number | null): Promise<Out> {
+  return run(teamId, "team_ai_member_limit_set", (u) => ({ p_actor: u, p_team: teamId, p_user: userId, p_limit: credits === null ? null : Math.round(credits * 1000) }), "Limit saved.");
+}
+export async function requestMoreCredits(teamId: string, credits: number, reason: string): Promise<Out> {
+  return run(teamId, "team_ai_request_more", (u) => ({ p_actor: u, p_team: teamId, p_mcr: Math.round(credits * 1000), p_reason: reason }), "Request sent to the team administrators.");
+}
+export async function decideRequest(teamId: string, requestId: string, approve: boolean, grantedCredits: number | null): Promise<Out> {
+  return run(teamId, "team_ai_decide", (u) => ({ p_actor: u, p_request: requestId, p_approve: approve, p_granted: grantedCredits === null ? null : Math.round(grantedCredits * 1000) }), approve ? "Approved." : "Declined.");
+}
+export async function chooseFunding(teamId: string | null): Promise<Out> {
+  return run(teamId ?? "none", "team_ai_set_funding", (u) => ({ p_actor: u, p_team: teamId }), teamId ? "Your AI requests now use the team's shared credits." : "Your AI requests use your own credits.");
+}

@@ -55,6 +55,7 @@ export async function GET(req: Request) {
     // Admin console housekeeping. These functions exist only once the admin migration is applied; until then they are skipped.
     const pruned = await db.rpc("analytics_prune", { p_days: 400 });
     out.eventsPruned = Number(pruned.data ?? 0);
+    await db.rpc("collab_scan_alerts"); // email quota, undelivered invitations, past-due teams
     const scan = await db.rpc("admin_scan_alerts");
     out.newAlerts = Number((scan.data as { new_alerts?: number } | null)?.new_alerts ?? 0);
     if (out.newAlerts > 0 && process.env.AI_ADMIN_ALERT_EMAIL) {

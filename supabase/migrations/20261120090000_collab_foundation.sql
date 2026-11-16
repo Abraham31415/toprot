@@ -491,7 +491,9 @@ begin
   if not found then raise exception 'invitation_invalid' using errcode = 'P0002'; end if;
   v_email := public.collab_user_email(p_actor);
   if v_email is null or v_email <> i.email then raise exception 'invitation_invalid' using errcode = 'P0002'; end if; -- same message as unknown, on purpose
-  if i.status = 'accepted' and i.accepted_by = p_actor then return jsonb_build_object('study_id', i.study_id, 'role', i.role, 'already', true); end if;
+  -- Accepting twice is harmless only while the membership still exists; after removal the used link must not work again.
+  if i.status = 'accepted' and i.accepted_by = p_actor and exists (select 1 from public.project_memberships where study_id = i.study_id and user_id = p_actor) then
+    return jsonb_build_object('study_id', i.study_id, 'role', i.role, 'already', true); end if;
   if i.status <> 'pending' then raise exception 'invitation_closed' using errcode = 'P0001'; end if;
   if i.expires_at <= now() then raise exception 'invitation_expired' using errcode = 'P0001'; end if;
   if public.study_role(i.study_id, p_actor) = 'owner' then raise exception 'invitation_invalid' using errcode = 'P0002'; end if;

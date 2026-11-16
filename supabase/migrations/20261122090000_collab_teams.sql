@@ -428,7 +428,7 @@ begin
   if not found then raise exception 'invitation_invalid' using errcode = 'P0002'; end if;
   v_email := public.collab_user_email(p_actor);
   if v_email is null or v_email <> i.email then raise exception 'invitation_invalid' using errcode = 'P0002'; end if;
-  if i.status = 'accepted' and i.accepted_by = p_actor then return jsonb_build_object('team_id', i.team_id, 'role', i.role, 'already', true); end if;
+  if i.status = 'accepted' and i.accepted_by = p_actor and exists (select 1 from public.team_memberships where team_id = i.team_id and user_id = p_actor) then return jsonb_build_object('team_id', i.team_id, 'role', i.role, 'already', true); end if;
   if i.status <> 'pending' then raise exception 'invitation_closed' using errcode = 'P0001'; end if;
   if i.expires_at <= now() then raise exception 'invitation_expired' using errcode = 'P0001'; end if;
   if exists (select 1 from public.team_memberships where team_id = i.team_id and user_id = p_actor) then raise exception 'already_member' using errcode = '23505'; end if;
