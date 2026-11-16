@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { friendlyAuthError } from "@/lib/auth-errors";
 import { redirect } from "next/navigation";
+import { safeNext } from "@/lib/collab/next-path";
 
 export type LoginState = { error?: string } | undefined;
 
@@ -28,5 +29,7 @@ export async function login(
 
   const profile = await getCurrentProfile();
   if (!profile?.role) redirect("/onboarding");
+  const next = safeNext(formData.get("next"));
+  if (next) redirect(next);
   redirect(profile.role === "supervisor" ? "/supervisor" : "/dashboard");
 }

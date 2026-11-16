@@ -51,6 +51,13 @@ export type AiErrorCode =
   | "unavailable" // config could not be loaded: fail closed
   | "feature_disabled"
   | "plan_required" // the user's plan does not include this AI feature
+  | "team_pool_exhausted" // the team credit pool the person chose cannot cover this request
+  | "team_limit_reached"
+  | "member_limit_reached"
+  | "team_pool_disabled"
+  | "team_plan_inactive"
+  | "team_not_member"
+  | "team_not_allowed"
   | "invalid_request"
   | "input_too_large"
   | "insufficient_credits"
@@ -89,6 +96,13 @@ export const USER_MESSAGES: Record<AiErrorCode, string> = {
   unavailable: "AI features are temporarily unavailable. Everything else in ToProt still works.",
   feature_disabled: "This AI feature is currently switched off.",
   plan_required: "This feature is part of Toprot Pro. Open Billing to see the plans.",
+  team_pool_exhausted: "Your team's shared AI credits have run out. Ask a team administrator to add credits, or switch back to your own credits in Billing.",
+  team_limit_reached: "Your team has reached its monthly AI spending limit. Switch back to your own credits in Billing, or ask a team administrator to raise the limit.",
+  member_limit_reached: "You have used your share of the team's AI credits this month. Request more from a team administrator, or switch back to your own credits in Billing.",
+  team_pool_disabled: "Your team's shared AI credits are switched off. Switch back to your own credits in Billing.",
+  team_plan_inactive: "Your team's plan is not active, so its shared AI credits are paused. Switch back to your own credits in Billing.",
+  team_not_member: "You no longer have a seat on the team that funds your AI requests. Switch back to your own credits in Billing.",
+  team_not_allowed: "That request is not allowed for this project.",
   invalid_request: "That request could not be processed.",
   input_too_large: "This is too long for AI review. Shorten the text and try again.",
   insufficient_credits:

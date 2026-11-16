@@ -34,6 +34,22 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// Permission is the project role, not the profile label. In these tests the fake "student" is the project owner and the
+// fake "supervisor" is a read-only member, so the same cases still prove that a user without write access is refused.
+vi.mock("@/lib/collab/access", async () => {
+  const { createClient } = await import("@/lib/supabase/server");
+  const { getCurrentProfile } = await import("@/lib/supabase/profile");
+  return {
+    requireProject: async () => {
+      const p = await getCurrentProfile();
+      if (!p) return { ok: false, error: "Sign in to continue.", status: 401 };
+      if (p.role !== "student") return { ok: false, error: "You have read-only access to this project.", status: 403 };
+      return { ok: true, supabase: await createClient(), userId: p.id, role: "owner", canWrite: true, isOwner: true };
+    },
+    listWritableStudies: async () => [],
+  };
+});
+
 import { insertMethodsIntoProtocol, saveCalculationToStudy } from "../actions";
 
 const goodInputs = { p: "0.5", d: "0.05", conf: "0.95", deff: "1", pop: "0", nonresponse: "0" };
@@ -60,7 +76,7 @@ describe("saveCalculationToStudy", () => {
     state.profile = null;
     expect((await saveCalculationToStudy("s1", "sample-size-proportion", goodInputs)).error).toMatch(/Sign in/);
     state.profile = { id: "u2", role: "supervisor" };
-    expect((await saveCalculationToStudy("s1", "sample-size-proportion", goodInputs)).error).toMatch(/Only students/);
+    expect((await saveCalculationToStudy("s1", "sample-size-proportion", goodInputs)).error).toMatch(/read-only access/);
     expect(state.inserted).toHaveLength(0);
   });
   it("rejects unknown calculators, unknown fields, invalid values and oversize input", async () => {

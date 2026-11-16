@@ -3,6 +3,8 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { DeviationForm } from "./deviation-form";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 export default async function DeviationsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
@@ -36,7 +38,7 @@ export default async function DeviationsPage({ params }: { params: Promise<{ id:
     .eq("study_id", studyId)
     .order("occurred_at", { ascending: false });
 
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">

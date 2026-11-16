@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { StudyNav } from "@/components/study-nav";
 import { MILESTONE_TYPES, type MilestoneRow as MilestoneRowType } from "@/lib/protocol/milestones";
 import { MilestoneRow } from "./milestone-row";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 export default async function MilestonesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
@@ -26,7 +28,7 @@ export default async function MilestonesPage({ params }: { params: Promise<{ id:
     .eq("study_id", studyId);
 
   const byType = new Map((milestones ?? []).map((m) => [m.milestone_type, m as MilestoneRowType]));
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">

@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { revalidatePath } from "next/cache";
 import type { SampleSizeInput, SampleSizeResult } from "@/lib/protocol/sample-size";
 import { runSampleSizeCalculation } from "@/lib/protocol/sample-size-engine";
+import { listWritableStudies } from "@/lib/collab/access";
 
 export type { SampleSizeCalcResult } from "@/lib/protocol/sample-size-engine";
 
@@ -15,17 +16,7 @@ export async function calculateStandalone(input: SampleSizeInput) {
 }
 
 export async function listMyStudies(): Promise<{ id: string; title: string }[]> {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "student") return [];
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("studies")
-    .select("id, title")
-    .eq("owner_id", profile.id)
-    .order("created_at", { ascending: false });
-
-  return data ?? [];
+  return listWritableStudies();
 }
 
 export type SaveToStudyResult = { error?: string };

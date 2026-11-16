@@ -8,6 +8,7 @@ import { getCalculator } from "@/lib/tools/registry";
 import { MILESTONE_TYPES } from "@/lib/protocol/milestones";
 import { uniqueSlug } from "@/lib/protocol/slug";
 import type { Calculator, ToolResult } from "@/lib/tools/types";
+import { requireProject, listWritableStudies } from "@/lib/collab/access";
 
 export type ToolActionResult = { error?: string; message?: string };
 
@@ -35,15 +36,7 @@ function recompute(slug: string, raw: Record<string, string>): { calc: Calculato
 
 /** The signed-in student's studies, or an empty list when signed out (so the page can stay static). */
 export async function listMyStudiesForTools(): Promise<{ id: string; title: string }[]> {
-  const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "student") return [];
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("studies")
-    .select("id, title")
-    .eq("owner_id", profile.id)
-    .order("last_activity_at", { ascending: false });
-  return data ?? [];
+  return listWritableStudies();
 }
 
 export async function deleteSavedCalculation(studyId: string, id: string): Promise<ToolActionResult> {
@@ -60,7 +53,8 @@ export async function deleteSavedCalculation(studyId: string, id: string): Promi
 export async function saveCalculationToStudy(studyId: string, slug: string, raw: Record<string, string>): Promise<ToolActionResult> {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to save calculations." };
-  if (profile.role !== "student") return { error: "Only students can save calculations to a study." };
+  const access = await requireProject(studyId, "write");
+  if (!access.ok) return { error: access.error };
   const r = recompute(slug, raw);
   if ("error" in r) return { error: r.error };
 
@@ -81,7 +75,8 @@ export async function saveCalculationToStudy(studyId: string, slug: string, raw:
 export async function insertMethodsIntoProtocol(studyId: string, slug: string, raw: Record<string, string>): Promise<ToolActionResult> {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to insert into a protocol." };
-  if (profile.role !== "student") return { error: "Only students can edit a protocol." };
+  const access = await requireProject(studyId, "write");
+  if (!access.ok) return { error: access.error };
   const r = recompute(slug, raw);
   if ("error" in r) return { error: r.error };
   const text = r.result.methods;
@@ -126,7 +121,8 @@ const FIELD_NAMES: Record<string, string> = {
 export async function applyToolAction(studyId: string, slug: string, raw: Record<string, string>, index: number): Promise<ToolActionResult> {
   const profile = await getCurrentProfile();
   if (!profile) return { error: "Sign in to add to a protocol." };
-  if (profile.role !== "student") return { error: "Only students can edit a protocol." };
+  const access = await requireProject(studyId, "write");
+  if (!access.ok) return { error: access.error };
   const r = recompute(slug, raw);
   if ("error" in r) return { error: r.error };
   const action = r.result.apply?.[Number.isInteger(index) ? index : -1];

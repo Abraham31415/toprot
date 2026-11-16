@@ -8,6 +8,7 @@ import { LiteratureError } from "@/lib/literature/types";
 import { workToRef } from "@/lib/literature/convert";
 import { refToRowFields, rowToRef, type RefRow } from "@/lib/refs/convert";
 import { findDuplicates } from "@/lib/refs/dedupe";
+import { requireProject } from "@/lib/collab/access";
 
 export type SaveWorksResult = {
   error?: string;
@@ -26,7 +27,8 @@ export async function saveWorksToStudy(studyId: string, items: (WorkRef & { titl
   const out: SaveWorksResult = { saved: 0, skipped: [], failed: [] };
   const profile = await getCurrentProfile();
   if (!profile) return { ...out, error: "Sign in to save references to a project." };
-  if (profile.role !== "student") return { ...out, error: "Only students can save references to a study." };
+  const access = await requireProject(studyId, "write");
+  if (!access.ok) return { ...out, error: access.error };
   if (!Array.isArray(items) || !items.length) return { ...out, error: "Select at least one record." };
   if (items.length > MAX_BATCH) return { ...out, error: `Save at most ${MAX_BATCH} records at a time.` };
 

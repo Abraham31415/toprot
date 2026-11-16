@@ -1,9 +1,12 @@
 import { redirect, notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 import { StudyNav } from "@/components/study-nav";
 import { ProtocolForm } from "./protocol-form";
 import { LockPanel } from "./lock-panel";
+import { HistoryPanel, type SnapshotRow } from "./history-panel";
 
 export default async function ProtocolPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: studyId } = await params;
@@ -44,14 +47,18 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
         .eq("protocol_version_id", version.id)
         .order("display_order"),
       supabase
-        .from("study_supervisors")
-        .select("supervisor_id, profiles!supervisor_id(id, full_name)")
+        .from("project_memberships")
+        .select("user_id, profiles!user_id(id, full_name)")
         .eq("study_id", studyId)
+        .eq("role", "reviewer")
+        .order("created_at")
+        .limit(1)
         .maybeSingle(),
       supabase
-        .from("supervisor_invitations")
-        .select("id, invited_email")
+        .from("project_invitations")
+        .select("id, invited_email:email")
         .eq("study_id", studyId)
+        .eq("role", "reviewer")
         .eq("status", "pending")
         .order("created_at", { ascending: false })
         .limit(1)
@@ -63,10 +70,17 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
         .maybeSingle(),
     ]);
 
-  const isOwner = profile.id === study.owner_id;
+  const role = await roleOf(supabase, studyId);
+  const isOwner = role === "owner";
   const supervisorProfile = studySupervisor?.profiles as unknown as { id: string; full_name: string } | null;
-  const isAttachedSupervisor = supervisorProfile?.id === profile.id;
-  const readOnly = version.status !== "draft" || !isOwner;
+  const isAttachedSupervisor = role === "reviewer";
+  const readOnly = version.status !== "draft" || !can(role, "write");
+
+  const { data: snaps } = await supabase.from("protocol_snapshots").select("id, kind, label, created_at, created_by").eq("version_id", version.id).order("created_at", { ascending: false }).limit(40);
+  const authorIds = [...new Set((snaps ?? []).map((s) => s.created_by).filter(Boolean))] as string[];
+  const { data: authors } = authorIds.length ? await supabase.from("profiles").select("id, full_name").in("id", authorIds) : { data: [] };
+  const nameOf = new Map((authors ?? []).map((a) => [a.id, a.full_name]));
+  const snapshots: SnapshotRow[] = (snaps ?? []).map((s) => ({ id: s.id, kind: s.kind, label: s.label, created_at: s.created_at, author: s.created_by ? nameOf.get(s.created_by) ?? null : null }));
 
   return (
     <div className="min-h-screen bg-paper">
@@ -81,6 +95,7 @@ export default async function ProtocolPage({ params }: { params: Promise<{ id: s
           pendingInvitation={pendingInvitation ?? null}
           amendmentReview={amendment ?? null}
         />
+        {version.status === "draft" && <HistoryPanel studyId={study.id} versionId={version.id} snapshots={snapshots} canEdit={can(role, "write")} />}
       </div>
       <ProtocolForm
         studyId={study.id}
