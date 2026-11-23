@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { BrandLogo } from "@/components/brand";
 import { BookOpen, CreditCard, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
@@ -50,7 +51,8 @@ export function AppShell({ fullName, role, children }: { fullName: string; role:
 
   const nav = (
     <>
-      <Link href="/" className="rounded-control px-3 text-lg font-semibold tracking-tight text-ink" onClick={() => setOpen(false)}>
+      <Link href="/" className="inline-flex items-center gap-2 rounded-control px-3 text-lg font-semibold tracking-tight text-ink" onClick={() => setOpen(false)}>
+        <BrandLogo />
         ToProt
       </Link>
       <nav aria-label="App" className="mt-5 flex flex-col gap-5">
@@ -99,7 +101,7 @@ export function AppShell({ fullName, role, children }: { fullName: string; role:
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-line bg-surface p-4 lg:flex">{nav}</aside>
 
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-surface px-4 py-3 lg:hidden">
-        <Link href="/" className="rounded-control text-lg font-semibold tracking-tight text-ink">ToProt</Link>
+        <Link href="/" className="inline-flex items-center gap-2 rounded-control text-lg font-semibold tracking-tight text-ink"><BrandLogo />ToProt</Link>
         <button
           ref={toggle} type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="app-drawer"
           onClick={() => setOpen((v) => !v)} className="rounded-control border border-line-strong bg-surface p-2 text-ink"

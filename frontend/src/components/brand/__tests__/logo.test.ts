@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { AnimatedLogo, LogoLoader, LogoMark, LOGO_CHEVRON_PATH, LOGO_DIAMOND_PATH, LOGO_HANDLE_PATH, LOGO_RING_PATH, LOGO_STROKES } from "@/components/brand";
+import { AppLoading } from "@/components/app-loading";
+import { AnimatedLogo, BrandLogo, LogoLoader, LogoMark, LOGO_CHEVRON_PATH, LOGO_DIAMOND_PATH, LOGO_HANDLE_PATH, LOGO_RING_PATH, LOGO_STROKES } from "@/components/brand";
 import { strokesFor } from "../logo-geometry";
 
 const html = (el: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(el);
@@ -141,5 +142,24 @@ describe("static brand files", () => {
     for (const f of ["logo-mark.tsx", "animated-logo.tsx", "logo-loader.tsx"]) {
       expect(read(`src/components/brand/${f}`)).not.toContain("—");
     }
+  });
+});
+
+describe("BrandLogo (headers)", () => {
+  it("draws on a full page load and is decorative beside the product name", () => {
+    const out = html(createElement(BrandLogo));
+    expect(out).toContain("toprot-logo--draw");
+    expect(out).toContain('aria-hidden="true"');
+    expect(out).toContain('width="28"');
+  });
+});
+
+describe("AppLoading", () => {
+  it("shows the looping logo with one announced status", () => {
+    const out = html(createElement(AppLoading, { label: "dashboard" }));
+    expect(out).toContain("toprot-logo--loop");
+    expect(count(out, /role="status"/g)).toBe(1);
+    expect(out).toContain("Loading dashboard");
+    expect(out).not.toContain("animate-pulse");
   });
 });
