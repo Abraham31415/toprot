@@ -55,15 +55,15 @@ async function checkout(teamId: string, kind: "team_subscription" | "team_seats"
   const productId = async (k: "plan" | "pack", key: string) => ((await admin.from("billing_provider_products").select("product_id").eq("provider", "dodo").eq("kind", k).eq("product_key", key).maybeSingle()).data?.product_id as string | undefined) ?? null;
 
   let created: { ok: boolean; code?: string };
-  let main: string | null; let extra: { productId: string; quantity: number }[] = []; let quantity = 1;
+  let main: string | null; let addons: { addonId: string; quantity: number }[] = []; let quantity = 1;
   if (kind === "team_subscription") {
     const seats = Number(args.seats);
     const base = Number((await admin.from("billing_settings").select("value_num").eq("key", "team_base_paid_seats").maybeSingle()).data?.value_num ?? 3);
     main = await productId("plan", "team");
-    if (seats > base) { const seat = await productId("plan", "team_seat"); if (!seat) return { error: "Extra seats are not available for purchase yet." }; extra = [{ productId: seat, quantity: seats - base }]; }
+    if (seats > base) { const seat = await productId("plan", "team_seat"); if (!seat) return { error: "Extra seats are not available for purchase yet." }; addons = [{ addonId: seat, quantity: seats - base }]; }
     ({ data: created } = (await admin.rpc("team_create_payment", { p_actor: user.id, p_team: teamId, p_seats: seats, p_currency: "USD", p_tx_ref: txRef, p_provider: "dodo" })) as { data: typeof created });
   } else if (kind === "team_seats") {
-    main = await productId("plan", "team_seat"); quantity = Math.floor(Number(args.add));
+    main = await productId("plan", "team_seat_once"); quantity = Math.floor(Number(args.add));
     ({ data: created } = (await admin.rpc("team_create_seats_payment", { p_actor: user.id, p_team: teamId, p_add: quantity, p_currency: "USD", p_tx_ref: txRef, p_provider: "dodo" })) as { data: typeof created });
   } else {
     if (!args.pack || !/^[a-z][a-z0-9_]{1,30}$/.test(args.pack)) return { error: say("invalid_request") };
@@ -77,7 +77,7 @@ async function checkout(teamId: string, kind: "team_subscription" | "team_seats"
   }
   try {
     const { link, sessionId } = await createCheckout(cfg, {
-      productId: main, quantity, extraItems: extra, returnUrl: `${SITE_URL}/billing/return?tx_ref=${txRef}`, email: user.email,
+      productId: main, quantity, addons, returnUrl: `${SITE_URL}/billing/return?tx_ref=${txRef}`, email: user.email,
       metadata: { toprot_tx_ref: txRef, toprot_kind: kind, toprot_team: teamId },
     });
     await admin.from("payments").update({ meta: { checkout_session_id: sessionId } }).eq("tx_ref", txRef);

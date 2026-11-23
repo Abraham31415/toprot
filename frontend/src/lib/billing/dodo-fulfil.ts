@@ -19,6 +19,8 @@ type Fetch = typeof fetch;
 const TX_REF = /^toprot-[0-9a-f-]{36}$/;
 
 async function expectedProductId(db: SupabaseClient, kind: string, productKey: string): Promise<string | null> {
+  // A one-off seat top-up is its own Dodo product, separate from the recurring seat add-on that is keyed team_seat.
+  if (kind === "team_seats") productKey = "team_seat_once";
   const { data } = await db.from("billing_provider_products").select("product_id").eq("provider", "dodo").eq("kind", ["subscription", "team_subscription", "team_seats"].includes(kind) ? "plan" : "pack").eq("product_key", productKey).maybeSingle();
   return (data?.product_id as string | undefined) ?? null;
 }

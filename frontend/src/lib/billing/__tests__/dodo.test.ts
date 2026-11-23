@@ -60,6 +60,12 @@ describe("createCheckout", () => {
     expect(body).toMatchObject({ product_cart: [{ product_id: "pdt_abc", quantity: 1 }], customer: { email: "a@b.org" }, return_url: input.returnUrl, billing_currency: "USD", metadata: { toprot_tx_ref: "toprot-x" } });
     expect(JSON.stringify(body)).not.toContain("dodo_test_abc123");
   });
+  it("attaches extra team seats as add-ons on the subscription line, not as a second product", async () => {
+    const { f, calls } = fetchOf(json({ session_id: "cks_2", checkout_url: "https://test.checkout.dodopayments.com/session/cks_2" }));
+    await createCheckout(CFG, { ...input, addons: [{ addonId: "adn_seat", quantity: 2 }] }, f);
+    const body = JSON.parse(String(calls[0].init.body));
+    expect(body.product_cart).toEqual([{ product_id: "pdt_abc", quantity: 1, addons: [{ addon_id: "adn_seat", quantity: 2 }] }]);
+  });
   it("never sends a customer anywhere except Dodo's own checkout", async () => {
     for (const link of ["https://evil.example/pay", "http://checkout.dodopayments.com/x", "https://dodopayments.com.evil.example/x", "javascript:alert(1)"]) {
       await expect(createCheckout(CFG, input, fetchOf(json({ session_id: "s", checkout_url: link })).f), link).rejects.toThrow(DodoError);
