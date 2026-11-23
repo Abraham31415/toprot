@@ -4,11 +4,13 @@ import { GoogleSignInButton } from "@/components/google-signin-button";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { FormError, OrDivider } from "@/components/auth/fields";
 import { callbackError } from "@/lib/auth-errors";
+import { safeNext } from "@/lib/collab/next-path";
 
 export const metadata: Metadata = { title: "Log in", robots: { index: false } };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const { error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const { error, next: rawNext } = await searchParams;
+  const next = safeNext(rawNext);
   return (
     <AuthLayout
       title="Log in"
@@ -19,7 +21,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <FormError>{callbackError(error)}</FormError>
         <GoogleSignInButton />
         <OrDivider />
-        <LoginForm />
+        <LoginForm next={next} />
       </div>
     </AuthLayout>
   );

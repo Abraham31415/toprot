@@ -7,6 +7,8 @@ import { StudyNav } from "@/components/study-nav";
 import { getTemplate, type TemplateId } from "@/lib/writing/templates";
 import { NewManuscriptForm } from "./new-manuscript-form";
 import { DeleteManuscriptButton } from "./delete-button";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 export const metadata = { title: "Writing" };
 
@@ -19,7 +21,7 @@ export default async function WritingPage({ params }: { params: Promise<{ id: st
   if (!study) notFound();
   const { data: manuscripts } = await supabase
     .from("manuscripts").select("id, title, template, word_count, updated_at").eq("study_id", studyId).order("updated_at", { ascending: false });
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">

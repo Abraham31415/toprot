@@ -7,12 +7,13 @@ import { FormError, PasswordField, SubmitButton, TextField } from "@/components/
 
 const initialState: LoginState = undefined;
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string | null }) {
   const [state, formAction, pending] = useActionState(login, initialState);
   const [email, setEmail] = useState("");
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {next && <input type="hidden" name="next" value={next} />}
       <TextField label="Email" name="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
       <PasswordField
         label="Password" name="password" autoComplete="current-password" required

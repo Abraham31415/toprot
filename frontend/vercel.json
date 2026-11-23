@@ -1,3 +1,6 @@
 {
-  "crons": [{ "path": "/api/billing/maintenance", "schedule": "17 3 * * *" }]
+  "crons": [
+    { "path": "/api/billing/maintenance", "schedule": "17 3 * * *" },
+    { "path": "/api/collab/dispatch", "schedule": "47 4 * * *" }
+  ]
 }

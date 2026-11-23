@@ -78,6 +78,35 @@ export async function reserve(
   return { ok: false, code: (r.code as AiErrorCode) ?? "internal", eventId: r.event_id as string | undefined };
 }
 
+/** The team whose credit pool this person has chosen to fund their AI requests, or null (the default: their own credits). */
+export async function userFundingTeam(db: RpcClient, userId: string): Promise<string | null> {
+  try {
+    const { data, error } = await db.rpc("team_ai_user_funding", { p_user: userId });
+    return !error && typeof data === "string" ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Reserve against a team pool. Atomic in Postgres: the pool hold, an advance lot and the ordinary ledger reservation all exist or none do. */
+export async function reserveTeam(
+  db: RpcClient,
+  args: { userId: string; teamId: string; studyId?: string | null; key: string; feature: string; model: string; reserveMicroUsd: number; meta?: Record<string, unknown> },
+): Promise<ReserveOk | ReserveFail> {
+  const r = await call(db, "team_ai_reserve", {
+    p_actor: args.userId, p_team: args.teamId, p_study: args.studyId ?? null, p_key: args.key, p_feature: args.feature, p_model: args.model,
+    p_reserve_micro_usd: args.reserveMicroUsd, p_meta: args.meta ?? {},
+  });
+  if (r.ok === true) return { ok: true, eventId: r.event_id as string, periodId: r.period_id as string, plan: r.plan as "pro" | "intro", reservedMcr: Number(r.reserved_mcr) };
+  return { ok: false, code: (r.code as AiErrorCode) ?? "internal", eventId: r.event_id as string | undefined };
+}
+
+/** After commit or release of a pool-funded request: the pool pays what was used and the rest of the advance returns to it. Idempotent. */
+export async function settleTeam(db: RpcClient, eventId: string): Promise<void> {
+  const r = await call(db, "team_ai_settle", { p_event: eventId });
+  if (r.ok !== true) throw new Error(`team_ai_settle: ${String(r.code)}`);
+}
+
 export async function commit(
   db: RpcClient,
   eventId: string,

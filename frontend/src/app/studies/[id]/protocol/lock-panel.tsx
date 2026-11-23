@@ -8,7 +8,6 @@ import {
   requestSupervisorApproval,
   approveAndLockProtocol,
   createAmendment,
-  inviteSupervisor,
 } from "../actions";
 
 type SupervisorInfo = { id: string; full_name: string } | null;
@@ -42,7 +41,6 @@ export function LockPanel({
   const [error, setError] = useState<string | null>(null);
   const [amendReason, setAmendReason] = useState("");
   const [showAmendForm, setShowAmendForm] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
 
   function run(action: () => Promise<{ error?: string }>) {
     setError(null);
@@ -173,22 +171,9 @@ export function LockPanel({
               </p>
             )}
             {!supervisor && !pendingInvitation && (
-              <div className="flex gap-2">
-                <input
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="supervisor@example.com"
-                  className="flex-1 rounded-lg border border-line bg-white px-3 py-2 text-sm text-navy outline-none"
-                />
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => run(() => inviteSupervisor(studyId, inviteEmail))}
-                  className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/85 hover:bg-navy/5 disabled:opacity-50"
-                >
-                  Invite
-                </button>
-              </div>
+              <p className="text-sm text-navy/65">
+                No supervisor yet. Use Share at the top of the page to invite one.
+              </p>
             )}
           </div>
         </div>

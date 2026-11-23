@@ -19,7 +19,7 @@ type Fetch = typeof fetch;
 const TX_REF = /^toprot-[0-9a-f-]{36}$/;
 
 async function expectedProductId(db: SupabaseClient, kind: string, productKey: string): Promise<string | null> {
-  const { data } = await db.from("billing_provider_products").select("product_id").eq("provider", "dodo").eq("kind", kind === "subscription" ? "plan" : "pack").eq("product_key", productKey).maybeSingle();
+  const { data } = await db.from("billing_provider_products").select("product_id").eq("provider", "dodo").eq("kind", ["subscription", "team_subscription", "team_seats"].includes(kind) ? "plan" : "pack").eq("product_key", productKey).maybeSingle();
   return (data?.product_id as string | undefined) ?? null;
 }
 
@@ -35,8 +35,13 @@ export async function fulfilDodoPayment(db: SupabaseClient, cfg: DodoConfig, inp
   if (!txRef) {
     if (!p.subscriptionId) return { outcome: "ignored" };
     if (p.status !== "succeeded") return { outcome: "ignored" };
-    const renewal = await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: p.subscriptionId, p_provider_payment_id: p.paymentId });
+    let renewal = await db.rpc("billing_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: p.subscriptionId, p_provider_payment_id: p.paymentId });
     if (renewal.error) throw new DodoError("Could not record the payment.", true);
+    // Not a personal subscription: it may be a team's.
+    if ((renewal.data as { code?: string } | null)?.code === "unknown_subscription") {
+      renewal = await db.rpc("team_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: p.subscriptionId, p_provider_payment_id: p.paymentId });
+      if (renewal.error) throw new DodoError("Could not record the payment.", true);
+    }
     const r = renewal.data as { ok?: boolean; tx_ref?: string };
     if (!r.ok || !r.tx_ref) return { outcome: "ignored" };
     txRef = r.tx_ref;
@@ -50,7 +55,7 @@ export async function fulfilDodoPayment(db: SupabaseClient, cfg: DodoConfig, inp
     // product must be our plan's.
     const expected = await expectedProductId(db, order.kind as string, order.product_key as string);
     if (!expected) return { outcome: "rejected", code: "product_not_configured" };
-    if (order.kind === "pack") {
+    if (order.kind === "pack" || order.kind === "team_pack" || order.kind === "team_seats") {
       if (p.productIds.length !== 1 || p.productIds[0] !== expected) return { outcome: "rejected", code: "product_mismatch" };
     } else {
       if (!p.subscriptionId) return { outcome: "rejected", code: "not_a_subscription_payment" };
@@ -68,6 +73,9 @@ export async function fulfilDodoPayment(db: SupabaseClient, cfg: DodoConfig, inp
   if (r.ok === true) {
     if (r.duplicate) return { outcome: "duplicate" };
     if (r.status === "failed") return { outcome: "failed" };
+    if (order.kind === "team_subscription" && p.subscriptionId && !isRenewal) {
+      await db.rpc("team_link_provider_subscription", { p_tx_ref: txRef, p_provider_subscription_id: p.subscriptionId });
+    }
     if (order.kind === "subscription" && p.subscriptionId && !isRenewal) {
       // Remember the provider's subscription id so renewals and cancellation can be matched to this customer.
       await db.rpc("billing_link_provider_subscription", { p_tx_ref: txRef, p_provider_subscription_id: p.subscriptionId });
@@ -84,4 +92,8 @@ export async function syncDodoSubscription(db: SupabaseClient, cfg: DodoConfig, 
   const stopped = sub.cancelAtPeriodEnd || ["cancelled", "expired", "failed", "on_hold"].includes(sub.status);
   const { error } = await db.rpc("billing_mark_subscription_cancel", { p_provider: "dodo", p_provider_subscription_id: subscriptionId, p_cancel: stopped });
   if (error) throw new DodoError("Could not record the subscription change.", true);
+  // The same news for a team subscription with this id (a no-op when the id is a personal subscription).
+  const state = ["on_hold", "failed"].includes(sub.status) ? "on_hold" : sub.status === "expired" ? "expired" : sub.cancelAtPeriodEnd || sub.status === "cancelled" ? "cancel_at_period_end" : "active";
+  const t = await db.rpc("team_sync_subscription", { p_provider: "dodo", p_provider_subscription_id: subscriptionId, p_state: state });
+  if (t.error) throw new DodoError("Could not record the subscription change.", true);
 }

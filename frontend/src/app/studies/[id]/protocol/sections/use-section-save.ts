@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AutosaveController, type SaveOutcome } from "@/lib/protocol/autosave";
 import { saveProtocolSection } from "../actions";
 
@@ -45,8 +45,15 @@ export function useSaveController<T>(
 
 /** Autosaving hook for the single-row text sections of the protocol. */
 export function useSectionSave(versionId: string, studyId: string, patch: Record<string, unknown> | null) {
+  // The values this section had when the page loaded, advanced after each successful save. The server refuses a save if someone else
+  // changed these fields in between, so two people editing the same field never overwrite each other silently.
+  const base = useRef<Record<string, unknown>>(patch ?? {});
   return useSaveController<Record<string, unknown>>(
-    (p) => saveProtocolSection(versionId, studyId, p),
+    async (p) => {
+      const r = await saveProtocolSection(versionId, studyId, p, base.current);
+      if (!r.error) base.current = { ...base.current, ...p };
+      return r;
+    },
     patch,
     true,
   );

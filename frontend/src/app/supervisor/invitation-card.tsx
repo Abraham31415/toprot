@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { acceptInvitation, declineInvitation } from "@/app/studies/[id]/actions";
+import { acceptInvite, declineInvite } from "@/app/shared/actions";
 
 export function InvitationCard({
   invitationId,
@@ -35,7 +35,7 @@ export function InvitationCard({
         <button
           type="button"
           disabled={pending}
-          onClick={() => respond(acceptInvitation)}
+          onClick={() => respond((id) => acceptInvite({ invitationId: id }))}
           className="rounded-lg bg-cobalt px-3 py-1.5 text-sm font-medium text-white hover:bg-cobalt-dark disabled:opacity-50"
         >
           Accept
@@ -43,7 +43,7 @@ export function InvitationCard({
         <button
           type="button"
           disabled={pending}
-          onClick={() => respond(declineInvitation)}
+          onClick={() => respond(declineInvite)}
           className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-navy/75 hover:bg-navy/5 disabled:opacity-50"
         >
           Decline

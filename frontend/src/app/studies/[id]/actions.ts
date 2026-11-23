@@ -1,9 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/supabase/profile";
+import type { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { randomUUID } from "crypto";
+import { requireProject } from "@/lib/collab/access";
 
 export type ActionResult = { error?: string };
 
@@ -54,10 +53,10 @@ export async function registerProtocolVersion(
   versionId: string,
   studyId: string,
 ): Promise<ActionResult> {
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-
-  const supabase = await createClient();
+  const access = await requireProject(studyId, "lock_protocol");
+  if (!access.ok) return { error: access.error };
+  const { supabase, userId } = access;
+  const profile = { id: userId };
 
   await supersedeCurrentlyRegistered(supabase, studyId, versionId);
 
@@ -82,12 +81,15 @@ export async function requestSupervisorApproval(
   versionId: string,
   studyId: string,
 ): Promise<ActionResult> {
-  const supabase = await createClient();
+  const access = await requireProject(studyId, "lock_protocol");
+  if (!access.ok) return { error: access.error };
+  const { supabase } = access;
 
   const { count } = await supabase
-    .from("study_supervisors")
-    .select("id", { count: "exact", head: true })
-    .eq("study_id", studyId);
+    .from("project_memberships")
+    .select("user_id", { count: "exact", head: true })
+    .eq("study_id", studyId)
+    .eq("role", "reviewer");
 
   if (!count) return { error: "No supervisor is attached to this study yet." };
 
@@ -107,10 +109,10 @@ export async function approveAndLockProtocol(
   versionId: string,
   studyId: string,
 ): Promise<ActionResult> {
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-
-  const supabase = await createClient();
+  const access = await requireProject(studyId, "review");
+  if (!access.ok) return { error: access.error };
+  const { supabase, userId } = access;
+  const profile = { id: userId };
 
   await supersedeCurrentlyRegistered(supabase, studyId, versionId);
 
@@ -139,10 +141,10 @@ export async function createAmendment(
 ): Promise<ActionResult & { newVersionId?: string }> {
   if (!reason.trim()) return { error: "A reason for the amendment is required." };
 
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-
-  const supabase = await createClient();
+  const access = await requireProject(studyId, "lock_protocol");
+  if (!access.ok) return { error: access.error };
+  const { supabase, userId } = access;
+  const profile = { id: userId };
 
   const { data: current, error: currentError } = await supabase
     .from("protocol_versions")
@@ -218,9 +220,10 @@ export async function createAmendment(
   }
 
   const { count: supervisorCount } = await supabase
-    .from("study_supervisors")
-    .select("id", { count: "exact", head: true })
-    .eq("study_id", studyId);
+    .from("project_memberships")
+    .select("user_id", { count: "exact", head: true })
+    .eq("study_id", studyId)
+    .eq("role", "reviewer");
 
   const supervised = !!supervisorCount;
 
@@ -244,10 +247,10 @@ export async function reviewAmendment(
   studyId: string,
   decision: "approved" | "rejected",
 ): Promise<ActionResult> {
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-
-  const supabase = await createClient();
+  const access = await requireProject(studyId, "review");
+  if (!access.ok) return { error: access.error };
+  const { supabase, userId } = access;
+  const profile = { id: userId };
   const { error } = await supabase
     .from("amendments")
     .update({ status: decision, reviewed_by: profile.id, reviewed_at: new Date().toISOString() })
@@ -258,79 +261,5 @@ export async function reviewAmendment(
 
   revalidatePath("/supervisor");
   revalidatePath(`/studies/${studyId}/protocol`);
-  return {};
-}
-
-export async function inviteSupervisor(studyId: string, email: string): Promise<ActionResult> {
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-  if (!email.trim()) return { error: "Email is required." };
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("supervisor_invitations").insert({
-    study_id: studyId,
-    invited_email: email.trim().toLowerCase(),
-    invited_by: profile.id,
-    token: randomUUID(),
-  });
-
-  if (error) return { error: error.message };
-
-  revalidatePath(`/studies/${studyId}/protocol`);
-  return {};
-}
-
-export async function acceptInvitation(invitationId: string): Promise<ActionResult> {
-  const profile = await getCurrentProfile();
-  if (!profile) return { error: "Not signed in." };
-
-  const supabase = await createClient();
-
-  const { data: invitation, error: invitationError } = await supabase
-    .from("supervisor_invitations")
-    .select("study_id")
-    .eq("id", invitationId)
-    .single();
-
-  if (invitationError || !invitation) return { error: invitationError?.message ?? "Invitation not found." };
-
-  const { data: workspace } = await supabase
-    .from("workspaces")
-    .select("id")
-    .eq("supervisor_id", profile.id)
-    .single();
-
-  if (!workspace) return { error: "No workspace found for this supervisor account." };
-
-  const { error: updateError } = await supabase
-    .from("supervisor_invitations")
-    .update({ status: "accepted", responded_at: new Date().toISOString() })
-    .eq("id", invitationId);
-
-  if (updateError) return { error: updateError.message };
-
-  const { error: linkError } = await supabase.from("study_supervisors").insert({
-    study_id: invitation.study_id,
-    supervisor_id: profile.id,
-    workspace_id: workspace.id,
-    invitation_id: invitationId,
-  });
-
-  if (linkError) return { error: linkError.message };
-
-  revalidatePath("/supervisor");
-  return {};
-}
-
-export async function declineInvitation(invitationId: string): Promise<ActionResult> {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("supervisor_invitations")
-    .update({ status: "declined", responded_at: new Date().toISOString() })
-    .eq("id", invitationId);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/supervisor");
   return {};
 }

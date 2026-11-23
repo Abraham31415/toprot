@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   if (!authorised(req)) return new NextResponse("unauthorized", { status: 401 });
   const db = createAdminClient();
   const cfg = loadFlwConfig();
-  const out = { rechecked: 0, fulfilled: 0, closed: 0, expiredLots: 0, eventsPruned: 0, newAlerts: 0 };
+  const out = { rechecked: 0, fulfilled: 0, closed: 0, expiredLots: 0, eventsPruned: 0, newAlerts: 0, teamsLapsed: 0, teamPoolSettled: 0, teamPoolDriftFixed: 0 };
   // Each run is recorded, so the admin console can show when the job last ran and whether it failed.
   const started = new Date().toISOString();
   const run = await db.rpc("job_run_start", { p_job: "billing_maintenance" });
@@ -46,9 +46,16 @@ export async function GET(req: Request) {
     out.closed = Number(closed.data ?? 0);
     const expired = await db.rpc("billing_sweep_expired_lots");
     out.expiredLots = Number(expired.data ?? 0);
+    // Teams: mark lapsed subscriptions, settle any pool-funded AI request left open, and repair and report pool drift.
+    const lapsed = await db.rpc("team_billing_sweep");
+    out.teamsLapsed = Number(lapsed.data ?? 0);
+    const recon = await db.rpc("team_ai_reconcile");
+    out.teamPoolSettled = Number((recon.data as { settled?: number } | null)?.settled ?? 0);
+    out.teamPoolDriftFixed = Number((recon.data as { drift_fixed?: number } | null)?.drift_fixed ?? 0);
     // Admin console housekeeping. These functions exist only once the admin migration is applied; until then they are skipped.
     const pruned = await db.rpc("analytics_prune", { p_days: 400 });
     out.eventsPruned = Number(pruned.data ?? 0);
+    await db.rpc("collab_scan_alerts"); // email quota, undelivered invitations, past-due teams
     const scan = await db.rpc("admin_scan_alerts");
     out.newAlerts = Number((scan.data as { new_alerts?: number } | null)?.new_alerts ?? 0);
     if (out.newAlerts > 0 && process.env.AI_ADMIN_ALERT_EMAIL) {

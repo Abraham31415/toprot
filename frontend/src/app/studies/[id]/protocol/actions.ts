@@ -8,15 +8,29 @@ import { runSampleSizeCalculation } from "@/lib/protocol/sample-size-engine";
 
 export type SaveResult = { error?: string; savedAt?: number };
 
+/**
+ * Saves one section with compare-and-set: `base` is what the browser started from. If someone else changed one of these fields since,
+ * nothing is written and the person is told, so a later save can never silently replace a colleague's text.
+ */
 export async function saveProtocolSection(
   versionId: string,
   studyId: string,
   patch: Record<string, unknown>,
-): Promise<SaveResult> {
+  base: Record<string, unknown> = {},
+): Promise<SaveResult & { conflict?: boolean }> {
   const supabase = await createClient();
-  const { error } = await supabase.from("protocol_versions").update(patch).eq("id", versionId);
+  const { data, error } = await supabase.rpc("save_protocol_section", { p_version: versionId, p_base: base, p_patch: patch });
 
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.message.includes("version_locked")) return { error: "This version is locked, so it can no longer be edited." };
+    if (error.message.includes("not_allowed") || error.message.includes("version_not_found")) return { error: "You do not have permission to edit this protocol." };
+    return { error: error.message };
+  }
+  const r = data as { ok: boolean; updated_by?: string | null; conflicts?: Record<string, unknown> };
+  if (!r.ok) {
+    const who = r.updated_by ? r.updated_by : "someone else";
+    return { conflict: true, error: `${who} changed this section while you were editing. Your text is kept here and was not saved. Reload the page to see their version, then re-apply your changes.` };
+  }
 
   revalidatePath(`/studies/${studyId}/protocol`);
   return { savedAt: Date.now() };

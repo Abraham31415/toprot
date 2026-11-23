@@ -27,6 +27,22 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// Permission is the project role, not the profile label. In these tests the fake "student" is the project owner and the
+// fake "supervisor" is a read-only member, so the same cases still prove that a user without write access is refused.
+vi.mock("@/lib/collab/access", async () => {
+  const { createClient } = await import("@/lib/supabase/server");
+  const { getCurrentProfile } = await import("@/lib/supabase/profile");
+  return {
+    requireProject: async () => {
+      const p = await getCurrentProfile();
+      if (!p) return { ok: false, error: "Sign in to continue.", status: 401 };
+      if (p.role !== "student") return { ok: false, error: "You have read-only access to this project.", status: 403 };
+      return { ok: true, supabase: await createClient(), userId: p.id, role: "owner", canWrite: true, isOwner: true };
+    },
+    listWritableStudies: async () => [],
+  };
+});
+
 import { addTagsToReferences, assignCollection, createCollection, deleteCollection, deleteReferences, importReferences, mergeReferences, renameCollection, updateReference } from "../actions";
 
 const U1 = "11111111-1111-4111-8111-111111111111", U2 = "22222222-2222-4222-8222-222222222222", U3 = "33333333-3333-4333-8333-333333333333";
@@ -68,7 +84,7 @@ describe("importReferences", () => {
     S.profile = null;
     expect((await importReferences("s1", [ref("A")], "import")).error).toMatch(/Sign in/);
     S.profile = { id: "u", role: "supervisor" };
-    expect((await importReferences("s1", [ref("A")], "import")).error).toMatch(/Only the student/);
+    expect((await importReferences("s1", [ref("A")], "import")).error).toMatch(/read-only access/);
     S.profile = { id: "u", role: "student" };
     expect((await importReferences("s1", [], "import")).error).toMatch(/nothing to import/);
     expect((await importReferences("s1", Array.from({ length: 501 }, () => ref("A")), "import")).error).toMatch(/at most 500/);

@@ -81,6 +81,9 @@ async function call(cfg: DodoConfig, path: string, init: RequestInit, f: Fetch):
 
 export type CheckoutInput = {
   productId: string;
+  quantity?: number;
+  /** Further products in the same checkout, for example extra team seats. */
+  extraItems?: { productId: string; quantity: number }[];
   returnUrl: string;
   email: string;
   metadata: Record<string, string>;
@@ -92,7 +95,7 @@ export async function createCheckout(cfg: DodoConfig, i: CheckoutInput, f: Fetch
   const body = await call(cfg, "/checkouts", {
     method: "POST",
     body: JSON.stringify({
-      product_cart: [{ product_id: i.productId, quantity: 1 }],
+      product_cart: [{ product_id: i.productId, quantity: i.quantity ?? 1 }, ...(i.extraItems ?? []).map((x) => ({ product_id: x.productId, quantity: x.quantity }))],
       customer: { email: i.email },
       return_url: i.returnUrl,
       // Our prices are in USD, so lock the currency: the amount can then be compared with what we expect.

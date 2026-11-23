@@ -6,6 +6,8 @@ import type { RefRow } from "@/lib/refs/convert";
 import type { Doc } from "@/lib/writing/doc";
 import type { TemplateId } from "@/lib/writing/templates";
 import { isUuid } from "@/lib/refs/validate";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 export const metadata = { title: "Manuscript" };
 
@@ -27,8 +29,8 @@ export default async function ManuscriptPage({ params }: { params: Promise<{ id:
     <div className="min-h-screen bg-paper">
       <ManuscriptEditor
         manuscript={{ id: ms.id, studyId, studyTitle: study.title, title: ms.title, template: ms.template as TemplateId, styleId: ms.style_id, revision: ms.revision, content: ms.content as Doc }}
-        references={(refs ?? []) as (RefRow & { id: string })[]}
-        readOnly={profile.id !== study.owner_id}
+        references={[...(refs ?? []), ...(((await supabase.rpc("study_linked_references", { p_study: studyId })).data as unknown[] | null) ?? []).map((r) => ({ ...(r as object), id: (r as { link_id: string }).link_id }))] as (RefRow & { id: string })[]}
+        readOnly={!can(await roleOf(supabase, study.id), "write")}
         userId={profile.id}
       />
     </div>

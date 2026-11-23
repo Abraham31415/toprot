@@ -25,6 +25,22 @@ vi.mock("@/lib/literature/search", () => ({
   },
 }));
 
+// Permission is the project role, not the profile label. In these tests the fake "student" is the project owner and the
+// fake "supervisor" is a read-only member, so the same cases still prove that a user without write access is refused.
+vi.mock("@/lib/collab/access", async () => {
+  const { createClient } = await import("@/lib/supabase/server");
+  const { getCurrentProfile } = await import("@/lib/supabase/profile");
+  return {
+    requireProject: async () => {
+      const p = await getCurrentProfile();
+      if (!p) return { ok: false, error: "Sign in to continue.", status: 401 };
+      if (p.role !== "student") return { ok: false, error: "You have read-only access to this project.", status: 403 };
+      return { ok: true, supabase: await createClient(), userId: p.id, role: "owner", canWrite: true, isOwner: true };
+    },
+    listWritableStudies: async () => [],
+  };
+});
+
 import { saveWorksToStudy } from "../actions";
 import { LiteratureError } from "@/lib/literature/types";
 
@@ -94,7 +110,7 @@ describe("saveWorksToStudy", () => {
     state.profile = null;
     expect((await saveWorksToStudy("s1", [{ doi: "10.1000/a" }])).error).toMatch(/Sign in/);
     state.profile = { id: "u2", role: "supervisor" };
-    expect((await saveWorksToStudy("s1", [{ doi: "10.1000/a" }])).error).toMatch(/Only students/);
+    expect((await saveWorksToStudy("s1", [{ doi: "10.1000/a" }])).error).toMatch(/read-only access/);
     state.profile = { id: "u1", role: "student" };
     expect((await saveWorksToStudy("s1", [])).error).toMatch(/at least one/);
     expect((await saveWorksToStudy("s1", Array.from({ length: 26 }, () => ({ doi: "10.1000/a" })))).error).toMatch(/at most 25/);

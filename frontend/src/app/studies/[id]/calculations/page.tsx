@@ -7,6 +7,8 @@ import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { getCalculator } from "@/lib/tools/registry";
 import { DeleteCalculationButton } from "./delete-button";
+import { roleOf } from "@/lib/collab/access";
+import { can } from "@/lib/collab/roles";
 
 type Saved = {
   id: string;
@@ -35,7 +37,7 @@ export default async function CalculationsPage({ params }: { params: Promise<{ i
     .eq("study_id", studyId)
     .order("created_at", { ascending: false });
   const items = (data ?? []) as Saved[];
-  const isOwner = profile.id === study.owner_id;
+  const isOwner = can(await roleOf(supabase, study.id), "write"); // may edit: owner or editor
 
   return (
     <div className="min-h-screen bg-paper">
