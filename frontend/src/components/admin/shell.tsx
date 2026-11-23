@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
@@ -63,7 +64,7 @@ export function AdminShell({ email, role, openAlerts, mfaWarning, children }: { 
       <a href="#admin-main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-surface focus:px-3 focus:py-2 focus:shadow-raised">Skip to content</a>
       <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col overflow-y-auto border-r border-line bg-surface p-3 lg:flex ${collapsed ? "w-16" : "w-60"}`}>
         <div className="flex items-center justify-between px-1 pb-4">
-          {!collapsed && <Link href="/admin" className="rounded-control px-2 text-lg font-semibold tracking-tight text-ink">ToProt Admin</Link>}
+          {!collapsed && <Link href="/admin" className="inline-flex items-center gap-2 rounded-control px-2 text-lg font-semibold tracking-tight text-ink"><BrandLogo size={24} />ToProt Admin</Link>}
           <button type="button" onClick={toggle} aria-pressed={collapsed} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="rounded-control p-2 text-ink-muted hover:bg-hover hover:text-ink">
             {collapsed ? <ChevronsRight className="h-4 w-4" aria-hidden="true" /> : <ChevronsLeft className="h-4 w-4" aria-hidden="true" />}
           </button>
@@ -77,7 +78,7 @@ export function AdminShell({ email, role, openAlerts, mfaWarning, children }: { 
             <button type="button" onClick={() => setDrawer((v) => !v)} aria-expanded={drawer} aria-controls="admin-drawer" aria-label={drawer ? "Close menu" : "Open menu"} className="rounded-control border border-line-strong p-2">
               {drawer ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
             </button>
-            <span className="font-semibold">ToProt Admin</span>
+            <span className="inline-flex items-center gap-2 font-semibold"><BrandLogo size={22} />ToProt Admin</span>
           </div>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-3">

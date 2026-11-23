@@ -1,16 +1,20 @@
-// A light placeholder shown instantly while a signed-in page fetches its data, so navigation feels responsive.
+import { LogoLoader } from "@/components/brand";
+
+// Shown instantly while a signed-in page fetches its data, so navigation feels responsive: the ToProt mark draws,
+// holds and fades on a loop, with faint placeholders below so the page does not jump when the content arrives.
 export function AppLoading({ label }: { label: string }) {
   return (
-    <div className="min-h-screen bg-paper" role="status" aria-live="polite">
+    <div className="min-h-screen bg-paper">
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <span className="sr-only">Loading {label}</span>
-        <div className="h-7 w-56 animate-pulse rounded bg-navy/10" />
-        <div className="mt-3 h-4 w-80 max-w-full animate-pulse rounded bg-navy/5" />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="h-40 animate-pulse rounded-xl border border-line bg-white" />
-          <div className="h-40 animate-pulse rounded-xl border border-line bg-white" />
+        <div className="flex flex-col items-center gap-3 py-10">
+          <LogoLoader size={56} label={`Loading ${label}`} />
+          <p aria-hidden="true" className="type-caption">Loading {label}</p>
         </div>
-        <div className="mt-4 h-56 animate-pulse rounded-xl border border-line bg-white" />
+        <div aria-hidden="true" className="grid gap-4 opacity-60 sm:grid-cols-2">
+          <div className="h-40 rounded-xl border border-line bg-white" />
+          <div className="h-40 rounded-xl border border-line bg-white" />
+        </div>
+        <div aria-hidden="true" className="mt-4 h-56 rounded-xl border border-line bg-white opacity-60" />
       </main>
     </div>
   );

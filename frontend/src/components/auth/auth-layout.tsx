@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft, BookOpen, Calculator, FlaskConical } from "lucide-react";
+import { BrandLogo } from "@/components/brand";
 
 // One layout for every account page, with its own minimal chrome: the logo, a way back to the homepage and a link to the other account page.
 // Desktop is two columns (a short panel about ToProt on the left, the form on the right). On a phone the panel is dropped and the form
@@ -23,7 +24,7 @@ export function AuthLayout({ title, subtitle, children, switchLink }: { title: s
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-4">
-            <Link href="/" className="rounded-control text-lg font-semibold tracking-tight text-ink">ToProt</Link>
+            <Link href="/" className="inline-flex items-center gap-2 rounded-control text-lg font-semibold tracking-tight text-ink"><BrandLogo />ToProt</Link>
             <Link href="/" className="type-nav hidden items-center gap-1 rounded-control text-ink-soft hover:text-primary sm:inline-flex">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back to homepage

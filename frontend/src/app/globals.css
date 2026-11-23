@@ -24,6 +24,12 @@
   --color-line: #dfe6f1;
   --color-gold: #c58a36;
 
+  /* Brand mark (src/components/brand): navy lens and handle, teal research layers. Dark backgrounds get a pale frame. */
+  --toprot-logo-frame: var(--color-navy);
+  --toprot-logo-pages: var(--color-teal);
+  --toprot-logo-frame-on-dark: #dbe4f5;
+  --toprot-logo-pages-on-dark: #2fd3bd;
+
   /* ---- Semantic roles (use these in components) ---- */
   --color-canvas: #f8fafc;        /* page background */
   --color-surface: #ffffff;       /* cards and content surfaces */
@@ -112,6 +118,35 @@ body {
 /* Respect the reader's motion preference: no animated transitions or scrolling for people who ask for none. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---- Brand mark animation. Each stroke uses pathLength=1, so dash values are fractions of that stroke. Strokes draw
+   one at a time in a single direction: ring, handle, lower layer, upper layer. Hidden is 1.05, not 1, so an empty dash
+   never leaves a round-cap dot behind. ---- */
+.toprot-logo--dark { --toprot-logo-frame: var(--toprot-logo-frame-on-dark); --toprot-logo-pages: var(--toprot-logo-pages-on-dark); }
+.toprot-logo--draw path, .toprot-logo--loop path { stroke-dasharray: 1 2; stroke-dashoffset: 1.05; }
+.toprot-logo--draw .toprot-logo-ring { --s: 0; --e: 0.45; }
+.toprot-logo--draw .toprot-logo-handle { --s: 0.45; --e: 0.52; }
+.toprot-logo--draw .toprot-logo-chevron { --s: 0.52; --e: 0.7; }
+.toprot-logo--draw .toprot-logo-diamond { --s: 0.7; --e: 1; }
+.toprot-logo--draw path {
+  animation: toprot-logo-draw calc(var(--logo-duration, 2s) * (var(--e) - var(--s))) cubic-bezier(0.55, 0.05, 0.25, 1) calc(var(--logo-delay, 0s) + var(--logo-duration, 2s) * var(--s)) both;
+}
+@keyframes toprot-logo-draw { from { stroke-dashoffset: 1.05; } to { stroke-dashoffset: 0; } }
+/* Loop (3.6 s): draw 0-54% (same order and proportions as above), hold to 80%, fade out by 95%, reset while invisible.
+   Every cycle starts and ends empty, so the repeat has no visible jump. */
+.toprot-logo--loop .toprot-logo-art { animation: toprot-logo-fade var(--logo-duration, 3.6s) var(--logo-delay, 0s) infinite both; }
+@keyframes toprot-logo-fade { 0%, 80% { opacity: 1; } 95%, 100% { opacity: 0; } }
+.toprot-logo--loop .toprot-logo-ring { animation: toprot-logo-loop-ring var(--logo-duration, 3.6s) var(--logo-delay, 0s) infinite both; }
+@keyframes toprot-logo-loop-ring { 0% { stroke-dashoffset: 1.05; animation-timing-function: cubic-bezier(0.55, 0.05, 0.25, 1); } 24.3%, 96% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1.05; } }
+.toprot-logo--loop .toprot-logo-handle { animation: toprot-logo-loop-handle var(--logo-duration, 3.6s) var(--logo-delay, 0s) infinite both; }
+@keyframes toprot-logo-loop-handle { 0%, 24.3% { stroke-dashoffset: 1.05; animation-timing-function: cubic-bezier(0.55, 0.05, 0.25, 1); } 28.1%, 96% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1.05; } }
+.toprot-logo--loop .toprot-logo-chevron { animation: toprot-logo-loop-chevron var(--logo-duration, 3.6s) var(--logo-delay, 0s) infinite both; }
+@keyframes toprot-logo-loop-chevron { 0%, 28.1% { stroke-dashoffset: 1.05; animation-timing-function: cubic-bezier(0.55, 0.05, 0.25, 1); } 37.8%, 96% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1.05; } }
+.toprot-logo--loop .toprot-logo-diamond { animation: toprot-logo-loop-diamond var(--logo-duration, 3.6s) var(--logo-delay, 0s) infinite both; }
+@keyframes toprot-logo-loop-diamond { 0%, 37.8% { stroke-dashoffset: 1.05; animation-timing-function: cubic-bezier(0.55, 0.05, 0.25, 1); } 54%, 96% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1.05; } }
+@media (prefers-reduced-motion: reduce) {
+  .toprot-logo--draw path, .toprot-logo--loop path, .toprot-logo--loop .toprot-logo-art { animation: none !important; stroke-dasharray: none; stroke-dashoffset: 0; opacity: 1; }
 }
 
 /* Manuscript editor and printed preview */
