@@ -48,6 +48,15 @@ describe("import", () => {
     expect(r.report.encoding).toBe("windows-1252");
     expect(r.dataset.variables[2].label).toBe("café");
   });
+  it("keeps de-duplicated long headers within the 64-character limit so the import can be saved", async () => {
+    // Survey exports (ODK, Kobo) produce long grouped headers that share their first 64 characters.
+    const h = "group_household_information/level_of_education_of_the_household_head_member";
+    const r = await parseFile(enc(`id,${h}_a,${h}_b,${h}_c\n1,x,y,z\n`), "s.csv");
+    const names = r.dataset.variables.map((v) => v.name);
+    expect(names.every((n) => n.length <= 64)).toBe(true);
+    expect(new Set(names.map((n) => n.toLowerCase())).size).toBe(names.length);
+    await expect(encodeDataset(r.dataset)).resolves.toBeDefined();
+  });
   it("enforces limits and rejects binaries and unsupported formats with guidance", async () => {
     await expect(parseFile(enc("a\n1\n2\n3\n"), "a.csv", {}, { maxRows: 2, maxColumns: 10, maxBytes: 1000 })).rejects.toThrow(/more than 2 rows/);
     await expect(parseFile(new Uint8Array([0x50, 0x4b, 3, 4, 0, 0]), "a.csv")).rejects.toThrow(/binary/);

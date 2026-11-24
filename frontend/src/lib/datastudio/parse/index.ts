@@ -2,6 +2,7 @@
 // and on the server, which re-parses the stored upload and is the only one whose result is saved.
 
 import { DataError, type Dataset, type VarType, type Warning } from "../types";
+import { validateDataset } from "../codec";
 import { inferDataset, type ColumnReport, type DateOrder } from "./infer";
 import { decodeText, detectDelimiter, parseDelimited, type Delimiter, type Encoding } from "./text";
 import { readXlsx } from "./xlsx";
@@ -137,6 +138,8 @@ export async function parseFile(bytes: Uint8Array, filename: string, options: Im
   const inferred = inferDataset(grid, { ...options, dateColumns });
   const rows = inferred.dataset.columns[0]?.length ?? 0;
   if (rows === 0) warnings.push({ level: "warning", text: "The file has a header but no data rows." });
+  // The same check the server runs before saving, so a problem shows in the preview rather than only when importing.
+  validateDataset(inferred.dataset);
   return {
     dataset: inferred.dataset,
     warnings: [...warnings, ...inferred.warnings],
