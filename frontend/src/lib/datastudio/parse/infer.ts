@@ -78,10 +78,12 @@ export function inferDataset(grid: (string | number | null)[][], opts: InferOpti
     const key = name.toLowerCase();
     if (seen.has(key)) {
       dupes++;
+      // Shorten the base so the numbered name still fits the 64-character limit (long survey-export headers often share a prefix).
       let k = (seen.get(key) ?? 1) + 1;
-      while (seen.has(`${key}_${k}`)) k++;
+      const numbered = (n: number) => `${name.slice(0, 64 - String(n).length - 1)}_${n}`;
+      while (seen.has(numbered(k).toLowerCase())) k++;
       seen.set(key, k);
-      name = `${name}_${k}`;
+      name = numbered(k);
     }
     seen.set(name.toLowerCase(), 1);
     names.push(name);

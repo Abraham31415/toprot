@@ -48,23 +48,30 @@ export function ImportPanel({ studyId, maxBytes, maxRows, maxColumns }: { studyI
   async function doImport() {
     if (!file || !preview) return;
     setBusy("Uploading…"); setError(null);
-    const prep = await prepareUpload(studyId, file.name, file.size);
-    if (!prep.ok) { setBusy(null); setError(prep.error); return; }
-    const { error: upErr } = await createClient().storage.from("ds-uploads").upload(prep.data.path, file, { upsert: false, contentType: file.type || "application/octet-stream" });
-    if (upErr) { setBusy(null); setError("The upload failed. Check your connection and try again."); return; }
-    setBusy("Checking and saving on the server…");
-    const r = await importDataset(studyId, { path: prep.data.path, filename: file.name, name, options: opts });
-    setBusy(null);
-    if (!r.ok) { setError(r.error); return; }
-    router.push(`/studies/${studyId}/data/${r.data.datasetId}`);
+    // Every outcome ends with the busy state cleared and, on failure, a visible message (a network failure rejects instead of returning).
+    try {
+      const prep = await prepareUpload(studyId, file.name, file.size);
+      if (!prep.ok) { setError(prep.error); return; }
+      const { error: upErr } = await createClient().storage.from("ds-uploads").upload(prep.data.path, file, { upsert: false, contentType: file.type || "application/octet-stream" });
+      if (upErr) { setError("The upload failed. Check your connection and try again."); return; }
+      setBusy("Checking and saving on the server…");
+      const r = await importDataset(studyId, { path: prep.data.path, filename: file.name, name, options: opts });
+      if (!r.ok) { setError(r.error); return; }
+      router.push(`/studies/${studyId}/data/${r.data.datasetId}`);
+    } catch {
+      setError("The import did not finish because the connection to the server was lost. Check your connection and try again.");
+    } finally { setBusy(null); }
   }
   async function doBlank() {
     const cols = blankCols.split(",").map((c) => c.trim()).filter(Boolean).map((c) => ({ name: c, type: "numeric" as const }));
-    setBusy("Creating…");
-    const r = await createBlankDataset(studyId, name || "New dataset", cols);
-    setBusy(null);
-    if (!r.ok) { setError(r.error); return; }
-    router.push(`/studies/${studyId}/data/${r.data.datasetId}`);
+    setBusy("Creating…"); setError(null);
+    try {
+      const r = await createBlankDataset(studyId, name || "New dataset", cols);
+      if (!r.ok) { setError(r.error); return; }
+      router.push(`/studies/${studyId}/data/${r.data.datasetId}`);
+    } catch {
+      setError("The dataset was not created because the connection to the server was lost. Try again.");
+    } finally { setBusy(null); }
   }
 
   const isText = file && !/\.(xlsx|json)$/i.test(file.name);
@@ -89,7 +96,7 @@ export function ImportPanel({ studyId, maxBytes, maxRows, maxColumns }: { studyI
         </div>
       )}
 
-      {error && <p role="alert" className="mt-4 flex gap-2 rounded-control border border-danger-line bg-danger-bg p-3 text-sm text-danger-ink"><AlertTriangle className="h-4 w-4 flex-none" aria-hidden="true" />{error}</p>}
+      {error && !(preview && file) && <p role="alert" className="mt-4 flex gap-2 rounded-control border border-danger-line bg-danger-bg p-3 text-sm text-danger-ink"><AlertTriangle className="h-4 w-4 flex-none" aria-hidden="true" />{error}</p>}
 
       {preview && file && (
         <div className="mt-5 space-y-4">
@@ -155,6 +162,8 @@ export function ImportPanel({ studyId, maxBytes, maxRows, maxColumns }: { studyI
             <Button onClick={doImport} loading={!!busy} disabled={!name.trim()}>Import dataset</Button>
             {busy && <span className="type-support" role="status">{busy}</span>}
           </div>
+          {/* Shown beside the button, where the person is looking when they import (the preview above can be long). */}
+          {error && <p role="alert" className="flex gap-2 rounded-control border border-danger-line bg-danger-bg p-3 text-sm text-danger-ink"><AlertTriangle className="h-4 w-4 flex-none" aria-hidden="true" />{error}</p>}
         </div>
       )}
     </section>
