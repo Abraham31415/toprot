@@ -4,6 +4,7 @@ const TABS = [
   { slug: "protocol", label: "Protocol" },
   { slug: "references", label: "References" },
   { slug: "writing", label: "Writing" },
+  { slug: "data", label: "Data Studio" },
   { slug: "calculations", label: "Calculations" },
   { slug: "milestones", label: "Milestones" },
   { slug: "deviations", label: "Deviations" },
