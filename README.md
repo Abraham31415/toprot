@@ -9,6 +9,8 @@ methods paragraph, ethics package, and consent form.
 - `frontend/` — Next.js (App Router, TypeScript, Tailwind) app. Auth, database, and storage via Supabase.
 - `service/` — Python (FastAPI) microservice for document generation and sample-size calculations.
 
+Data Studio (dataset management, statistics, charts and reporting inside each project) is documented in `docs/DATA_STUDIO.md`.
+
 ## Local development
 
 ### Frontend

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { BrandLogo } from "@/components/brand";
-import { Bell, BookOpen, Users2, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
+import { Bell, BarChart3, BookOpen, Users2, CreditCard, FolderOpen, LayoutDashboard, Library, LogOut, Menu, PenLine, Quote, Sparkles, Users, Wrench, X, type LucideIcon } from "lucide-react";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; badge?: number; /** Other paths that belong to this item, so it stays highlighted there. */ also?: string[] };
 type NavGroup = { label: string; items: NavItem[] };
@@ -18,6 +18,7 @@ function navFor(unread: number): NavGroup[] {
     {
       label: "Research",
       items: [
+        { href: "/data-studio", label: "Data Studio", icon: BarChart3 },
         { href: "/tools", label: "Research tools", icon: Wrench, also: ["/calculator"] },
         { href: "/literature", label: "Literature", icon: BookOpen },
         { href: "/citations", label: "Citations", icon: Quote },

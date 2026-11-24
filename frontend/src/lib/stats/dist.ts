@@ -23,3 +23,5 @@ export const lnGamma = (x: number): number => J.gammaln(x);
 
 /** Two-sided critical z for a confidence level, e.g. 0.95 -> 1.959964. */
 export const zCrit = (conf: number): number => normPpf(1 - (1 - conf) / 2);
+/** Quantile of the F distribution (used by Data Studio for ICC and Cronbach's alpha intervals). */
+export const fPpf = (p: number, d1: number, d2: number): number => J.centralF.inv(p, d1, d2);
