@@ -9,6 +9,10 @@ export type LotView = { id: string; remainingMcr: number; grantedMcr: number; ex
 export type OperationView = { id: string; feature: string; model: string; status: string; chargedMcr: number; createdAt: string };
 export type PaymentView = { id: string; kind: string; product: string; amount: number; currency: string; status: string; method: string | null; createdAt: string };
 export type TransactionView = { id: number; kind: string; pool: string; amountMcr: number; note: string | null; createdAt: string };
+/** AI credits charged per feature in the current billing period (or since joining, on Free). */
+export type FeatureUsage = { feature: string; requests: number; chargedMcr: number };
+/** A team this person owns or administers, with its shared-credit summary. */
+export type ManagedTeam = { id: string; name: string; role: string };
 export type BillingOverview = {
   headroom: Headroom | null;
   /** Why the balance could not be read (no secrets), to make a configuration problem diagnosable. */
@@ -18,6 +22,8 @@ export type BillingOverview = {
   operations: OperationView[];
   payments: PaymentView[];
   transactions: TransactionView[];
+  featureUsage: FeatureUsage[];
+  managedTeams: ManagedTeam[];
 };
 
 type Row = Record<string, unknown>;
@@ -32,6 +38,25 @@ export async function loadBillingOverview(db: SupabaseClient, userId: string): P
     db.from("payments").select("id, kind, product_key, amount, currency, status, method, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
     db.from("ai_credit_transactions").select("id, kind, pool, amount_mcr, note, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(25),
   ]);
+  // Usage by feature for the current billing period, from the ledger's committed events (personally funded only; team-funded requests
+  // are shown on the team's billing page).
+  const since = (headroom as Headroom | null)?.periodStart ?? "1970-01-01T00:00:00Z";
+  const [usageRows, teamRows] = await Promise.all([
+    db.from("ai_usage_events").select("feature_key, charged_mcr, funding_source").eq("user_id", userId).eq("status", "committed").gte("created_at", since).order("created_at", { ascending: false }).limit(2000),
+    db.from("team_memberships").select("team_id, role, teams(name, archived_at)").eq("user_id", userId).in("role", ["owner", "administrator"]).limit(20),
+  ]);
+  const byFeature = new Map<string, FeatureUsage>();
+  for (const e of (usageRows.data ?? []) as Row[]) {
+    if (e.funding_source === "team") continue;
+    const k = String(e.feature_key);
+    const f = byFeature.get(k) ?? { feature: k, requests: 0, chargedMcr: 0 };
+    f.requests += 1; f.chargedMcr += Number(e.charged_mcr ?? 0);
+    byFeature.set(k, f);
+  }
+  const managedTeams = ((teamRows.data ?? []) as Row[]).flatMap((t) => {
+    const team = (Array.isArray(t.teams) ? t.teams[0] : t.teams) as Row | null | undefined;
+    return team && !team.archived_at ? [{ id: String(t.team_id), name: String(team.name ?? "Team"), role: String(t.role) }] : [];
+  });
   const s = sub.data as Row | null;
   return {
     headroom,
@@ -41,6 +66,8 @@ export async function loadBillingOverview(db: SupabaseClient, userId: string): P
     operations: ((ops.data ?? []) as Row[]).map((e) => ({ id: String(e.id), feature: String(e.feature_key), model: String(e.model_id), status: String(e.status), chargedMcr: Number(e.charged_mcr), createdAt: String(e.created_at) })),
     payments: ((pay.data ?? []) as Row[]).map((p) => ({ id: String(p.id), kind: String(p.kind), product: String(p.product_key), amount: Number(p.amount), currency: String(p.currency), status: String(p.status), method: (p.method as string | null) ?? null, createdAt: String(p.created_at) })),
     transactions: ((tx.data ?? []) as Row[]).map((t) => ({ id: Number(t.id), kind: String(t.kind), pool: String(t.pool), amountMcr: Number(t.amount_mcr), note: (t.note as string | null) ?? null, createdAt: String(t.created_at) })),
+    featureUsage: [...byFeature.values()].sort((a, b) => b.chargedMcr - a.chargedMcr),
+    managedTeams,
   };
 }
 

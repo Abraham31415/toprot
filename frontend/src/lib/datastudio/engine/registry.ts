@@ -1,9 +1,9 @@
-// The catalogue of analyses: what each one is for, which plan tier unlocks it, the inputs its form shows, and its assumptions.
+// The catalogue of analyses: what each one is for, which method tier it needs, the inputs its form shows, and its assumptions.
+// Which plans grant which tier, and every access check, live in ../entitlements.ts; nothing else should compare tiers.
 // The interface is generated from these field definitions, and the server validates every request against the same definitions.
 
-export type Tier = "basic" | "standard" | "advanced";
-export const TIER_RANK: Record<Tier, number> = { basic: 0, standard: 1, advanced: 2 };
-export const TIER_LABEL: Record<Tier, string> = { basic: "All plans", standard: "Pro and above", advanced: "Teams" };
+import type { Tier } from "../entitlements";
+export type { Tier };
 
 export type FieldKind = "variable" | "variables" | "level" | "number" | "select" | "boolean" | "pairs";
 export type VarFilter = "numeric" | "categorical" | "binary" | "any" | "scale";
@@ -122,11 +122,11 @@ export const METHODS: MethodDef[] = [
     summary: "Crude and stratum-specific odds ratios, the Mantel-Haenszel adjusted odds ratio, the MH test and the Breslow-Day test for effect modification.",
     assumptions: ["Each stratum is a 2x2 table of a binary exposure and a binary outcome.", "If Breslow-Day suggests heterogeneity, report stratum-specific estimates rather than one adjusted estimate."],
     fields: [{ key: "exposure", label: "Exposure", kind: "variable", filter: "categorical", required: true }, { key: "exposed", label: "Exposed level", kind: "level", levelOf: "exposure", required: true }, { key: "outcome", label: "Outcome", kind: "variable", filter: "categorical", required: true }, { key: "event", label: "Event level", kind: "level", levelOf: "outcome", required: true }, { key: "stratum", label: "Stratify by", kind: "variable", filter: "categorical", required: true }, conf] },
-  { id: "reliability", label: "Scale reliability (alpha, ICC)", category: "Reliability", tier: "advanced",
+  { id: "reliability", label: "Scale reliability (alpha, ICC)", category: "Reliability", tier: "standard",
     summary: "Cronbach's alpha with a CI, item-rest correlations and alpha if item deleted; intraclass correlations (ICC1, ICC2, ICC3) for raters.",
     assumptions: ["Items measure one construct (alpha is not a test of unidimensionality).", "Choose the ICC form that matches the design: random raters and absolute agreement (ICC2) is the usual choice for rater studies."],
     fields: [{ key: "variables", label: "Items or raters", kind: "variables", filter: "numeric", required: true, minItems: 2 }, conf] },
-  { id: "bland_altman", label: "Bland-Altman agreement", category: "Reliability", tier: "advanced",
+  { id: "bland_altman", label: "Bland-Altman agreement", category: "Reliability", tier: "standard",
     summary: "Bias and 95% limits of agreement between two measurement methods, with CIs and a check for proportional bias.",
     assumptions: ["The differences are roughly normal and do not change with the size of the measurement (check the plot)."],
     fields: [{ key: "a", label: "Method A", kind: "variable", filter: "numeric", required: true }, { key: "b", label: "Method B", kind: "variable", filter: "numeric", required: true }, conf] },

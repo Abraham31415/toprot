@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AdminDb } from "@/lib/admin/__tests__/db-harness";
 import { makeHelpers } from "@/lib/collab/__tests__/helpers";
+import { PLAN_METHOD_TIER } from "../entitlements";
 
 // supabase/migrations/20261126090000_data_studio.sql against a scratch Postgres with every migration applied.
 let db: AdminDb;
@@ -82,6 +83,31 @@ describe("data studio schema", () => {
     const pl = await db.rpc("ds_project_limits", { p_study: ps });
     expect(pl.plan).toBe("pro");
     expect(pl.max_rows).toBeGreaterThan(lim.max_rows);
+  });
+
+  it("grants each subscription tier the statistics in the entitlement table, with no Teams-only methods", async () => {
+    const seeded = Object.fromEntries((await db.pool.query("select plan_key, method_tier from public.ds_plan_limits")).rows.map((r) => [r.plan_key, r.method_tier]));
+    expect(seeded).toEqual(PLAN_METHOD_TIER);
+    // Individual subscribers: the project's limits follow the owner's own plan.
+    for (const plan of ["free", "pro", "advanced"] as const) {
+      const o = await h.person(`Stats-${plan}`);
+      if (plan !== "free") await h.subscribe(o.id, plan);
+      const lim = await db.rpc("ds_project_limits", { p_study: await h.project(o.id) });
+      expect(lim).toMatchObject({ plan, method_tier: PLAN_METHOD_TIER[plan] });
+    }
+    // A team project with an active team subscription gets the same statistics as Advanced, even when its owner is on Free.
+    const owner = await h.person("Stats-team-owner");
+    const team = await db.rpc<string>("team_create", { p_actor: owner.id, p_name: "Stats lab" });
+    await db.pool.query(`insert into public.team_subscriptions (team_id, status, paid_seats, current_period_start, current_period_end, billing_owner)
+      values ($1, 'active', 3, now() - interval '1 day', now() + interval '29 days', $2)`, [team, owner.id]);
+    const tp = (await db.pool.query("insert into public.studies (owner_id, title, team_id) values ($1, 'Team study', $2) returning id", [owner.id, team])).rows[0].id;
+    expect(await db.rpc("ds_project_limits", { p_study: tp })).toMatchObject({ plan: "team", method_tier: "advanced" });
+  });
+
+  it("adds the Advanced plan switched off for checkout until the payment provider is set up", async () => {
+    const adv = (await db.pool.query("select is_paid, active from public.plans where plan_key = 'advanced'")).rows[0];
+    expect(adv).toEqual({ is_paid: true, active: false });
+    expect((await db.pool.query("select amount::text a from public.billing_prices where kind = 'plan' and product_key = 'advanced' and currency = 'USD'")).rows[0].a).toBe("15.99");
   });
 
   it("meters analyses per person per project per day against the plan limit", async () => {

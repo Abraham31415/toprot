@@ -11,13 +11,15 @@ export type BillingOverview = {
   your_role: "owner" | "administrator" | "member";
   entitlements: { state: string; max_paid_seats: number; max_guests: number; period_end: string | null; cancel_at_period_end: boolean; grace_until: string | null; next_paid_seats: number | null; seat_sync_pending: boolean };
   billing_enabled: boolean;
-  prices: { base: number | null; seat: number | null; base_seats: number; max_seats: number; monthly_credits: number | null };
+  prices: { base: number | null; seat: number | null; base_seats: number; max_seats: number; monthly_credits: number | null; seat_credits?: number | null };
+  /** Owners and administrators of an active team only. */
+  allowance?: null | { paid_seats: number; extra_seats: number; monthly_allowance_mcr: number; extra_seat_credits_mcr: number };
   subscription: null | { status: string; paid_seats: number; next_paid_seats: number | null; period_end: string; cancel_at_period_end: boolean; grace_until: string | null; seat_sync_pending: boolean; renews_automatically: boolean };
   payments: { kind: string; amount: number; currency: string; status: string; at: string }[];
 };
 export type AiOverview = {
   your_role: "owner" | "administrator" | "member";
-  pool: null | { enabled: boolean; balance_mcr: number; reserved_mcr: number; available_mcr: number; monthly_team_limit_mcr: number | null; default_member_limit_mcr: number | null; month_used_mcr: number };
+  pool: null | { enabled: boolean; balance_mcr: number; reserved_mcr: number; available_mcr: number; monthly_team_limit_mcr: number | null; default_member_limit_mcr: number | null; month_used_mcr: number; period_grant_mcr?: number; period_end?: string | null };
   you: { used_mcr: number; allowance_mcr: number | null; using_pool: boolean };
   members: { user_id: string; full_name: string; used_mcr: number; allowance_mcr: number | null; override_mcr: number | null }[];
   requests: { id: string; user_id: string; full_name: string; requested_mcr: number; reason: string | null; status: string; granted_mcr: number | null; at: string }[];
@@ -66,8 +68,16 @@ export function BillingPanel({ teamId, userId, bill, ai, paymentsReady, payments
           {sub?.status === "past_due" && sub.grace_until && ` The last renewal payment failed. Everything keeps working until ${day(sub.grace_until)}.`}
         </p>
         <p className="mt-2 text-sm text-ink-soft">
-          {bill.prices.base !== null ? `${money(bill.prices.base)} a month includes ${bill.prices.base_seats} paid seats${bill.prices.seat !== null ? `, then ${money(bill.prices.seat)} a month per extra seat` : ""}.` : "Teams pricing is not set up."} Guest reviewers use free guest seats. Your personal Pro plan is separate: it covers your own projects, and you never pay for another member&apos;s seat.
+          {bill.prices.base !== null ? `${money(bill.prices.base)} a month includes ${bill.prices.base_seats} paid seats${bill.prices.monthly_credits != null ? ` and ${bill.prices.monthly_credits.toLocaleString("en-US")} shared AI credits` : ""}${bill.prices.seat !== null ? `, then ${money(bill.prices.seat)} a month per extra seat${bill.prices.seat_credits != null ? `, each adding ${bill.prices.seat_credits.toLocaleString("en-US")} shared credits` : ""}` : ""}.` : "Teams pricing is not set up."} Shared credits go to the team pool each paid period and unused ones expire when it ends. Guest reviewers use free guest seats. Your personal plan is separate: it covers your own projects and credits, and you never pay for another member&apos;s seat.
         </p>
+        {bill.allowance && (
+          <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+            <div><dt className="text-ink-soft">Paid seats</dt><dd className="font-semibold text-ink">{bill.allowance.paid_seats}</dd></div>
+            <div><dt className="text-ink-soft">Monthly shared allowance</dt><dd className="font-semibold text-ink">{cr(bill.allowance.monthly_allowance_mcr)}</dd></div>
+            <div><dt className="text-ink-soft">From extra seats</dt><dd className="font-semibold text-ink">{cr(bill.allowance.extra_seat_credits_mcr)} ({bill.allowance.extra_seats} seat{bill.allowance.extra_seats === 1 ? "" : "s"})</dd></div>
+            <div><dt className="text-ink-soft">Period ends</dt><dd className="font-semibold text-ink">{day(e.period_end) || "-"}</dd></div>
+          </dl>
+        )}
         {!bill.billing_enabled && <p className="mt-2 rounded-control bg-surface-soft p-3 text-sm text-ink-soft">Teams billing is not switched on yet, so a Teams plan cannot be bought. It will be offered once the payment setup has been verified.</p>}
         {bill.billing_enabled && !paymentsReady && <p className="mt-2 rounded-control bg-surface-soft p-3 text-sm text-ink-soft">{paymentsMessage}</p>}
 
@@ -85,7 +95,7 @@ export function BillingPanel({ teamId, userId, bill, ai, paymentsReady, payments
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-control border border-line p-3">
                   <label htmlFor={ids.add} className="block text-sm font-medium">Add seats now</label>
-                  <p className="text-xs text-ink-soft">One-off payment of {money(bill.prices.seat)} per seat. Seats renew with the team.</p>
+                  <p className="text-xs text-ink-soft">One-off payment of {money(bill.prices.seat)} per seat{bill.prices.seat_credits != null ? `, adding ${bill.prices.seat_credits.toLocaleString("en-US")} shared credits each once paid` : ""}. Seats renew with the team.</p>
                   <div className="mt-2 flex gap-2"><input id={ids.add} type="number" min={1} value={add} onChange={(ev) => setAdd(ev.target.value)} className={`${field} w-24`} /><Button size="sm" loading={pending} onClick={() => act(() => startAddSeats(teamId, Number(add)))}>Pay and add</Button></div>
                 </div>
                 <div className="rounded-control border border-line p-3">
@@ -113,6 +123,7 @@ export function BillingPanel({ teamId, userId, bill, ai, paymentsReady, payments
           <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
             <div><dt className="text-ink-soft">In the pool</dt><dd className="font-semibold text-ink">{cr(ai.pool.balance_mcr)}</dd></div>
             <div><dt className="text-ink-soft">Held for requests</dt><dd className="font-semibold text-ink">{cr(ai.pool.reserved_mcr)}</dd></div>
+            {isAdmin && ai.pool.period_grant_mcr != null && <div><dt className="text-ink-soft">This period&apos;s shared credits left</dt><dd className="font-semibold text-ink">{cr(ai.pool.period_grant_mcr)}{ai.pool.period_end ? `, expire ${day(ai.pool.period_end)}` : ""}</dd></div>}
             <div><dt className="text-ink-soft">Team used this month</dt><dd className="font-semibold text-ink">{cr(ai.pool.month_used_mcr)}</dd></div>
             <div><dt className="text-ink-soft">You used this month</dt><dd className="font-semibold text-ink">{cr(ai.you.used_mcr)}{ai.you.allowance_mcr !== null ? ` of ${cr(ai.you.allowance_mcr)}` : ""}</dd></div>
           </dl>

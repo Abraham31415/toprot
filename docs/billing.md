@@ -3,6 +3,29 @@
 Code: `frontend/src/lib/billing/`, `frontend/src/app/billing/`, `frontend/src/app/api/billing/`, `frontend/src/app/admin/billing/`.
 Schema: `supabase/migrations/20261115090000_billing_plans_payments.sql` (extends `20261109120000_ai_usage_credits.sql`).
 
+## Plans (final configuration, `20261128090000_subscription_plans_final.sql`)
+
+| Plan | Price (USD/month) | AI credits | Projects | Data Studio methods | Checkout |
+|---|---:|---|---|---|---|
+| Free | 0 | 150 once per account (never reset or re-granted) | 3 | basic | n/a |
+| Pro | 7.99 | 2,000 per paid billing period | 25 | standard | on |
+| Advanced | 15.99 | 5,000 per paid billing period | 50 | advanced (all) | **off** until set up (below) |
+| Team | 25.00 for 3 paid seats, +6.00 per extra seat | 7,500 shared per paid period +2,000 per extra paid seat, to the team pool | unlimited team projects (fair-use `team_limits`) | advanced (all) | **off** until set up |
+
+Credit packs (any active paid personal subscriber): 2,000 for $4.99, 5,000 for $9.99, 10,000 for $16.99, each expiring 365 days after purchase.
+
+- Unused plan credits expire at the end of their billing period (a new period starts a new allowance). This now also applies to a team's shared grant (`team_credit_pools.period_grant_mcr`, expired on renewal or by the daily `team_billing_sweep`). Purchased credits keep their own expiry. Pool balances that existed before the migration are kept and never expire.
+- Team credits go only to the team pool, never to members. A personal plan and its credits are separate; members opt in to pool funding as before. `plans.audience = 'team'` stops the Team plan being bought as a personal subscription.
+- Upgrades start at once and the new month starts after the time already paid for. A downgrade (`tier_rank` lower than the active plan) is refused with `downgrade_at_period_end` until the paid period ends. Changing a plan that the provider renews automatically first needs its renewal cancelled (`already_subscribed`), as before.
+- Added Team seats are paid in full and add 2,000 shared credits each once the payment is verified; refunding the seats takes those credits back.
+
+### Switching on Advanced and Team checkout (not done; needs the provider)
+
+1. In Dodo create a **monthly subscription product at $15.99** (Advanced), a **monthly subscription at $25.00** (Teams base) and the **extra-seat product at $6.00 per seat** used by the team checkout.
+2. Map them: `insert into billing_provider_products (provider, kind, product_key, product_id) values ('dodo', 'plan', 'advanced', 'pdt_...'), ('dodo', 'plan', 'team', 'pdt_...'), ('dodo', 'plan', 'team_seat', 'pdt_...');`
+3. Make one test-mode purchase of each and confirm it verifies and grants the right credits (5,000 personal; 7,500 + 2,000 per extra seat shared).
+4. Then: `update plans set active = true where plan_key = 'advanced';` and, for Teams, `update billing_settings set value_num = 1 where key = 'teams_billing_enabled'; update plans set active = true where plan_key = 'team';`
+
 ## How it works
 
 - **Plans, prices, packs and quotas are data.** Tables `plans`, `billing_prices`, `credit_packs`, `billing_settings`. Change them with SQL; the pricing page, billing page and checkout read them. Nothing is hard-coded in the app.

@@ -17,12 +17,13 @@ const MESSAGES: Record<string, string> = {
   unknown_product: "That item is not available.",
   currency_unavailable: "That item is not available in the chosen currency.",
   too_many_attempts: "You have started several payments in the last hour. Please wait a little and try again.",
-  subscription_required: "Credit packs are for Pro subscribers. Subscribe to Pro first, then you can add extra credits.",
+  subscription_required: "Credit packs are for active paid subscribers. Subscribe to Pro or Advanced first, then you can add extra credits.",
 };
 
-function mapCreateError(created: { code?: string; renew_from?: string; renews_on?: string }): string {
+function mapCreateError(created: { code?: string; renew_from?: string; renews_on?: string; available_from?: string }): string {
   const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "");
   if (created.code === "too_early") return `You can renew in the last few days of your billing period${created.renew_from ? `, from ${day(created.renew_from)}` : ""}.`;
+  if (created.code === "downgrade_at_period_end") return `Your current plan is paid until ${day(created.available_from)}. You can switch to a smaller plan once it ends; until then you keep everything you paid for.`;
   if (created.code === "already_subscribed") return `You already have an active subscription${created.renews_on ? ` that renews on ${day(created.renews_on)}` : ""}. It renews automatically, so there is nothing to buy.`;
   return MESSAGES[created.code ?? ""] ?? MESSAGES.invalid_request;
 }
@@ -44,7 +45,7 @@ export async function startCheckout(kind: "subscription" | "pack", productKey: s
     const txRef = newDodoTxRef();
     const { data, error } = await admin.rpc("billing_create_payment", { p_user: user.id, p_kind: kind, p_product: productKey, p_currency: currency, p_tx_ref: txRef, p_provider: "dodo" });
     if (error) return { error: "Could not start the payment. Please try again." };
-    const created = data as { ok: boolean; code?: string; renew_from?: string; renews_on?: string };
+    const created = data as { ok: boolean; code?: string; renew_from?: string; renews_on?: string; available_from?: string };
     if (!created.ok) return { error: mapCreateError(created) };
     try {
       const { link, sessionId } = await dodoCreateCheckout(cfg, {
@@ -67,10 +68,10 @@ export async function startCheckout(kind: "subscription" | "pack", productKey: s
   const txRef = newTxRef();
   const { data, error } = await admin.rpc("billing_create_payment", { p_user: user.id, p_kind: kind, p_product: productKey, p_currency: currency, p_tx_ref: txRef, p_provider: "flutterwave" });
   if (error) return { error: "Could not start the payment. Please try again." };
-  const created = data as { ok: boolean; code?: string; amount?: number; renew_from?: string; renews_on?: string };
+  const created = data as { ok: boolean; code?: string; amount?: number; renew_from?: string; renews_on?: string; available_from?: string };
   if (!created.ok) return { error: mapCreateError(created) };
   let title = "Toprot";
-  let description = kind === "subscription" ? "Toprot Pro, one month" : "Toprot AI credits";
+  let description = kind === "subscription" ? "Toprot subscription, one month" : "Toprot AI credits";
   if (kind === "pack") {
     const { data: pack } = await admin.from("credit_packs").select("name").eq("pack_key", productKey).maybeSingle();
     if (pack?.name) description = `Toprot AI credits: ${pack.name}`;

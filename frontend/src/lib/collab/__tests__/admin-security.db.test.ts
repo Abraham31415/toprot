@@ -91,7 +91,7 @@ describe("admin functions", () => {
     await db.rpcFails("admin_team_credit_grant", { p_actor: admin, p_team: team, p_credits: 10, p_reason: "short" }, "reason_required");
     await db.rpcFails("admin_team_credit_grant", { p_actor: admin, p_team: team, p_credits: 999999, p_reason: "goodwill gesture for outage" }, "credits_out_of_range");
     await db.rpc("admin_team_credit_grant", { p_actor: admin, p_team: team, p_credits: 100, p_reason: "goodwill gesture for outage" });
-    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [team])).rows[0].b).toBe(2_100_000);
+    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [team])).rows[0].b).toBe(9_600_000); // 9,500 shared credits for 4 paid seats (20261128090000) + the 100 granted
     await db.rpc("admin_team_pool_set", { p_actor: admin, p_team: team, p_enabled: false, p_reason: "suspected abuse of the pool" });
     const actions = (await db.pool.query("select action, reason from public.admin_audit_log where actor_id = $1 order by id", [admin])).rows;
     expect(actions.map((a: any) => a.action)).toEqual(expect.arrayContaining(["collab.investigate", "team.view", "team.credit_grant", "team.pool_set"]));

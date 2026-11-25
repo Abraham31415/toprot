@@ -7,7 +7,7 @@ const MESSAGES: Record<string, string> = {
   cannot_invite_self: "You cannot invite yourself.",
   already_member: "That person is already on this project.",
   already_invited: "That email already has a pending invitation. Resend or revoke it instead.",
-  role_not_in_plan: "Your plan does not include that role. Free projects can invite supervisors (reviewers) only. Upgrade to Pro to invite editors and viewers.",
+  role_not_in_plan: "Your plan does not include that role. Free projects can invite supervisors (reviewers) only. Upgrade to Pro or Advanced to invite editors and viewers.",
   role_limit_reached: "This project has reached the limit for that role on your plan.",
   rate_limited_owner: "You have sent a lot of invitations today. Try again tomorrow.",
   rate_limited_recipient: "That email address has received several invitations recently. Try again later.",

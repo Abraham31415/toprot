@@ -5,7 +5,8 @@ import { StudyNav } from "@/components/study-nav";
 import { ImportPanel } from "@/components/datastudio/import-panel";
 import { requireProject } from "@/lib/collab/access";
 import { projectLimits } from "@/lib/datastudio/server";
-import { TIER_LABEL } from "@/lib/datastudio/engine/registry";
+import { METHODS } from "@/lib/datastudio/engine/registry";
+import { TIER_NAME, methodsForTier, planName } from "@/lib/datastudio/entitlements";
 
 export const metadata = { title: "Data Studio" };
 
@@ -31,7 +32,7 @@ export default async function DataStudioHome({ params }: { params: Promise<{ id:
             <h1 className="flex items-center gap-2 text-xl font-semibold text-navy"><BarChart3 className="h-5 w-5 text-cobalt" aria-hidden="true" />Data Studio</h1>
             <p className="mt-1 text-sm text-navy/65">Import, clean, analyse and report on this project&apos;s datasets. Every analysis is computed by validated statistical code and tied to an exact dataset version.</p>
           </div>
-          <p className="type-caption text-right">Plan: {limits.plan} · {rows.length} of {limits.max_datasets_per_project} datasets · {(usedBytes / 1048576).toFixed(1)} of {(limits.max_project_storage_bytes / 1048576).toFixed(0)} MB · methods: {TIER_LABEL[limits.method_tier]} · {limits.max_analyses_per_day} analyses per day</p>
+          <p className="type-caption text-right">Plan: {planName(limits.plan)} · {rows.length} of {limits.max_datasets_per_project} datasets · {(usedBytes / 1048576).toFixed(1)} of {(limits.max_project_storage_bytes / 1048576).toFixed(0)} MB · statistics: {TIER_NAME[limits.method_tier]} ({methodsForTier(limits.method_tier).length} of {METHODS.length} methods) · {limits.max_analyses_per_day} analyses per day</p>
         </div>
 
         <section aria-labelledby="ds-h" className="mt-6">

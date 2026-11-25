@@ -7,6 +7,8 @@ import { makeHelpers, type Person } from "./helpers";
 // Stage 5: Teams plan, seats, renewals, grace, refunds, and AI credit funding.
 let db: AdminDb;
 const { person, project, as } = makeHelpers(() => db);
+// Shared credits per paid period, in milli-credits (20261128090000): 7,500 for 3 seats, +2,000 per extra paid seat.
+const GRANT3 = 7_500_000, GRANT4 = 9_500_000;
 let feature = ""; let model = ""; let proFeature = ""; let proModel = ""; let unit = 0; // unit: credits (milli) held by a 20,000 micro-USD request
 
 beforeAll(async () => {
@@ -78,7 +80,7 @@ describe("team subscription payments", () => {
     const b = await fulfil(p2.tx_ref, p2.amount, { p_provider_txn: txn });
     expect(a).toMatchObject({ ok: true, duplicate: false }); expect(b).toMatchObject({ ok: true, duplicate: true });
     expect(await ent(t)).toMatchObject({ state: "active", max_paid_seats: 4 });
-    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [t])).rows[0].b).toBe(2_000_000);
+    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [t])).rows[0].b).toBe(GRANT4);
     expect((await db.pool.query("select count(*)::int n from public.team_credit_transactions where team_id = $1 and kind = 'subscription_grant'", [t])).rows[0].n).toBe(1);
     expect((await db.pool.query("select kind, team_id from public.payments where tx_ref = $1", [p2.tx_ref])).rows[0]).toMatchObject({ kind: "team_subscription", team_id: t });
   });
@@ -127,7 +129,8 @@ describe("renewals, failures, cancellation, refunds", () => {
     await fulfil(r.tx_ref, 31, { p_provider_txn: "pay_renew_1" });
     const after = (await db.pool.query("select current_period_end e from public.team_subscriptions where team_id = $1", [team])).rows[0].e as Date;
     expect(after.getTime()).toBeGreaterThan(before.getTime() + 25 * 86400_000);
-    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [team])).rows[0].b).toBe(4_000_000); // a second billing period of credits
+    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [team])).rows[0].b).toBe(GRANT4); // a new billing period of credits; the unused ones from the last period expire
+    expect((await db.pool.query("select amount_mcr::int a from public.team_credit_transactions where team_id = $1 and kind = 'expiry'", [team])).rows.map((x) => x.a)).toEqual([-GRANT4]);
     expect((await db.rpc<any>("team_start_renewal_payment", { p_provider: "dodo", p_provider_subscription_id: "nope", p_provider_payment_id: "pay_x" })).code).toBe("unknown_subscription");
   });
 
@@ -207,7 +210,7 @@ describe("renewals, failures, cancellation, refunds", () => {
     const pk = await db.rpc<any>("team_create_pack_payment", { p_actor: o.id, p_team: t, p_pack: "boost", p_currency: "USD", p_tx_ref: ref(), p_provider: "dodo" });
     expect(pk.ok).toBe(true);
     await fulfil(pk.tx_ref, 5);
-    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [t])).rows[0].b).toBe(2_000_000 + 500_000);
+    expect((await db.pool.query("select balance_mcr::int b from public.team_credit_pools where team_id = $1", [t])).rows[0].b).toBe(GRANT3 + 500_000);
   });
 });
 
@@ -247,7 +250,7 @@ describe("AI credits and team pools", () => {
     expect(r).toMatchObject({ ok: true, funding: "team" });
     const heldPool = await pool(team);
     expect(heldPool.r).toBeGreaterThan(0);
-    expect(heldPool.b).toBe(2_000_000);
+    expect(heldPool.b).toBe(GRANT4);
     const c = await commit(r.event_id);
     expect(c.ok).toBe(true);
     const s = await db.rpc<any>("team_ai_settle", { p_event: r.event_id });
@@ -255,7 +258,7 @@ describe("AI credits and team pools", () => {
     expect(s.charged_mcr).toBe(c.charged_mcr);
     const after = await pool(team);
     expect(after.r).toBe(0);
-    expect(after.b).toBe(2_000_000 - c.charged_mcr);
+    expect(after.b).toBe(GRANT4 - c.charged_mcr);
     expect((await db.rpc<any>("team_ai_settle", { p_event: r.event_id })).already).toBe(true); // idempotent
     expect((await db.pool.query("select count(*)::int n from public.team_credit_transactions where event_id = $1", [r.event_id])).rows[0].n).toBe(1);
     const ev = (await db.pool.query("select funding_source, funding_team_id, charged_mcr from public.ai_usage_events where id = $1", [r.event_id])).rows[0];
@@ -269,7 +272,7 @@ describe("AI credits and team pools", () => {
     const r = await reserve(m.id, team);
     await db.rpc("ai_release", { p_event: r.event_id, p_error_code: null, p_platform_exposure_micro_usd: 0, p_usage_known: true });
     await db.rpc("team_ai_settle", { p_event: r.event_id });
-    expect(await pool(team)).toEqual({ b: 2_000_000, r: 0 });
+    expect(await pool(team)).toEqual({ b: GRANT4, r: 0 });
   });
 
   it("refuses without touching anything when the pool is exhausted, and never goes negative", async () => {
@@ -290,7 +293,7 @@ describe("AI credits and team pools", () => {
       const r = await reserve(m.id, team);
       expect(r).toMatchObject({ ok: false, code: "feature_disabled" });
     } finally { await db.pool.query("update public.ai_features set enabled = true where feature_key = $1", [feature]); }
-    expect(await pool(team)).toEqual({ b: 2_000_000, r: 0 });
+    expect(await pool(team)).toEqual({ b: GRANT4, r: 0 });
     expect((await db.pool.query("select count(*)::int n from public.ai_credit_lots where user_id = $1", [m.id])).rows[0].n).toBe(0);
     expect((await db.pool.query("select count(*)::int n from public.team_ai_reservations where team_id = $1", [team])).rows[0].n).toBe(0);
   });
@@ -349,7 +352,7 @@ describe("AI credits and team pools", () => {
     await db.pool.query("update public.team_ai_reservations set created_at = now() - interval '1 hour' where event_id = $1", [r.event_id]);
     const out = await db.rpc<any>("team_ai_reconcile");
     expect(out.settled).toBeGreaterThanOrEqual(1);
-    expect(await pool(team)).toEqual({ b: 2_000_000, r: 0 });
+    expect(await pool(team)).toEqual({ b: GRANT4, r: 0 });
     // a hold with no matching reservation is corrected and reported
     await db.pool.query("update public.team_credit_pools set reserved_mcr = 500 where team_id = $1", [team]);
     expect((await db.rpc<any>("team_ai_reconcile")).drift_fixed).toBe(1);

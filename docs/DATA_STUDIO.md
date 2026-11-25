@@ -141,22 +141,34 @@ and no partial result.
 
 Seeded in `ds_plan_limits` (edit with SQL; nothing is hard-coded):
 
-| | Free | Pro | Team |
-|---|---|---|---|
-| Datasets per project | 3 | 25 | 100 |
-| Rows / variables | 5,000 / 100 | 100,000 / 500 | 100,000 / 500 |
-| Cells per dataset (all plans, fixed in code) | 3,000,000 | 3,000,000 | 3,000,000 |
-| Upload size | 5 MB | 25 MB | 25 MB |
-| Project storage | 25 MB | 500 MB | 2 GB |
-| Versions per dataset | 20 | 200 | 500 |
-| Analyses per person per project per day | 60 | 600 | 3,000 |
-| Methods | basic (descriptives, Table 1, frequencies, normality, crosstabs, t-tests, ANOVA, nonparametric tests, correlation) | + regression, logistic, multinomial and ordinal logistic, Poisson/negative binomial/gamma GLMs, factorial ANOVA and ANCOVA, epidemiology 2x2, age standardisation and SMR, diagnostics, ROC, kappa, Friedman, McNemar, Cochran's Q, partial correlation, bootstrap CIs, permutation tests | + survival (KM, Cox), Mantel-Haenszel, reliability, Bland-Altman, PCA |
-| Exports | CSV | CSV, SVG, PNG, Python | CSV, SVG, PNG, Python |
-| AI analyst | no | yes (AI credits) | yes (AI credits) |
+Statistical methods follow the researcher's **subscription tier**. Teams adds collaboration (shared projects and datasets, team workspaces,
+role-based permissions, team administration), not exclusive access to statistical methods, so Teams has exactly the statistics of Advanced.
+
+| | Free | Pro | Advanced | Team |
+|---|---|---|---|---|
+| Datasets per project | 3 | 25 | 50 | 100 |
+| Rows / variables | 5,000 / 100 | 100,000 / 500 | 250,000 / 1,000 | 100,000 / 500 |
+| Cells per dataset (all plans, fixed in code) | 3,000,000 | 3,000,000 | 3,000,000 | 3,000,000 |
+| Upload size | 5 MB | 25 MB | 50 MB | 25 MB |
+| Project storage | 25 MB | 500 MB | 1 GB | 2 GB |
+| Versions per dataset | 20 | 200 | 500 | 500 |
+| Analyses per person per project per day | 60 | 600 | 1,500 | 3,000 |
+| Method tier | basic | standard | advanced | advanced |
+| Methods | descriptives, Table 1, frequencies, normality, crosstabs, t-tests, one-way ANOVA, nonparametric tests, correlation | + linear, logistic, multinomial and ordinal regression, Poisson/negative binomial/gamma GLMs, factorial ANOVA and ANCOVA, epidemiology 2x2, age standardisation and SMR, diagnostic accuracy, ROC, kappa, **reliability (alpha, ICC), Bland-Altman**, Friedman, McNemar, Cochran's Q, partial correlation, bootstrap CIs, permutation tests | every method: + survival (Kaplan-Meier, log-rank, Cox), Mantel-Haenszel, PCA | same as Advanced |
+| Exports | CSV | CSV, SVG, PNG, Python | CSV, SVG, PNG, Python | CSV, SVG, PNG, Python |
+| AI analyst | no | yes (AI credits) | yes (AI credits) | yes (AI credits) |
+
+**Where entitlements live.** `frontend/src/lib/datastudio/entitlements.ts` is the single place that compares tiers: `canUseMethod` (browser
+locks), `checkMethodAccess` (the `runAnalysisAction` server action, before any data is loaded or metered), `upgradePrompt`, and
+`planComparison` (pricing page). The tier each method needs is its `tier` in `engine/registry.ts`; the tier each plan grants is
+`ds_plan_limits.method_tier`, which must equal `PLAN_METHOD_TIER` (tested in `data-studio.db.test.ts`). An unrecognised tier is treated as
+`basic`. Tests: `entitlements.test.ts` (full method x plan matrix), `run-action-entitlements.test.ts` (server action refuses per plan).
 
 The limits that apply are those of the plan governing the **project** (`collab_project_plan`), so collaborators work within the owner's or
-team's plan. There is no "Advanced" plan in the billing system today; the "advanced" method tier is assigned to Team. To add an Advanced plan,
-insert it into `plans` (and its prices), then `insert into ds_plan_limits (...) values ('advanced', ..., 'advanced', ...)`; no code change.
+team's plan. The **Advanced** plan (`plan_key = 'advanced'`, created by `20261127090000`, configured by `20261128090000_subscription_plans_final.sql`)
+is priced at $15.99 but **inactive**: it is shown on the pricing page as not yet open and cannot be bought until the provider products are
+mapped and tested (docs/billing.md). Advanced's 250,000 rows x 1,000 variables are still bounded by the fixed 3,000,000-cell limit per
+dataset. Analyses and charts never use AI credits; only the AI analyst does.
 
 ```sql
 update ds_plan_limits set max_rows = 20000 where plan_key = 'free';

@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { formatMoney, type Catalog } from "@/lib/billing/catalog";
+import type { PlanCard } from "@/lib/billing/plan-display";
+import { PLAN_KEYS, type PlanKey } from "@/lib/datastudio/entitlements";
 import { cancelRenewal, startCheckout } from "./actions";
 
 const primary = "inline-flex items-center justify-center rounded-md bg-cobalt px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cobalt-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -22,20 +25,23 @@ function Badge({ children, tone = "navy" }: { children: React.ReactNode; tone?: 
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${t}`}>{children}</span>;
 }
 
-export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, canBuyPlan, renewLabel, nextRenewal, windowDays, providerName, autoRenews, processorNote, canCancel, isSubscriber }: {
-  catalog: Catalog; ready: boolean; readyMessage: string; currentPlanKey: string; canBuyPlan: boolean; renewLabel: string; nextRenewal: string | null; windowDays: number;
-  providerName: string; autoRenews: boolean; processorNote: string; canCancel: boolean; isSubscriber: boolean;
+export function PurchasePanel({ catalog, cards, ready, readyMessage, currentPlanKey, canRenewNow, nextRenewal, windowDays, providerName, autoRenews, processorNote, canCancel, managed, isSubscriber }: {
+  catalog: Catalog; cards: PlanCard[]; ready: boolean; readyMessage: string; currentPlanKey: string;
+  /** The current paid plan may be renewed now (inside the renewal window, or not yet paid). */
+  canRenewNow: boolean; nextRenewal: string | null; windowDays: number;
+  providerName: string; autoRenews: boolean; processorNote: string; canCancel: boolean;
+  /** The current plan renews automatically at the provider and has not been cancelled. */
+  managed: boolean; isSubscriber: boolean;
 }) {
   const [currency, setCurrency] = useState(catalog.currencies[0] ?? "USD");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
   const [, start] = useTransition();
-  const paid = catalog.plans.find((p) => p.isPaid);
-  const free = catalog.plans.find((p) => !p.isPaid);
   const priceIn = (prices: { currency: string; amount: number }[]) => prices.find((p) => p.currency === currency);
   const onPaid = currentPlanKey !== "free";
-  const proPrice = paid ? priceIn(paid.prices) : undefined;
+  const rank = (k: string) => PLAN_KEYS.indexOf(k as PlanKey);
+  const short = (name: string) => name.replace(/^Toprot /, "");
 
   // Best value: the pack with the lowest price per 1,000 credits in the chosen currency.
   const perK = catalog.packs.map((k) => { const p = priceIn(k.prices); return { key: k.key, per: p ? p.amount / (k.credits / 1000) : null, currency: p?.currency }; });
@@ -57,12 +63,23 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
     setError(r.error ?? "Something went wrong.");
   });
 
+  /** Why a plan cannot be bought right now, or null when it can. The database applies the same rules (billing_create_payment). */
+  const blocker = (c: PlanCard): string | null => {
+    if (!c.purchasable) return "Not yet open for purchase.";
+    if (managed && !cancelled) return c.key === currentPlanKey ? "Your plan renews automatically, so there is nothing to buy." : "To change plan, cancel the renewal of your current plan first.";
+    if (onPaid && rank(c.key) < rank(currentPlanKey)) return nextRenewal ? `A downgrade can be bought once your current plan ends on ${nextRenewal}.` : "A downgrade can be bought once your current plan ends.";
+    if (c.key === currentPlanKey && !canRenewNow) return nextRenewal ? `Your plan is paid until ${nextRenewal}.${autoRenews ? "" : ` You can renew in the last ${windowDays} days.`}` : "Your plan is already paid for.";
+    return null;
+  };
+  const individual = cards.filter((c) => c.audience === "individual");
+  const team = cards.find((c) => c.audience === "team");
+
   return (
     <section aria-labelledby="buy-h" className="mt-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="buy-h" className="text-lg font-semibold text-navy">Plans and credit packs</h2>
-          <p className="mt-0.5 text-sm text-navy/65">Pick the plan that fits your research. Upgrade or cancel whenever you like.</p>
+          <p className="mt-0.5 text-sm text-navy/65">Pick the plan that fits your research. Upgrade at any time; a downgrade starts when your paid period ends.</p>
         </div>
         {catalog.currencies.length > 1 && (
           <label className="text-xs text-navy/70">Pay in{" "}
@@ -74,62 +91,68 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
       {!ready && <p role="status" className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">{readyMessage} You can see the plans below, but they cannot be bought yet.</p>}
       {error && <p role="alert" className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {free && (
-          <div className={`flex flex-col rounded-xl border bg-white p-5 ${!onPaid ? "border-navy/30" : "border-line"}`}>
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold text-navy">{free.name}</h3>
-              {!onPaid && <Badge tone="good">Your plan</Badge>}
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        {individual.map((c) => {
+          const plan = catalog.plans.find((p) => p.key === c.key);
+          const price = c.key === "free" || !plan ? null : priceIn(plan.prices);
+          const mine = c.key === currentPlanKey;
+          const why = c.key === "free" ? null : blocker(c);
+          const up = rank(c.key) > rank(currentPlanKey);
+          return (
+            <div key={c.key} className={`flex flex-col rounded-xl bg-white p-5 ${mine ? "border-2 border-teal" : c.key === "pro" && !onPaid ? "border-2 border-cobalt" : "border border-line"}`}>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-base font-semibold text-navy">{c.name}</h3>
+                {mine ? <Badge tone="good">Your plan</Badge> : !c.purchasable && c.key !== "free" ? <Badge>Coming soon</Badge> : c.key === "pro" && !onPaid ? <Badge tone="gold">Recommended</Badge> : null}
+              </div>
+              {c.key === "free"
+                ? <p className="mt-2 text-3xl font-semibold text-navy">{formatMoney(0, currency)}<span className="ml-1 text-sm font-normal text-navy/60">forever</span></p>
+                : price ? <p className="mt-2 text-3xl font-semibold text-navy">{formatMoney(price.amount, price.currency)}<span className="ml-1 text-sm font-normal text-navy/60">per month</span></p>
+                : <p className="mt-2 text-sm text-navy/65">Not available in {currency}.</p>}
+              <p className="mt-1 text-sm text-navy/70">{c.tagline}</p>
+              <ul className="mt-4 space-y-2 text-sm text-navy/80">
+                {[c.credits, c.projects, `Data Studio: ${c.statistics.charAt(0).toLowerCase()}${c.statistics.slice(1)}`].map((b) => <li key={b} className="flex gap-2"><Check /><span>{b}</span></li>)}
+              </ul>
+              <p className="mt-3 text-xs text-navy/60">{c.renewal}.</p>
+              {c.key !== "free" && (
+                <div className="mt-auto pt-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button type="button" className={mine || up ? primary : secondary} disabled={!ready || !price || !!why || !!busy} onClick={() => go("subscription", c.key)}>
+                      {busy === `subscription:${c.key}` ? "Opening checkout..." : mine ? (autoRenews ? "Resubscribe" : "Renew for one month") : up ? `${onPaid ? "Upgrade to" : "Subscribe to"} ${short(c.name)}` : `Switch to ${short(c.name)}`}
+                    </button>
+                    {mine && canCancel && !cancelled && <button type="button" className={secondary} disabled={!!busy} onClick={cancel}>{busy === "cancel" ? "Cancelling..." : "Cancel renewal"}</button>}
+                    {mine && cancelled && <span role="status" className="text-sm text-teal-ink">Renewal cancelled. Your plan stays active until the end of the paid period.</span>}
+                  </div>
+                  {why && <p className="mt-2 text-xs text-navy/60">{why}</p>}
+                </div>
+              )}
             </div>
-            <p className="mt-2 text-3xl font-semibold text-navy">{formatMoney(0, currency)}<span className="ml-1 text-sm font-normal text-navy/60">forever</span></p>
-            <p className="mt-1 text-sm text-navy/70">{free.tagline}</p>
-            <ul className="mt-4 space-y-2 text-sm text-navy/80">
-              {free.bullets.map((b) => <li key={b} className="flex gap-2"><Check /><span>{b}</span></li>)}
-              <li className="flex gap-2"><Check /><span>{free.introCredits.toLocaleString()} one-time introductory AI credits</span></li>
-            </ul>
-          </div>
-        )}
-
-        {paid && (
-          <div className={`relative flex flex-col rounded-xl border-2 bg-white p-5 ${onPaid ? "border-teal" : "border-cobalt"}`}>
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold text-navy">{paid.name}</h3>
-              {onPaid ? <Badge tone="good">Your plan</Badge> : <Badge tone="gold">Recommended</Badge>}
-            </div>
-            {proPrice
-              ? <p className="mt-2 text-3xl font-semibold text-navy">{formatMoney(proPrice.amount, proPrice.currency)}<span className="ml-1 text-sm font-normal text-navy/60">per month</span></p>
-              : <p className="mt-2 text-sm text-navy/65">Not available in {currency}.</p>}
-            <p className="mt-1 text-sm text-navy/70">{paid.tagline}</p>
-            <ul className="mt-4 space-y-2 text-sm text-navy/80">
-              {paid.bullets.map((b) => <li key={b} className="flex gap-2"><Check /><span>{b}</span></li>)}
-              <li className="flex gap-2"><Check /><span>{paid.monthlyCredits.toLocaleString()} AI credits per billing period</span></li>
-            </ul>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <button type="button" className={primary} disabled={!ready || !proPrice || !canBuyPlan || !!busy} onClick={() => go("subscription", paid.key)}>
-                {busy === `subscription:${paid.key}` ? "Opening checkout..." : onPaid ? (autoRenews ? "Resubscribe" : renewLabel) : autoRenews ? "Subscribe monthly" : `${renewLabel} for one month`}
-              </button>
-              {canCancel && !cancelled && <button type="button" className={secondary} disabled={!!busy} onClick={cancel}>{busy === "cancel" ? "Cancelling..." : "Cancel renewal"}</button>}
-              {cancelled && <span role="status" className="text-sm text-teal-ink">Renewal cancelled. Your plan stays active until the end of the paid period.</span>}
-            </div>
-            <p className="mt-3 text-xs text-navy/60">
-              {onPaid && !canBuyPlan && nextRenewal ? `Your plan is paid until ${nextRenewal}. ${autoRenews ? "" : `You can renew in the last ${windowDays} days. `}` : ""}
-              {autoRenews ? "Billed monthly and renewed automatically until you cancel. Cancel any time and keep your plan until the end of the period you paid for." : "Each month is a separate payment. Nothing renews automatically, and you are not charged unless you complete a payment."}
-            </p>
-          </div>
-        )}
+          );
+        })}
       </div>
+      <p className="mt-3 text-xs text-navy/60">{autoRenews ? "Paid plans are billed monthly and renewed automatically until you cancel. Cancel any time and keep your plan until the end of the period you paid for." : "Each month is a separate payment. Nothing renews automatically, and you are not charged unless you complete a payment."}</p>
+
+      {team && (
+        <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line bg-white p-5">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2"><h3 className="text-base font-semibold text-navy">{team.name}</h3>{!team.purchasable && <Badge>Coming soon</Badge>}</div>
+            <p className="mt-1 text-sm text-navy/75">{team.price} {team.period}. {team.seats}. {team.credits}. {team.collaboration}. Every Data Studio method, the same as Advanced.</p>
+            <p className="mt-1 text-xs text-navy/60">A team owner subscribes for the team from the team&apos;s billing page. It does not change your personal plan or your personal credits.</p>
+          </div>
+          <Link href="/teams" className={secondary}>Go to teams</Link>
+        </div>
+      )}
 
       <div className="mt-8">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-base font-semibold text-navy">Extra AI credits</h3>
-          <Badge>Pro subscribers</Badge>
+          <Badge>Paid subscribers</Badge>
         </div>
         <p className="mt-1 text-sm text-navy/65">Prepaid top-ups for when your plan credits run out. Plan credits are used first, then purchased credits, earliest expiry first.</p>
 
         {!isSubscriber && (
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-gold/50 bg-gold/10 px-3 py-2.5 text-sm text-[#6f4a14]">
             <Lock />
-            <p>Credit packs are for Pro subscribers. Subscribe to Pro above to unlock them.</p>
+            <p>Credit packs are for active paid subscribers. Subscribe to Pro or Advanced above to unlock them.</p>
           </div>
         )}
 
@@ -148,7 +171,7 @@ export function PurchasePanel({ catalog, ready, readyMessage, currentPlanKey, ca
                 {p && per?.per != null && per.currency && <p className="text-xs text-navy/60">{formatMoney(per.per, per.currency)} per 1,000 credits</p>}
                 <p className="mt-2 text-xs text-navy/60">Expire {k.expiryDays} days after purchase.</p>
                 <button type="button" className={`${secondary} mt-3 w-full`} disabled={!ready || !p || locked || !!busy} onClick={() => go("pack", k.key)}>
-                  {busy === `pack:${k.key}` ? "Opening..." : locked ? "Pro required" : "Buy credits"}
+                  {busy === `pack:${k.key}` ? "Opening..." : locked ? "Subscription required" : "Buy credits"}
                 </button>
               </li>
             );

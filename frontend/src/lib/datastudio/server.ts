@@ -3,7 +3,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decodeDataset, encodeDataset } from "./codec";
-import { TIER_RANK, type Tier } from "./engine/registry";
+import { normalizeTier, type Tier } from "./entitlements";
 import type { Operation } from "./transform";
 import { ENGINE_VERSION, DataError, nRows, type Dataset } from "./types";
 
@@ -23,10 +23,10 @@ export const admin = () => createAdminClient();
 export async function projectLimits(studyId: string): Promise<Limits> {
   const { data, error } = await admin().rpc("ds_project_limits", { p_study: studyId });
   if (error || !data) throw new DataError("Data Studio limits could not be loaded. Try again shortly.");
-  return data as Limits;
+  const l = data as Limits;
+  // An unrecognised tier from the database is treated as the lowest, so a bad row never grants more.
+  return { ...l, method_tier: normalizeTier(l.method_tier) };
 }
-
-export function tierAllows(limits: Limits, tier: Tier): boolean { return TIER_RANK[limits.method_tier] >= TIER_RANK[tier]; }
 
 // Versions are immutable, so a decoded version can be cached by id safely. Small LRU bounded by cell count.
 const cache = new Map<string, { d: Dataset; cells: number }>();

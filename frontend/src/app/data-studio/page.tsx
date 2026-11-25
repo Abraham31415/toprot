@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { BarChart3, Database, FolderOpen } from "lucide-react";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
-import { METHODS, TIER_LABEL } from "@/lib/datastudio/engine/registry";
+import { METHODS } from "@/lib/datastudio/engine/registry";
+import { TIERS, TIER_LABEL, TIER_SUMMARY } from "@/lib/datastudio/entitlements";
 
 export const metadata = { title: "Data Studio" };
 
@@ -59,9 +60,16 @@ export default async function DataStudioIndex() {
 
         <section className="mt-8 rounded-card border border-line bg-surface p-4" aria-labelledby="methods-h">
           <h2 id="methods-h" className="text-sm font-semibold text-navy">Available analyses</h2>
-          <ul className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-            {METHODS.map((m) => <li key={m.id} className="flex justify-between gap-2"><span className="text-ink">{m.label}</span><span className="type-caption">{TIER_LABEL[m.tier]}</span></li>)}
-          </ul>
+          <p className="type-caption mt-1">Statistical methods depend on the subscription of the project&apos;s owner. Teams includes every method in Advanced and adds shared projects, datasets and team administration. <Link href="/pricing" className="text-primary underline">Compare plans</Link></p>
+          {TIERS.map((t) => (
+            <div key={t} className="mt-4">
+              <h3 className="text-sm font-medium text-ink">{TIER_LABEL[t]}</h3>
+              <p className="type-caption">{TIER_SUMMARY[t]}</p>
+              <ul className="mt-1 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                {METHODS.filter((m) => m.tier === t).map((m) => <li key={m.id} className="text-ink">{m.label}</li>)}
+              </ul>
+            </div>
+          ))}
         </section>
       </main>
     </div>
