@@ -95,7 +95,7 @@ export const USER_MESSAGES: Record<AiErrorCode, string> = {
   unauthenticated: "Please sign in to use AI features.",
   unavailable: "AI features are temporarily unavailable. Everything else in ToProt still works.",
   feature_disabled: "This AI feature is currently switched off.",
-  plan_required: "This feature is part of Toprot Pro. Open Billing to see the plans.",
+  plan_required: "This feature is part of the paid plans (Pro and Advanced). Open Billing to see the plans.",
   team_pool_exhausted: "Your team's shared AI credits have run out. Ask a team administrator to add credits, or switch back to your own credits in Billing.",
   team_limit_reached: "Your team has reached its monthly AI spending limit. Switch back to your own credits in Billing, or ask a team administrator to raise the limit.",
   member_limit_reached: "You have used your share of the team's AI credits this month. Request more from a team administrator, or switch back to your own credits in Billing.",

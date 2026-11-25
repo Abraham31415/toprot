@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import { Lock, Play, Sparkles, Wand2, X } from "lucide-react";
 import { Button } from "@/components/ds";
-import { CATEGORIES, METHODS, METHOD_BY_ID, TIER_LABEL, TIER_RANK, type Field, type MethodDef, type Tier } from "@/lib/datastudio/engine/registry";
+import Link from "next/link";
+import { CATEGORIES, METHODS, METHOD_BY_ID, type Field, type MethodDef } from "@/lib/datastudio/engine/registry";
+import { TIER_LABEL, canUseMethod, upgradePrompt, type Tier } from "@/lib/datastudio/entitlements";
 import { distinctPresent, fitsFilter, validateParams } from "@/lib/datastudio/engine/params";
 import { suggest, type WizardAnswers } from "@/lib/datastudio/wizard";
 import type { Dataset } from "@/lib/datastudio/types";
 
-export function AnalysisPanel({ dataset, tier, canRun, running, onRun }: { dataset: Dataset; tier: Tier; canRun: boolean; running: boolean; onRun: (method: string, params: Record<string, unknown>) => void }) {
+export function AnalysisPanel({ dataset, tier, plan, canRun, running, onRun }: { dataset: Dataset; tier: Tier; plan?: string; canRun: boolean; running: boolean; onRun: (method: string, params: Record<string, unknown>) => void }) {
   const [method, setMethod] = useState<string>("describe");
   const [params, setParams] = useState<Record<string, Record<string, unknown>>>({});
   const [wizard, setWizard] = useState(false);
@@ -17,7 +19,7 @@ export function AnalysisPanel({ dataset, tier, canRun, running, onRun }: { datas
   const def = METHOD_BY_ID.get(method)!;
   const p = params[method] ?? {};
   const set = (k: string, v: unknown) => { setError(null); setParams((s) => ({ ...s, [method]: { ...(s[method] ?? {}), [k]: v } })); };
-  const locked = (m: MethodDef) => TIER_RANK[m.tier] > TIER_RANK[tier];
+  const locked = (m: MethodDef) => !canUseMethod(tier, m.id);
   const list = METHODS.filter((m) => !query || `${m.label} ${m.summary} ${m.category}`.toLowerCase().includes(query.toLowerCase()));
 
   function run() {
@@ -43,7 +45,7 @@ export function AnalysisPanel({ dataset, tier, canRun, running, onRun }: { datas
                   <li key={m.id}>
                     <button type="button" onClick={() => { setMethod(m.id); setError(null); }} aria-current={method === m.id ? "true" : undefined}
                       className={`flex w-full items-center justify-between gap-2 rounded-control px-2 py-1.5 text-left text-sm ${method === m.id ? "bg-surface-soft text-primary-hover" : "text-ink-soft hover:bg-hover"}`}>
-                      <span>{m.label}</span>{locked(m) && <Lock className="h-3.5 w-3.5 flex-none text-ink-muted" aria-label={`Requires ${TIER_LABEL[m.tier]}`} />}
+                      <span>{m.label}</span>{locked(m) && <Lock className="h-3.5 w-3.5 flex-none text-ink-muted" aria-label={`Included in ${TIER_LABEL[m.tier]}`} />}
                     </button>
                   </li>
                 ))}
@@ -58,7 +60,7 @@ export function AnalysisPanel({ dataset, tier, canRun, running, onRun }: { datas
         <div>
           <h3 id="method-h" className="type-card">{def.label}</h3>
           <p className="type-support mt-1">{def.summary}</p>
-          {locked(def) && <p className="mt-2 inline-flex items-center gap-1 rounded-control bg-warning-bg px-2 py-1 text-sm text-warning-ink"><Lock className="h-3.5 w-3.5" aria-hidden="true" />Available on {TIER_LABEL[def.tier]}.</p>}
+          {locked(def) && <p className="mt-2 flex flex-wrap items-center gap-1 rounded-control bg-warning-bg px-2 py-1 text-sm text-warning-ink"><Lock className="h-3.5 w-3.5 flex-none" aria-hidden="true" /><span>{upgradePrompt(def, plan)}</span> <Link href="/pricing" className="font-medium underline">Compare plans</Link></p>}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {def.fields.map((f) => <FieldInput key={f.key} field={f} value={p[f.key]} params={p} dataset={dataset} onChange={(v) => set(f.key, v)} />)}

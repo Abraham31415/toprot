@@ -6,11 +6,11 @@ import { requireProject } from "@/lib/collab/access";
 import { isUuid } from "@/lib/collab/roles";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { AnalysisError, type AnalysisResult } from "@/lib/datastudio/engine/common";
-import { METHOD_BY_ID, TIER_LABEL } from "@/lib/datastudio/engine/registry";
+import { checkMethodAccess } from "@/lib/datastudio/entitlements";
 import { runAnalysis } from "@/lib/datastudio/engine/run";
 import { parseFile, formatOf, type ImportOptions } from "@/lib/datastudio/parse";
 import { applyAll, appendDatasets, mergeDatasets, OperationSchema, type Operation } from "@/lib/datastudio/transform";
-import { admin, audit, getVersion, loadVersionData, projectLimits, tierAllows, usage, writeVersion, type Limits, type VersionRow } from "@/lib/datastudio/server";
+import { admin, audit, getVersion, loadVersionData, projectLimits, usage, writeVersion, type Limits, type VersionRow } from "@/lib/datastudio/server";
 import { ENGINE_VERSION, DataError, type Dataset } from "@/lib/datastudio/types";
 
 // Every action: (1) authenticates from the session cookie, (2) checks the project role on the server (lib/collab/access.ts, backed by the
@@ -234,10 +234,10 @@ export type SavedAnalysis = { id: string; method: string; title: string; config:
 export async function runAnalysisAction(studyId: string, datasetId: string, versionId: string, method: string, params: Record<string, unknown>): Promise<Result<SavedAnalysis>> {
   try {
     const a = await writer(studyId);
-    const def = METHOD_BY_ID.get(method);
-    if (!def) throw new DataError("Unknown analysis.");
     const limits = await projectLimits(studyId);
-    if (!tierAllows(limits, def.tier)) throw new DataError(`${def.label} is available on ${TIER_LABEL[def.tier]}. This project is on the ${limits.plan} plan.`);
+    // Statistical entitlements: the same check the browser uses to show locks (lib/datastudio/entitlements.ts).
+    const access = checkMethodAccess(limits, method);
+    if (!access.ok) throw new DataError(access.error);
     if (!checkRateLimit(`ds-run:${a.userId}`, { limit: 30, windowMs: 60_000 }).ok) throw new DataError("Too many analyses in a short time. Wait a minute.");
     const v = await getVersion(studyId, datasetId, versionId);
     const d = await loadVersionData(v);

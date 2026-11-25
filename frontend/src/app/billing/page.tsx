@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { loadCatalog, formatMoney } from "@/lib/billing/catalog";
+import { planCards, teamTerms } from "@/lib/billing/plan-display";
+import { teamRpc } from "@/lib/collab/teams";
+import type { AiOverview, BillingOverview as TeamBillingOverview } from "@/app/teams/[id]/billing/billing-panel";
 import { credits, loadBillingOverview } from "@/lib/billing/data";
 import { paymentsMode, providerInfo, providerReady } from "@/lib/billing/provider";
 import { PurchasePanel } from "./purchase-panel";
@@ -12,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 const FEATURE_LABELS: Record<string, string> = {
   protocol_review: "Protocol reviewer questions", assistant_light: "AI assistant (light)", assistant_standard: "AI assistant (standard)", assistant_deep: "AI assistant (deep)",
-  pdf_qa: "PDF questions", pdf_compare: "PDF comparison",
+  pdf_qa: "PDF questions", pdf_compare: "PDF comparison", data_analyst: "Data Studio AI analyst",
 };
 const STATUS: Record<string, string> = { committed: "Completed", failed: "Not charged (error)", released: "Not charged", expired: "Not charged (timed out)", reserved: "In progress" };
 const PAY_STATUS: Record<string, string> = { succeeded: "Paid", pending: "Awaiting payment", failed: "Not completed", refunded: "Refunded" };
@@ -25,6 +28,8 @@ const CHECKOUT_NOTE: Record<string, { text: string; tone: "good" | "warn" }> = {
   unavailable: { text: "Payments are not available right now.", tone: "warn" },
 };
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+/** Milliseconds until a moment. The page is rendered per request (force-dynamic), so reading the clock here is intended. */
+function msUntil(iso: string): number { return new Date(iso).getTime() - Date.now(); }
 const dateTime = (iso: string) => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "UTC" }) + " UTC";
 
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
@@ -33,23 +38,33 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   if (!profile.role) redirect("/onboarding");
   const { checkout } = await searchParams;
   const admin = createAdminClient();
-  const [overview, catalog, windowRow] = await Promise.all([
+  const [overview, catalog, settingsRows] = await Promise.all([
     loadBillingOverview(admin, profile.id),
-    loadCatalog(admin).catch(() => null),
-    admin.from("billing_settings").select("value_num").eq("key", "renewal_window_days").maybeSingle(),
+    loadCatalog(admin, { includeInactive: true }).catch(() => null),
+    admin.from("billing_settings").select("key, value_num").in("key", ["renewal_window_days", "team_base_paid_seats", "team_seat_monthly_credits"]),
   ]);
+  const settings = (settingsRows.data ?? []) as { key: string; value_num: number }[];
+  const cards = catalog ? planCards(catalog, teamTerms(settings)) : [];
+  // Shared-credit summaries for the teams this person owns or administers (the same functions the team billing page uses).
+  const teams = await Promise.all(overview.managedTeams.slice(0, 5).map(async (t) => {
+    const [bill, ai] = await Promise.all([
+      teamRpc<TeamBillingOverview>(admin, "team_billing_overview", { p_actor: profile.id, p_team: t.id }),
+      teamRpc<AiOverview>(admin, "team_ai_overview", { p_actor: profile.id, p_team: t.id }),
+    ]);
+    return { ...t, bill: bill.data ?? null, ai: ai.data ?? null };
+  }));
   const ready = providerReady();
   const mode = paymentsMode();
   const provider = providerInfo();
-  const windowDays = Number(windowRow.data?.value_num ?? 3);
+  const windowDays = Number(settings.find((r) => r.key === "renewal_window_days")?.value_num ?? 3);
   const h = overview.headroom;
   const sub = overview.subscription;
-  const paidPlan = catalog?.plans.find((p) => p.isPaid) ?? null;
   const freePlan = catalog?.plans.find((p) => !p.isPaid) ?? null;
   const activePaid = h && h.planKey !== "free" && sub?.periodEnd ? sub : null;
-  const msLeft = activePaid?.periodEnd ? new Date(activePaid.periodEnd).getTime() - Date.now() : null;
+  const msLeft = activePaid?.periodEnd ? msUntil(activePaid.periodEnd) : null;
   const managed = !!activePaid && activePaid.autoRenews && !activePaid.cancelAtPeriodEnd;
-  const canBuyPlan = !!paidPlan && !managed && (msLeft === null || activePaid?.autoRenews || msLeft <= windowDays * 86400_000);
+  const canRenewNow = !managed && (msLeft === null || !!activePaid?.autoRenews || msLeft <= windowDays * 86400_000);
+  const planName = h ? (catalog?.plans.find((p) => p.key === h.planKey)?.name ?? (h.planKey === "free" ? "Free" : h.planKey)) : "";
   const used = h && h.allowanceMcr > 0 ? Math.min(100, Math.round((h.usedMcr / h.allowanceMcr) * 100)) : 0;
   const home = profile.role === "supervisor" ? "/supervisor" : "/dashboard";
   const note = checkout ? CHECKOUT_NOTE[checkout] : null;
@@ -70,11 +85,12 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
             <section aria-labelledby="plan-h" className="rounded-xl border border-line bg-white p-5">
               <h2 id="plan-h" className="text-sm font-medium text-navy/65">Your plan</h2>
-              <p className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-semibold text-navy">{h.planKey === "free" ? (freePlan?.name ?? "Free") : (catalog?.plans.find((p) => p.key === h.planKey)?.name ?? "Toprot Pro")}{h.planKey !== "free" && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${activePaid?.cancelAtPeriodEnd ? "bg-gold/15 text-[#8a5d1c]" : "bg-teal/10 text-teal-ink"}`}>{activePaid?.cancelAtPeriodEnd ? "Ends " + (h.periodEnd ? date(h.periodEnd) : "soon") : "Active"}</span>}</p>
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-semibold text-navy">{h.planKey === "free" ? (freePlan?.name ?? "Free") : planName}{h.planKey !== "free" && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${activePaid?.cancelAtPeriodEnd ? "bg-gold/15 text-[#8a5d1c]" : "bg-teal/10 text-teal-ink"}`}>{activePaid?.cancelAtPeriodEnd ? "Ends " + (h.periodEnd ? date(h.periodEnd) : "soon") : "Active"}</span>}</p>
               <dl className="mt-3 grid gap-y-2 text-sm">
                 <div><dt className="text-navy/60">Subscription status</dt><dd className="font-medium text-navy">{h.planKey === "free" ? (sub && sub.status !== "active" ? `Ended (${sub.status})` : "Free plan") : "Active"}</dd></div>
-                <div><dt className="text-navy/60">Monthly credit allocation</dt><dd className="font-medium text-navy">{h.planKey === "free" ? `${credits(h.allowanceMcr)} one-time introductory credits` : `${credits(h.allowanceMcr)} credits per billing period`}</dd></div>
-                <div><dt className="text-navy/60">Next credit reset</dt><dd className="font-medium text-navy">{h.planKey !== "free" && h.periodEnd ? date(h.periodEnd) : "Not applicable (introductory credits do not reset)"}</dd></div>
+                <div><dt className="text-navy/60">Monthly credits allocated</dt><dd className="font-medium text-navy">{h.planKey === "free" ? `${credits(h.allowanceMcr)} one-time introductory credits` : `${credits(h.allowanceMcr)} credits per billing period`}</dd></div>
+                <div><dt className="text-navy/60">Billing period</dt><dd className="font-medium text-navy">{h.planKey !== "free" && h.periodStart && h.periodEnd ? `${date(h.periodStart)} to ${date(h.periodEnd)}` : "Not applicable on Free"}</dd></div>
+                <div><dt className="text-navy/60">{activePaid?.autoRenews && !activePaid.cancelAtPeriodEnd ? "Renews on" : "Next credit reset"}</dt><dd className="font-medium text-navy">{h.planKey !== "free" && h.periodEnd ? (activePaid?.cancelAtPeriodEnd ? `Ends ${date(h.periodEnd)}` : date(h.periodEnd)) : "Not applicable (introductory credits do not reset)"}</dd></div>
                 <div><dt className="text-navy/60">Projects</dt><dd className="font-medium text-navy">{(() => { const p = catalog?.plans.find((x) => x.key === h.planKey); return p ? (p.maxProjects === null ? "Unlimited" : `Up to ${p.maxProjects}`) : "-"; })()}</dd></div>
               </dl>
               {h.planKey !== "free" && h.periodEnd && (activePaid?.autoRenews
@@ -88,9 +104,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               <div className="mt-4 grid gap-4">
                 <div>
                   <p className="text-sm font-medium text-navy">{h.planKey === "free" ? "Introductory credits" : "Plan credits"}</p>
-                  <p className="text-sm text-navy/75">{credits(h.subscriptionAvailableMcr)} left of {credits(h.allowanceMcr)}</p>
+                  <p className="text-sm text-navy/75">{credits(h.subscriptionAvailableMcr)} remaining of {credits(h.allowanceMcr)} allocated</p>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-navy/5" role="progressbar" aria-valuenow={used} aria-valuemin={0} aria-valuemax={100} aria-label="Plan credits used"><div className="h-full bg-cobalt" style={{ width: `${used}%` }} /></div>
-                  <p className="mt-1 text-xs text-navy/60">{credits(h.usedMcr)} used{h.reservedMcr > 0 ? `, ${credits(h.reservedMcr)} held for requests in progress` : ""}. Used first.</p>
+                  <p className="mt-1 text-xs text-navy/60">{credits(h.usedMcr)} consumed{h.reservedMcr > 0 ? `, ${credits(h.reservedMcr)} held for requests in progress` : ""}. Used first{h.planKey !== "free" ? "; unused plan credits expire at the end of the billing period" : ""}.</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-navy">Purchased credits</p>
@@ -104,7 +120,46 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             </section>
             </div>
 
-            {catalog && <PurchasePanel catalog={{ ...catalog, currencies: catalog.currencies.filter((c) => provider.currencies.includes(c)) }} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canBuyPlan={canBuyPlan} renewLabel={activePaid ? "Renew" : "Upgrade"} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} providerName={provider.name} autoRenews={provider.autoRenews} processorNote={provider.processorNote} canCancel={managed} isSubscriber={!!activePaid} />}
+            <section aria-labelledby="feat-h" className="mt-8">
+              <h2 id="feat-h" className="text-sm font-medium text-navy/85">AI use by feature {h.planKey !== "free" ? "this billing period" : "so far"}</h2>
+              {overview.featureUsage.length === 0 ? <p className="mt-2 text-sm text-navy/65">No AI credits used yet{h.planKey !== "free" ? " this period" : ""}. Data Studio analyses and charts never use AI credits.</p> : (
+                <div className="mt-2 overflow-x-auto rounded-lg border border-line bg-white">
+                  <table className="w-full text-left text-sm"><thead className="border-b border-line text-xs text-navy/65"><tr><th className="px-3 py-2 font-medium">Feature</th><th className="px-3 py-2 text-right font-medium">Requests</th><th className="px-3 py-2 text-right font-medium">Credits</th></tr></thead>
+                    <tbody>{overview.featureUsage.map((f) => <tr key={f.feature} className="border-b border-line last:border-0"><td className="px-3 py-2 text-navy">{FEATURE_LABELS[f.feature] ?? f.feature}</td><td className="px-3 py-2 text-right tabular-nums text-navy/75">{f.requests}</td><td className="px-3 py-2 text-right tabular-nums text-navy">{credits(f.chargedMcr)}</td></tr>)}</tbody></table>
+                </div>
+              )}
+            </section>
+
+            {teams.length > 0 && (
+              <section aria-labelledby="teams-h" className="mt-8">
+                <h2 id="teams-h" className="text-sm font-medium text-navy/85">Teams you manage</h2>
+                <p className="mt-1 text-xs text-navy/60">Shared credits belong to the team and are separate from your personal credits.</p>
+                <ul className="mt-2 grid gap-3 md:grid-cols-2">
+                  {teams.map((t) => {
+                    const a = t.bill?.allowance ?? null, pool = t.ai?.pool ?? null;
+                    const used = (t.ai?.members ?? []).filter((m) => m.used_mcr > 0).sort((x, y) => y.used_mcr - x.used_mcr).slice(0, 5);
+                    return (
+                      <li key={t.id} className="rounded-xl border border-line bg-white p-4">
+                        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-navy">{t.name}</p><Link href={`/teams/${t.id}/billing`} className="text-sm text-cobalt hover:underline">Team billing</Link></div>
+                        {t.bill?.entitlements.state !== "active" ? <p className="mt-1 text-sm text-navy/65">No active Teams plan.</p> : (
+                          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                            <div><dt className="text-navy/60">Shared balance</dt><dd className="font-medium text-navy">{pool ? credits(pool.available_mcr) : "0"} available</dd></div>
+                            <div><dt className="text-navy/60">Monthly shared allowance</dt><dd className="font-medium text-navy">{a ? credits(a.monthly_allowance_mcr) : "-"}</dd></div>
+                            <div><dt className="text-navy/60">Paid seats</dt><dd className="font-medium text-navy">{a?.paid_seats ?? "-"}</dd></div>
+                            <div><dt className="text-navy/60">Extra-seat credits</dt><dd className="font-medium text-navy">{a ? `${credits(a.extra_seat_credits_mcr)} (${a.extra_seats} extra seat${a.extra_seats === 1 ? "" : "s"})` : "-"}</dd></div>
+                            <div><dt className="text-navy/60">Team limit per month</dt><dd className="font-medium text-navy">{pool?.monthly_team_limit_mcr != null ? credits(pool.monthly_team_limit_mcr) : "No limit"}</dd></div>
+                            <div><dt className="text-navy/60">Each member per month</dt><dd className="font-medium text-navy">{pool?.default_member_limit_mcr != null ? credits(pool.default_member_limit_mcr) : "No limit"}</dd></div>
+                          </dl>
+                        )}
+                        {used.length > 0 && <p className="mt-2 text-xs text-navy/65">Member use this month: {used.map((m) => `${m.full_name} ${credits(m.used_mcr)}`).join(", ")}.</p>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
+            {catalog && <PurchasePanel catalog={{ ...catalog, currencies: catalog.currencies.filter((c) => provider.currencies.includes(c)) }} cards={cards} ready={ready.ok} readyMessage={ready.ok ? "" : ready.message} currentPlanKey={h.planKey} canRenewNow={canRenewNow} nextRenewal={activePaid?.periodEnd ? date(activePaid.periodEnd) : null} windowDays={windowDays} providerName={provider.name} autoRenews={provider.autoRenews} processorNote={provider.processorNote} canCancel={managed} managed={managed} isSubscriber={!!activePaid} />}
 
             <section aria-labelledby="ops-h" className="mt-8">
               <h2 id="ops-h" className="text-sm font-medium text-navy/85">Recent AI operations</h2>
@@ -114,7 +169,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                     <tbody>{overview.operations.map((e) => <tr key={e.id} className="border-b border-line last:border-0"><td className="whitespace-nowrap px-3 py-2 text-navy/75">{dateTime(e.createdAt)}</td><td className="px-3 py-2 text-navy">{FEATURE_LABELS[e.feature] ?? e.feature}</td><td className="px-3 py-2 text-navy/75">{STATUS[e.status] ?? e.status}</td><td className="px-3 py-2 text-right tabular-nums text-navy">{e.status === "committed" ? credits(e.chargedMcr) : "0"}</td></tr>)}</tbody></table>
                 </div>
               )}
-              <p className="mt-2 text-xs text-navy/60">Each request is charged for the processing it actually used, including every model step and any paid tools. Failed requests are not charged.</p>
+              <p className="mt-2 text-xs text-navy/60">Each request is charged for the processing it actually used, including every model step and any paid tools. Failed requests are not charged. Statistical analyses and charts in Data Studio never use AI credits.</p>
             </section>
 
             <section aria-labelledby="pay-h" className="mt-8">

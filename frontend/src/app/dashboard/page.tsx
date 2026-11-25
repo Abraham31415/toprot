@@ -133,6 +133,7 @@ export default async function DashboardPage() {
 
   const firstName = profile.full_name.split(" ")[0];
   const isFree = headroom?.planKey === "free";
+  const paidName = ({ pro: "Toprot Pro", advanced: "Toprot Advanced" }[headroom?.planKey ?? ""] ?? "Paid plan");
   const latestStudy = cards[0]?.study;
   const hasProjects = cards.length > 0;
 
@@ -156,10 +157,10 @@ export default async function DashboardPage() {
           {headroom && (
             <Link
               href="/billing"
-              aria-label={isFree ? "You are on the Free plan. Open billing to upgrade." : "You are on Toprot Pro. Open billing."}
+              aria-label={isFree ? "You are on the Free plan. Open billing to upgrade." : `You are on ${paidName}. Open billing.`}
               className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${isFree ? "border-line bg-surface text-ink-soft hover:border-line-strong" : "border-success-line bg-success-bg text-success-ink hover:border-teal"}`}
             >
-              {isFree ? "Free plan" : "Toprot Pro"}
+              {isFree ? "Free plan" : paidName}
               {isFree && <span className="text-primary">Upgrade</span>}
             </Link>
           )}
@@ -258,7 +259,7 @@ export default async function DashboardPage() {
           <Panel title="AI credits" icon={BrainCircuit}>
             {headroom ? (
               <>
-                <p className="type-caption mb-2">Plan: <span className="font-medium text-ink">{isFree ? "Free" : "Toprot Pro"}</span></p>
+                <p className="type-caption mb-2">Plan: <span className="font-medium text-ink">{isFree ? "Free" : paidName}</span></p>
                 <p className="type-stat">
                   {credits(headroom.availableMcr)}
                   <span className="ml-2 text-sm font-normal text-ink-muted">credits available</span>

@@ -56,7 +56,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
                 <Kpi icon={Activity} label="Active in the last 30 days" value={num(o.users.active_30d)} note="Monthly active users" />
                 <Kpi icon={Users} label="Free accounts" value={num(free)} />
                 <Kpi icon={WalletCards} label="Pro subscribers" value={num(o.users.paying_by_plan.pro ?? 0)} note="Active paid period" />
-                <Kpi icon={WalletCards} label="Team subscribers" value={o.users.paying_by_plan.team !== undefined ? num(o.users.paying_by_plan.team) : "Not offered"} note={o.users.paying_by_plan.team !== undefined ? undefined : "There is no Team plan yet"} />
+                <Kpi icon={WalletCards} label="Advanced subscribers" value={num(o.users.paying_by_plan.advanced ?? 0)} note="Active paid period" />
+                <Kpi icon={WalletCards} label="Team subscribers" value={o.users.paying_by_plan.team !== undefined ? num(o.users.paying_by_plan.team) : "Not offered"} note={o.users.paying_by_plan.team !== undefined ? undefined : "Teams are billed per team; see Teams"} />
               </KpiGrid>
               <p className="type-caption mt-2">Active means the person did something that was recorded (a project, calculation, reference, manuscript, PDF, assistant message, AI request or document). Sign-ins are not recorded historically. {num(o.users.suspended)} suspended.</p>
             </Section>

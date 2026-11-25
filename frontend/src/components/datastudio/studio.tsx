@@ -6,7 +6,8 @@ import { BarChart3, Database, FileCode2, FlaskConical, History, Loader2, Pin, Re
 import { Button } from "@/components/ds";
 import { applyAll, OP_LABEL, type Operation } from "@/lib/datastudio/transform";
 import { pythonScript, datasetToCsv } from "@/lib/datastudio/export";
-import { METHOD_BY_ID, type Tier } from "@/lib/datastudio/engine/registry";
+import { METHOD_BY_ID } from "@/lib/datastudio/engine/registry";
+import { normalizeTier } from "@/lib/datastudio/entitlements";
 import { nRows, type Dataset } from "@/lib/datastudio/types";
 import type { Limits } from "@/lib/datastudio/server";
 import {
@@ -134,7 +135,7 @@ export function DataStudio(props: {
   }
   async function refreshAnalyses() { const r = await listAnalyses(studyId, datasetId); if (r.ok) setAnalyses(r.data); }
 
-  const tier: Tier = (limits?.method_tier as Tier) ?? "basic";
+  const tier = normalizeTier(limits?.method_tier);
   const versionOf = (vid: string) => props.versions.find((v) => v.id === vid);
 
   return (
@@ -220,7 +221,7 @@ export function DataStudio(props: {
               )}
             </div>
           ) : section === "analyze" ? (
-            <AnalysisPanel dataset={data} tier={tier} canRun={props.canWrite && !ops.length} running={running} onRun={run} />
+            <AnalysisPanel dataset={data} tier={tier} plan={limits?.plan} canRun={props.canWrite && !ops.length} running={running} onRun={run} />
           ) : section === "visualize" ? (
             <Visualize dataset={data} canExport={(f) => canExport(f, "chart")} canSave={props.canWrite && !!meta}
               onSave={async (spec, title) => { const r = await saveChart(studyId, datasetId, meta!.id, spec.chart.kind, title, spec); setMsg(r.ok ? { kind: "ok", text: "Chart settings saved to the project." } : { kind: "error", text: r.error }); }} />

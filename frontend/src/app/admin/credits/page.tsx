@@ -59,7 +59,7 @@ export default async function CreditsPage() {
               <form action="/admin/users" method="get" role="search" className="flex flex-wrap gap-2"><label htmlFor="c-q" className="sr-only">Find a user</label><input id="c-q" name="q" placeholder="Name or email" className={`${inputCls} max-w-sm`} /><button className="h-9 rounded-control border border-line-strong bg-surface px-3 text-sm font-medium hover:border-primary">Find</button></form>
               <p className="type-caption mt-2">Open a user, then choose &quot;Full credit ledger for this user&quot;. Or go to <Link href="/admin/users" className="text-primary hover:underline">Users</Link>.</p>
             </Section>
-            <Notice tone="setup" title="Credit rules enforced by the database">Only active Pro subscribers can buy credit packs, subscription credits are spent before purchased credits, purchased credits survive a subscription ending, and reservations are taken under row locks so simultaneous requests cannot overspend. Administrators can add promotional credits only through an audited, capped action.</Notice>
+            <Notice tone="setup" title="Credit rules enforced by the database">Only active paid subscribers (Pro or Advanced) can buy credit packs, subscription credits are spent before purchased credits, purchased credits survive a subscription ending, and reservations are taken under row locks so simultaneous requests cannot overspend. Administrators can add promotional credits only through an audited, capped action.</Notice>
           </>
         );
       })()}
