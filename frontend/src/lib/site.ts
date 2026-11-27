@@ -2,7 +2,7 @@
 // actually built. Marketing pages read feature status from here so the site never advertises
 // a capability that does not exist.
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://toprot.vercel.app").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.toprot.org").replace(/\/$/, "");
 export const SITE_NAME = "ToProt";
 export const SITE_TITLE = "ToProt | Research Protocol & Study Design Platform";
 export const SITE_DESCRIPTION =

@@ -39,7 +39,7 @@ async function fetchText(url: string, f: typeof fetch): Promise<string> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 10000);
   try {
-    const res = await f(url, { signal: ctl.signal, headers: { "User-Agent": "ToProt/1.0 (https://toprot.vercel.app)" } });
+    const res = await f(url, { signal: ctl.signal, headers: { "User-Agent": "ToProt/1.0 (https://www.toprot.org)" } });
     if (res.status === 404) throw new CslFetchError("That style or locale does not exist in the official repository.", 404);
     if (!res.ok) throw new CslFetchError(`The style repository returned an error (${res.status}).`, 502);
     const len = parseInt(res.headers.get("content-length") ?? "0", 10);
