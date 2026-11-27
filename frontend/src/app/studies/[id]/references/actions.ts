@@ -38,7 +38,7 @@ type CrossRefMessage = {
 
 async function lookupCrossRef(doi: string): Promise<ReferenceMetadata | null> {
   const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
-    headers: { "User-Agent": "ToProt/1.0 (https://toprot.vercel.app)" },
+    headers: { "User-Agent": "ToProt/1.0 (https://www.toprot.org)" },
     cache: "no-store",
   });
   if (!res.ok) return null;

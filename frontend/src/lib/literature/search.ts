@@ -19,7 +19,7 @@ export const envFromProcess = (): Env => ({
   mailto: process.env.LITERATURE_MAILTO || undefined,
 });
 
-const UA = "ToProt/1.0 (https://toprot.vercel.app; research reference tool)";
+const UA = "ToProt/1.0 (https://www.toprot.org; research reference tool)";
 
 async function get(url: string, source: keyof typeof SOURCE_INFO, env: Env, as: "json" | "text" = "json"): Promise<unknown> {
   const f = env.fetch ?? fetch;

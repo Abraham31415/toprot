@@ -50,7 +50,7 @@ Setup, in test mode first:
      ('dodo', 'pack', 'credits_5000', 'pdt_...'),
      ('dodo', 'pack', 'credits_10000', 'pdt_...');
    ```
-4. In Dodo, Developer > Webhooks: add `https://toprot.vercel.app/api/billing/dodo-webhook`, subscribe to payment and subscription events, and copy the signing secret.
+4. In Dodo, Developer > Webhooks: add `https://www.toprot.org/api/billing/dodo-webhook`, subscribe to payment and subscription events, and copy the signing secret.
 5. In Vercel set `DODO_PAYMENTS_API_KEY` (test key), `DODO_PAYMENTS_WEBHOOK_SECRET` (`whsec_...`) and `CRON_SECRET`, then redeploy.
 6. Make a test purchase. The plan or credits appear only after the backend has re-fetched the payment from Dodo and checked product, amount and currency. A repeated webhook changes nothing.
 7. Live: finish Dodo's product information and verification, use the live key and set `BILLING_LIVE_ENABLED=true`. A live key is refused without that flag.
@@ -61,7 +61,7 @@ Behaviour: a renewal arrives as `payment.succeeded` for a known subscription and
 
 1. Apply the migration in Supabase (production).
 2. Create a Flutterwave account and use **test mode** first. Copy the test **secret key** (`FLWSECK_TEST-...`).
-3. In Flutterwave: Settings > Webhooks. URL `https://toprot.vercel.app/api/billing/webhook`. Choose a random **secret hash** and enable retries.
+3. In Flutterwave: Settings > Webhooks. URL `https://www.toprot.org/api/billing/webhook`. Choose a random **secret hash** and enable retries.
 4. In Vercel (Project > Settings > Environment Variables) set:
    - `FLW_SECRET_KEY` = the test secret key
    - `FLW_WEBHOOK_HASH` = the secret hash from step 3
